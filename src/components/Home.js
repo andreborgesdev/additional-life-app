@@ -4,7 +4,7 @@ import Product from "./Product";
 import sampleProducts from "../sample-products"
 import { SearchOutlined } from '@ant-design/icons';
 import 'antd/dist/antd.css';
-import "../css/Home.css"
+import "../css/Home.css";
 
 const { Header, Content, Footer } = Layout;
 
