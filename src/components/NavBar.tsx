@@ -18,6 +18,7 @@ import {
   } from "@chakra-ui/react"
 import { ColorModeSwitcher } from "./ColorModeSwitcher";
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
+import { useHistory } from "react-router-dom";
 
 const Links = ['Home', 'Products', 'Map'];
 
@@ -37,6 +38,10 @@ const NavLink = ({ children }: { children: ReactNode }) => (
 
 function NavBar() {
     const { isOpen, onOpen, onClose } = useDisclosure();
+
+    // function handleClick() {
+    //   history.push("/home");
+    // }
 
     return (
         <Box bg={useColorModeValue('gray.100', 'gray.900')} px={4}>
@@ -61,6 +66,7 @@ function NavBar() {
           </HStack>
           <Flex alignItems={'center'}>
             <ColorModeSwitcher justifySelf="flex-end" />
+            <Button marginX="5" >Login</Button>
             <Menu>
               <MenuButton
                 as={Button}
