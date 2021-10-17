@@ -2,18 +2,21 @@ import React from "react";
 import {
   Box,
   Grid,
+  Container
 } from "@chakra-ui/react"
 import NavBar from "./NavBar";
 import Product from "./Product";
 import Footer from "./Footer";
-import "../css/Home.css";
+import type { NextPage } from 'next'
+// import "../css/Home.css";
 
-function Home() {
+const Home: NextPage = () => {
 
   return (
     <>
-      <div className="wrapper">
-        <NavBar />
+      <NavBar />
+      {/* <Container maxWidth="container.xl" p={5}> */}
+
         <Box p={4}>
         <Grid templateColumns="repeat(4, 1fr)" gap={6}>
           { [...Array(4)].map((e, i) => 
@@ -23,11 +26,13 @@ function Home() {
           )}
         </Grid>
         </Box>
-        {/* <div className="footer"> */}
-          <Footer />
-        {/* </div> */}
-      </div>
+      {/* </Container> */}
+
+      {/* <div className="footer"> */}
+        {/* <Footer /> */}
+      {/* </div> */}
     </>
   );
 }
+
 export default Home;
