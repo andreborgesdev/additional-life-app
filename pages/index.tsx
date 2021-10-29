@@ -18,19 +18,17 @@ const Home: NextPage = () => {
       {/* <Container maxWidth="container.xl" p={5}> */}
 
         <Box p={4}>
-        <Grid templateColumns="repeat(4, 1fr)" gap={6}>
-          { [...Array(4)].map((e, i) => 
-                  <Box w="100%" h="10" > 
-                  <Product />
-                </Box>
-          )}
-        </Grid>
+          <Grid templateColumns="repeat(4, 1fr)" gap={6}>
+            { [...Array(4)].map((e, i) => 
+                    <Box w="100%" h="10" > 
+                    <Product />
+                  </Box>
+            )}
+          </Grid>
         </Box>
       {/* </Container> */}
 
-      {/* <div className="footer"> */}
-        {/* <Footer /> */}
-      {/* </div> */}
+      {/* <Footer /> */}
     </>
   );
 }
