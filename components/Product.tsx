@@ -18,7 +18,13 @@ const data = {
   numReviews: 34
 };
 
-function Product() {
+import { Item } from "../pages/index";
+
+interface ProductProps {
+  item : Item
+}
+
+export default function Product(props: ProductProps) {
   return (
     <Flex p={50} w="full" alignItems="center" justifyContent="center">
       <Box
@@ -59,7 +65,7 @@ function Product() {
               as="h4"
               lineHeight="tight"
               isTruncated>
-              {data.name}
+              {props.name}
             </Box>
             {/* <Tooltip
               label="Add to cart"
@@ -76,7 +82,7 @@ function Product() {
           <Flex justifyContent="space-between" alignContent="center">
             {/* <Rating rating={data.rating} numReviews={data.numReviews} /> */}
             <Box fontSize="12px" color={useColorModeValue('gray.800', 'gray.500')}>
-              This is the description of the procut but what if it is very long?
+            {props.description}
             </Box>
           </Flex>
         </Box>
@@ -84,5 +90,3 @@ function Product() {
     </Flex>
   );
 }
-
-export default Product;

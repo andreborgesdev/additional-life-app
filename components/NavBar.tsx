@@ -37,7 +37,7 @@ const NavLink = ({ children }: { children: ReactNode }) => (
     </Link>
   );
 
-function NavBar() {
+export default function NavBar() {
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     // function handleClick() {
@@ -106,5 +106,3 @@ function NavBar() {
       </Box>
     );
 }
-
-export default NavBar;

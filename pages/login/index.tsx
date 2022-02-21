@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Box,
     Flex,
@@ -15,6 +15,8 @@ import {
     IconProps,
     Icon,
   } from '@chakra-ui/react';
+import axios from 'axios';
+import { useRouter } from 'next/router';
   
   const avatars = [
     {
@@ -40,6 +42,32 @@ import {
   ];
   
 export default function Login() {
+  const router = useRouter();
+  const apiUrl = 'http://localhost:8080';
+  const [jwt, setJwt] = useState();
+
+  useEffect(() => {
+    // redirect to home if already logged in
+    if (localStorage.getItem('token') != undefined) {
+        router.push('/');
+    }
+  }, []);
+
+  async function login() {    
+    const { data } = await axios.post(`${apiUrl}/login`, new URLSearchParams({
+      username: 'andre',
+      password: '123'
+    }));
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem('token', data["access-token"]);
+      setJwt(data.token);
+    }
+
+    router.push("/");
+  }
+
+
   return (
     <Box position={'relative'}>
       <Container
@@ -170,9 +198,11 @@ export default function Login() {
               _hover={{
                 bgGradient: 'linear(to-r, red.400,pink.400)',
                 boxShadow: 'xl',
-              }}>
+              }}
+              onClick={login}>
               Log in
             </Button>
+            <h1>YOOOO {jwt}</h1>
           </Box>
           form
         </Stack>
