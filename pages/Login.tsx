@@ -143,7 +143,7 @@ export default function Login() {
           <Box as={'form'} mt={10}>
             <Stack spacing={4}>
               <Input
-                placeholder="Firstname"
+                placeholder="Username"
                 bg={'gray.100'}
                 border={0}
                 color={'gray.500'}
@@ -152,7 +152,7 @@ export default function Login() {
                 }}
               />
               <Input
-                placeholder="firstname@lastname.io"
+                placeholder="Password"
                 bg={'gray.100'}
                 border={0}
                 color={'gray.500'}
@@ -160,18 +160,6 @@ export default function Login() {
                   color: 'gray.500',
                 }}
               />
-              <Input
-                placeholder="+1 (___) __-___-___"
-                bg={'gray.100'}
-                border={0}
-                color={'gray.500'}
-                _placeholder={{
-                  color: 'gray.500',
-                }}
-              />
-              <Button fontFamily={'heading'} bg={'gray.200'} color={'gray.800'}>
-                Upload CV
-              </Button>
             </Stack>
             <Button
               fontFamily={'heading'}
@@ -183,7 +171,7 @@ export default function Login() {
                 bgGradient: 'linear(to-r, red.400,pink.400)',
                 boxShadow: 'xl',
               }}>
-              Submit
+              Log in
             </Button>
           </Box>
           form

@@ -15,10 +15,11 @@ import {
     useColorModeValue,
     useDisclosure,
     Stack,
-  } from "@chakra-ui/react"
+  } from "@chakra-ui/react";
+import NextLink from 'next/link';
 import { ColorModeSwitcher } from "./ColorModeSwitcher";
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
-import { useHistory } from "react-router-dom";
+// import { useHistory } from "react-router-dom";
 
 const Links = ['Home', 'Products', 'Map'];
 
@@ -66,7 +67,9 @@ function NavBar() {
           </HStack>
           <Flex alignItems={'center'}>
             <ColorModeSwitcher justifySelf="flex-end" />
-            <Button marginX="5" >Login</Button>
+            <NextLink href='/login' passHref>
+              <Button marginX="5" colorScheme={"whatsapp"} >Login</Button>
+            </NextLink>
             <Menu>
               <MenuButton
                 as={Button}

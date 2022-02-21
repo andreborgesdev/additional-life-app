@@ -4,9 +4,9 @@ import {
   Grid,
   Container
 } from "@chakra-ui/react"
-import NavBar from "./NavBar";
-import Product from "./Product";
-import Footer from "./Footer";
+import NavBar from "../components/NavBar";
+import Product from "../components/Product";
+import Footer from "../components/Footer";
 import type { NextPage } from 'next'
 // import "../css/Home.css";
 
