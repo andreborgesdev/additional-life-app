@@ -5,7 +5,7 @@ import {
   Container
 } from "@chakra-ui/react"
 import NavBar from "../components/NavBar";
-import Product from "../components/Product";
+import ItemCard from "../components/ItemCard";
 import Footer from "../components/Footer";
 import type { NextPage } from 'next'
 import axios from "axios";
@@ -16,17 +16,20 @@ interface ServerResponse {
 }
 
 export interface Item {
+  id: number,
   name: string,
   description: string,
   location: string,
   isTaken: boolean,
-  postedOn: Date
+  postedOn: string,
+  imageUrl: string,
+  url: string
 }
 
 const Home: NextPage = () => {
 
   const apiUrl = 'http://localhost:8080';
-  const [items, setItems] = useState<Item[]>();
+  const [items, setItems] = useState<Item[]>([]);
 
   // axios.interceptors.request.use(
   //   config => {
@@ -45,29 +48,31 @@ const Home: NextPage = () => {
   // );
 
   useEffect(() => {
-    axios.get<Item[]>(`${apiUrl}/api/v1/items`).then((response) => {
-      setItems(response.data);
-    });
+    getItems();
   }, []);
+
+  function getItems() {
+    axios.get<Item[]>(`${apiUrl}/api/v1/items`)   
+    .then((response) => {
+      setItems([...response.data]);
+    });
+  };
 
   return (
     <>
       <NavBar />
-      {/* <Container maxWidth="container.xl" p={5}> */}
-
-        <Box p={4}>
-          <Grid templateColumns="repeat(4, 1fr)" gap={6}>
-            { items?.map((item,index)=>{
-                <Box w="100%" h="10" > 
-                  <Product item={item} />
-                </Box>
-              })
-            }
-          </Grid>
-        </Box>
-      {/* </Container> */}
-
-      {/* <Footer /> */}
+      <Box>
+        <Grid templateColumns="repeat(5, 1fr)">
+          { items.map((item, index)=> {
+            return (
+              <Box w="100%" h="10" > 
+                <ItemCard item={item} />
+              </Box>
+            )})
+          }
+        </Grid>
+      </Box>
+      <Footer />
     </>
   );
 }
