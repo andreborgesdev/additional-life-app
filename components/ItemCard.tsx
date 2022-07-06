@@ -39,7 +39,7 @@ export default function ItemCard(props: ItemCardProps) {
             position="absolute"
             top={2}
             right={2}>
-            {isNew && (
+            {isNew() && (
               <Badge rounded="full" px="2" fontSize="0.8em" colorScheme="red">
                 New
               </Badge>

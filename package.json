@@ -11,15 +11,15 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
-    "@chakra-ui/icons": "^1.0.16",
-    "@chakra-ui/react": "^1.6.10",
+    "@chakra-ui/icons": "^2.0.2",
+    "@chakra-ui/react": "^2.2.1",
     "@emotion/react": "^11.5.0",
     "@emotion/styled": "^11",
-    "axios": "^0.26.0",
-    "framer-motion": "^4",
-    "next": "11.1.2",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
+    "axios": "^0.27.2",
+    "framer-motion": "^6.4.2",
+    "next": "12.2.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
     "react-icons": "^4.3.1",
     "webpack": "^5.69.1"
   },
@@ -32,11 +32,11 @@
     "@storybook/builder-webpack5": "^6.4.19",
     "@storybook/manager-webpack5": "^6.4.19",
     "@storybook/react": "^6.4.19",
-    "@storybook/testing-library": "0.0.9",
-    "@types/react": "17.0.27",
+    "@storybook/testing-library": "0.0.13",
+    "@types/react": "18.0.15",
     "babel-loader": "^8.2.3",
-    "eslint": "8.0.0",
-    "eslint-config-next": "11.1.2",
-    "typescript": "4.4.3"
+    "eslint": "8.19.0",
+    "eslint-config-next": "12.2.0",
+    "typescript": "4.7.4"
   }
 }
