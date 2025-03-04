@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "categories": "Kategorien",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "addItem": "Artikel hinzufügen"
+  },
+  "search": {
+    "placeholder": "Artikel suchen..."
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "register": "Registrieren"
+  },
+  "hero": {
+    "title": "Geben Sie Ihren Besitztümern ein zweites Leben",
+    "subtitle": "Treten Sie unserem gemeinschaftsbasierten Marktplatz bei, wo Sie Gegenstände, die Sie nicht mehr benötigen, verschenken und Schätze finden können, die andere teilen.",
+    "browseItems": "Artikel durchsuchen",
+    "learnMore": "Mehr erfahren"
+  },
+  "features": {
+    "ecoFriendly": {
+      "title": "Umweltfreundlich",
+      "description": "Reduzieren Sie Abfall und schützen Sie die Umwelt"
+    },
+    "circularEconomy": {
+      "title": "Kreislaufwirtschaft",
+      "description": "Fördern Sie Wiederverwendung und nachhaltigen Konsum"
+    },
+    "communityDriven": {
+      "title": "Gemeinschaftsgetrieben",
+      "description": "Verbinden Sie sich mit Gleichgesinnten"
+    }
+  }
+}

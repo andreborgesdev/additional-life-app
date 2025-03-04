@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "categories": "Categorie",
+    "about": "Chi siamo",
+    "contact": "Contatti",
+    "addItem": "Aggiungi articolo"
+  },
+  "search": {
+    "placeholder": "Cerca articoli..."
+  },
+  "auth": {
+    "login": "Accedi",
+    "logout": "Esci",
+    "register": "Registrati"
+  },
+  "hero": {
+    "title": "Dai una seconda vita ai tuoi oggetti",
+    "subtitle": "Unisciti al nostro marketplace basato sulla comunità dove puoi regalare oggetti di cui non hai più bisogno e trovare tesori che altri condividono.",
+    "browseItems": "Sfoglia articoli",
+    "learnMore": "Scopri di più"
+  },
+  "features": {
+    "ecoFriendly": {
+      "title": "Ecologico",
+      "description": "Riduci i rifiuti e aiuta l'ambiente"
+    },
+    "circularEconomy": {
+      "title": "Economia circolare",
+      "description": "Promuovi il riutilizzo e il consumo sostenibile"
+    },
+    "communityDriven": {
+      "title": "Guidato dalla comunità",
+      "description": "Connettiti con persone che la pensano come te"
+    }
+  }
+}

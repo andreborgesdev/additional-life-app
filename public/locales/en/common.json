@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "categories": "Categories",
+    "about": "About",
+    "contact": "Contact",
+    "addItem": "Add Item"
+  },
+  "search": {
+    "placeholder": "Search items..."
+  },
+  "auth": {
+    "login": "Log In",
+    "logout": "Log Out",
+    "register": "Register"
+  },
+  "hero": {
+    "title": "Give a Second Life to Your Belongings",
+    "subtitle": "Join our community-driven marketplace where you can give away items you no longer need and find treasures others are sharing.",
+    "browseItems": "Browse Items",
+    "learnMore": "Learn More"
+  },
+  "features": {
+    "ecoFriendly": {
+      "title": "Eco-Friendly",
+      "description": "Reduce waste and help the environment"
+    },
+    "circularEconomy": {
+      "title": "Circular Economy",
+      "description": "Promote reuse and sustainable consumption"
+    },
+    "communityDriven": {
+      "title": "Community-Driven",
+      "description": "Connect with like-minded individuals"
+    }
+  }
+}

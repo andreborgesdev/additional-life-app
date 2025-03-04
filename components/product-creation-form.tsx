@@ -1,21 +1,18 @@
-"use client";
+"use client"
 
-import type React from "react";
+import type React from "react"
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { toast } from "@/components/ui/use-toast"
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet"
+import "leaflet/dist/leaflet.css"
+import L from "leaflet"
 
 const categories = [
   "Furniture",
@@ -30,27 +27,51 @@ const categories = [
   "Toys & Games",
   "Automotive",
   "Miscellaneous",
-];
+]
+
+function LocationMarker({
+  position,
+  setPosition,
+}: { position: [number, number]; setPosition: (pos: [number, number]) => void }) {
+  const map = useMapEvents({
+    click(e) {
+      setPosition([e.latlng.lat, e.latlng.lng])
+    },
+  })
+
+  return position === null ? null : <Marker position={position}></Marker>
+}
 
 export default function ProductCreationForm() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [location, setLocation] = useState("");
-  const [image, setImage] = useState<File | null>(null);
-  const router = useRouter();
-  const { toast } = useToast();
+  const [title, setTitle] = useState("")
+  const [description, setDescription] = useState("")
+  const [category, setCategory] = useState("")
+  const [location, setLocation] = useState("")
+  const [position, setPosition] = useState<[number, number]>([51.505, -0.09])
+  const [image, setImage] = useState<File | null>(null)
+  const [isClient, setIsClient] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    setIsClient(true)
+    delete L.Icon.Default.prototype._getIconUrl
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: "/leaflet/marker-icon-2x.png",
+      iconUrl: "/leaflet/marker-icon.png",
+      shadowUrl: "/leaflet/marker-shadow.png",
+    })
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    if (!title || !description || !category || !location) {
+    if (!title || !description || !category || !location || !position) {
       toast({
         title: "Error",
         description: "Please fill in all required fields.",
         variant: "destructive",
-      });
-      return;
+      })
+      return
     }
 
     // Here you would typically send the form data to your backend
@@ -60,17 +81,19 @@ export default function ProductCreationForm() {
       description,
       category,
       location,
+      latitude: position[0],
+      longitude: position[1],
       image,
-    });
+    })
 
     toast({
       title: "Success",
       description: "Your item has been added successfully!",
-    });
+    })
 
     // Redirect to home page after successful submission
-    router.push("/");
-  };
+    router.push("/")
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto">
@@ -102,10 +125,7 @@ export default function ProductCreationForm() {
           </SelectTrigger>
           <SelectContent>
             {categories.map((cat) => (
-              <SelectItem
-                key={cat}
-                value={cat.toLowerCase().replace(/ & /g, "-")}
-              >
+              <SelectItem key={cat} value={cat.toLowerCase().replace(/ & /g, "-")}>
                 {cat}
               </SelectItem>
             ))}
@@ -123,17 +143,27 @@ export default function ProductCreationForm() {
         />
       </div>
       <div>
+        <Label>Select Location on Map</Label>
+        {isClient && (
+          <div className="h-[400px] rounded-lg overflow-hidden">
+            <MapContainer center={position} zoom={13} scrollWheelZoom={false} style={{ height: "100%", width: "100%" }}>
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <LocationMarker position={position} setPosition={setPosition} />
+            </MapContainer>
+          </div>
+        )}
+      </div>
+      <div>
         <Label htmlFor="image">Image</Label>
-        <Input
-          id="image"
-          type="file"
-          onChange={(e) => setImage(e.target.files?.[0] || null)}
-          accept="image/*"
-        />
+        <Input id="image" type="file" onChange={(e) => setImage(e.target.files?.[0] || null)} accept="image/*" />
       </div>
       <Button type="submit" className="w-full">
         Add Item
       </Button>
     </form>
-  );
+  )
 }
+

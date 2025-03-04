@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -19,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 export default function ProductActions({ productId }: { productId: string }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const router = useRouter()
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
@@ -27,9 +29,15 @@ export default function ProductActions({ productId }: { productId: string }) {
     setIsDialogOpen(false)
   }
 
+  const handleChatClick = () => {
+    router.push(`/chat/${productId}`)
+  }
+
   return (
     <div className="space-y-4">
-      <Button className="w-full">Contact Owner</Button>
+      <Button className="w-full" onClick={handleChatClick}>
+        Chat with Owner
+      </Button>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
           <Button variant="outline" className="w-full">

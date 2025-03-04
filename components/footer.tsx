@@ -51,7 +51,7 @@ export default function Footer() {
           </div>
           <div>
             <h3 className="text-xl font-semibold mb-4">Connect With Us</h3>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 mb-4">
               <a href="#" className="text-green-200 dark:text-green-300 hover:text-white">
                 <Facebook size={24} />
               </a>
@@ -62,6 +62,21 @@ export default function Footer() {
                 <Instagram size={24} />
               </a>
             </div>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/terms-and-conditions"
+                  className="text-green-200 dark:text-green-300 hover:text-white text-sm"
+                >
+                  Terms and Conditions
+                </Link>
+              </li>
+              <li>
+                <Link href="/data-privacy" className="text-green-200 dark:text-green-300 hover:text-white text-sm">
+                  Data Privacy Policy
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
         <div className="mt-8 text-center text-green-200 dark:text-green-300">

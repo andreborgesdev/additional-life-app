@@ -1,35 +1,40 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import Script from "next/script"
-import Header from "@/components/header"
-import Footer from "@/components/footer"
+import type React from "react";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import Script from "next/script";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import { AuthProvider } from "@/hooks/auth-provider";
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Additional Life - Free Item Marketplace",
-  description: "A platform for giving away and finding free items, promoting sustainability and reducing waste.",
-}
+  description:
+    "A platform for giving away and finding free items, promoting sustainability and reducing waste.",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Header />
-        <div className="pt-16">
-          {" "}
-          {/* Add padding to account for fixed header */}
-          {children}
-        </div>
-        <Footer />
-        <Script id="handle-prefers-color-scheme">
-          {`
+        <AuthProvider>
+          <Header />
+          <div className="pt-16">
+            {" "}
+            {/* Add padding to account for fixed header */}
+            {children}
+          </div>
+          <Footer />
+          <Script id="handle-prefers-color-scheme">
+            {`
             (function() {
               function getInitialColorMode() {
                 const persistedColorPreference = window.localStorage.getItem('color-mode');
@@ -48,9 +53,9 @@ export default function RootLayout({
               document.documentElement.classList.toggle('dark', colorMode === 'dark');
             })();
           `}
-        </Script>
+          </Script>
+        </AuthProvider>
       </body>
     </html>
-  )
+  );
 }
-

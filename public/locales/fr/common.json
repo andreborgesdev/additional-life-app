@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "categories": "Catégories",
+    "about": "À propos",
+    "contact": "Contact",
+    "addItem": "Ajouter un article"
+  },
+  "search": {
+    "placeholder": "Rechercher des articles..."
+  },
+  "auth": {
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "register": "S'inscrire"
+  },
+  "hero": {
+    "title": "Donnez une seconde vie à vos objets",
+    "subtitle": "Rejoignez notre place de marché communautaire où vous pouvez donner des objets dont vous n'avez plus besoin et trouver des trésors que d'autres partagent.",
+    "browseItems": "Parcourir les articles",
+    "learnMore": "En savoir plus"
+  },
+  "features": {
+    "ecoFriendly": {
+      "title": "Écologique",
+      "description": "Réduisez les déchets et aidez l'environnement"
+    },
+    "circularEconomy": {
+      "title": "Économie circulaire",
+      "description": "Promouvoir la réutilisation et la consommation durable"
+    },
+    "communityDriven": {
+      "title": "Communautaire",
+      "description": "Connectez-vous avec des personnes partageant les mêmes idées"
+    }
+  }
+}
