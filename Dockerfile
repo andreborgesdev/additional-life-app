@@ -3,23 +3,23 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Install yarn
-RUN apk add --no-cache yarn
+# Install pnpm
+RUN npm install -g pnpm
 
 # Copy package files
-COPY package.json yarn.lock ./
+COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN yarn install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Copy app source
 COPY . .
 
 # Build the Next.js application
-RUN yarn build
+RUN pnpm build
 
 # Expose port 
 EXPOSE 3000
 
 # Start command for Next.js production server
-CMD ["yarn", "start"]
+CMD ["pnpm", "start"]

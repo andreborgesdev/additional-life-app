@@ -8,7 +8,7 @@ import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 import { Textarea } from "@/src/components/ui/textarea";
 import { Switch } from "@/src/components/ui/switch";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/src/hooks/use-toast";
 
 export default function UserSettingsPage() {
   const [name, setName] = useState("John Doe");

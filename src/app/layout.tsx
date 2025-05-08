@@ -7,7 +7,7 @@ import Header from "@/src/components/header";
 import Footer from "@/src/components/footer";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { AuthProvider } from "@/src/hooks/auth-provider";
+import { ReactQueryClientProvider } from "./provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,15 +25,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Header />
-        <div className="pt-16">
-          {" "}
-          {/* Add padding to account for fixed header */}
-          {children}
-        </div>
-        <Footer />
-        <Script id="handle-prefers-color-scheme">
-          {`
+        <ReactQueryClientProvider>
+          <Header />
+          <div className="pt-16">
+            {" "}
+            {/* Add padding to account for fixed header */}
+            {children}
+          </div>
+          <Footer />
+          <Script id="handle-prefers-color-scheme">
+            {`
             (function() {
               function getInitialColorMode() {
                 const persistedColorPreference = window.localStorage.getItem('color-mode');
@@ -52,7 +53,8 @@ export default function RootLayout({
               document.documentElement.classList.toggle('dark', colorMode === 'dark');
             })();
           `}
-        </Script>
+          </Script>
+        </ReactQueryClientProvider>
       </body>
     </html>
   );

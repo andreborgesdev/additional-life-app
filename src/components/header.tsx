@@ -43,8 +43,6 @@ export default function Header() {
   const { t, i18n, ready } = useTranslation("common");
 
   useEffect(() => {
-    console.log("test " + ready);
-
     setMounted(true);
     setDarkMode(document.documentElement.classList.contains("dark"));
     setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
@@ -109,6 +107,12 @@ export default function Header() {
             className="text-white dark:text-green-100 hover:text-green-200"
           >
             {t("nav.contact")}
+          </Link>
+          <Link
+            href="/create-product"
+            className="text-white dark:text-green-100 hover:text-green-200"
+          >
+            TEST +
           </Link>
           {isLoggedIn && (
             <Link
