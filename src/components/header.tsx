@@ -44,11 +44,39 @@ export default function Header() {
 
   useEffect(() => {
     setMounted(true);
-    setDarkMode(document.documentElement.classList.contains("dark"));
+
+    // Initialize Dark Mode
+    const storedUserColorPreference = localStorage.getItem("color-mode");
+    // Check system preference as a fallback
+    const systemPrefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    let newDarkModeState;
+
+    if (storedUserColorPreference) {
+      newDarkModeState = storedUserColorPreference === "dark";
+    } else {
+      newDarkModeState = systemPrefersDark;
+      // Optionally, you might want to save the determined initial state to localStorage here
+      // localStorage.setItem("color-mode", newDarkModeState ? "dark" : "light");
+    }
+    setDarkMode(newDarkModeState);
+    document.documentElement.classList.toggle("dark", newDarkModeState);
+
+    // Initialize Logged In State
     setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+
+    // Initialize Language from localStorage
+    const persistedLanguage = localStorage.getItem("language");
+    if (persistedLanguage && persistedLanguage !== i18n.language) {
+      i18n.changeLanguage(persistedLanguage).catch((error) => {
+        console.error("Error setting persisted language on mount:", error);
+      });
+    }
+
     // In a real application, you would fetch the actual notification count from an API
     setNotificationCount(3);
-  }, []);
+  }, [i18n]); // Added i18n to dependency array
 
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode;
@@ -63,12 +91,16 @@ export default function Header() {
     router.push("/");
   };
 
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
-    // In a real application, you might want to persist the language preference
-    localStorage.setItem("language", lng);
-    // Reload the page to apply language changes
-    router.refresh();
+  const changeLanguage = async (lng: string) => {
+    try {
+      await i18n.changeLanguage(lng); // Ensure i18next processes the change
+      localStorage.setItem("language", lng); // Then, persist in localStorage
+      // Reload the page to apply language changes throughout the app
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to change language:", error);
+      // Optionally, inform the user via a toast or message
+    }
   };
 
   if (!mounted) return null;
@@ -80,14 +112,13 @@ export default function Header() {
           href="/"
           className="text-2xl font-bold text-white dark:text-green-100"
         >
-          Additional Life
+          Additional Life +
         </Link>
         <nav className="hidden md:flex space-x-4">
           <Link
             href="/items"
             className="text-white dark:text-green-100 hover:text-green-200"
           >
-            <List className="inline-block mr-1" size={18} />
             {t("nav.allItems")}
           </Link>
           <Link
@@ -96,7 +127,7 @@ export default function Header() {
           >
             {t("nav.categories")}
           </Link>
-          <Link
+          {/* <Link
             href="/about"
             className="text-white dark:text-green-100 hover:text-green-200"
           >
@@ -107,22 +138,14 @@ export default function Header() {
             className="text-white dark:text-green-100 hover:text-green-200"
           >
             {t("nav.contact")}
-          </Link>
+          </Link> */}
           <Link
             href="/create-product"
             className="text-white dark:text-green-100 hover:text-green-200"
           >
-            TEST +
+            <PlusCircle className="inline-block mr-1" size={18} />
+            {t("nav.addItem")}
           </Link>
-          {isLoggedIn && (
-            <Link
-              href="/create-product"
-              className="text-white dark:text-green-100 hover:text-green-200"
-            >
-              <PlusCircle className="inline-block mr-1" size={18} />
-              {t("nav.addItem")}
-            </Link>
-          )}
         </nav>
         <div className="flex items-center space-x-4">
           <SearchDropdown />

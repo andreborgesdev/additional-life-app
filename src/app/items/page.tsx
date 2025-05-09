@@ -36,7 +36,7 @@ const conditions = ["New", "Like New", "Good", "Fair", "Poor"];
 export default function ItemsPage() {
   // const [items, setItems] = useState<Item[]>([]);
   // const [filteredItems, setFilteredItems] = useState<Item[]>([]);
-  const { data, isLoading, error } = useItems();
+  const { data, isLoading, error } = useItems({});
   const [page, setPage] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -81,7 +81,8 @@ export default function ItemsPage() {
               </SelectContent>
             </Select>
           </div>
-          <div>
+          {/* TODO Add condition */}
+          {/* <div>
             <Label>Condition</Label>
             <div className="space-y-2">
               {conditions.map((condition) => (
@@ -106,7 +107,7 @@ export default function ItemsPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
         </div>
 
         <div className="md:col-span-3">
@@ -166,7 +167,7 @@ export default function ItemsPage() {
                 </CardContent>
                 <CardFooter>
                   <Button asChild className="w-full">
-                    <Link href={`/product/${item.id}`}>View Details</Link>
+                    <Link href={`/items/${item.id}`}>View Details</Link>
                   </Button>
                 </CardFooter>
               </Card>

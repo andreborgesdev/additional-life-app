@@ -1,13 +1,22 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ItemResponse, PageItemResponse } from "../lib/api-client";
+import { PageItemResponse } from "../lib/api-client";
 
-export const useItems = () => {
+export interface UseItemsProps {
+  page?: number;
+  size?: number;
+  sortBy?: "title" | "category" | "postedOn";
+  direction?: "asc" | "desc";
+}
+
+export const useItems = ({ page, size, sortBy, direction }: UseItemsProps) => {
   return useQuery<PageItemResponse>({
-    queryKey: ["items"],
+    queryKey: ["items", page, size, sortBy, direction],
     queryFn: async () => {
-      const response = await fetch("/api/items");
+      const response = await fetch(
+        `/api/items?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch items");
       }

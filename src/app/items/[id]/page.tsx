@@ -18,9 +18,9 @@ import {
   Mail,
 } from "lucide-react";
 import ProductActions from "@/src/components/product-actions";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
+// import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+// import "leaflet/dist/leaflet.css";
+// import L from "leaflet";
 import ImageCarousel from "@/src/components/image-carousel";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -42,57 +42,69 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { useToast } from "@/src/hooks/use-toast";
+import { useItem } from "@/src/hooks/use-item";
 
 // This is mock data. In a real application, you'd fetch this from an API or database.
-const products = [
-  {
-    id: "1",
-    title: "Vintage Bicycle",
-    description:
-      "A well-maintained vintage bicycle from the 1980s. Perfect for collectors or those looking for a unique ride.",
-    images: [
-      "/placeholder.svg?height=400&width=600&text=Vintage+Bicycle+1",
-      "/placeholder.svg?height=400&width=600&text=Vintage+Bicycle+2",
-      "/placeholder.svg?height=400&width=600&text=Vintage+Bicycle+3",
-      "/placeholder.svg?height=400&width=600&text=Vintage+Bicycle+4",
-    ],
-    location: "Brooklyn, NY",
-    latitude: 40.6782,
-    longitude: -73.9442,
-    postedBy: "Jane Doe",
-    postedDate: "2024-02-23",
-    category: "Transportation",
-    email: "jane.doe@example.com",
-    phoneNumber: "+1234567890",
-  },
-  // Add more mock products as needed
-];
+// const products = [
+//   {
+//     id: "1",
+//     title: "Vintage Bicycle",
+//     description:
+//       "A well-maintained vintage bicycle from the 1980s. Perfect for collectors or those looking for a unique ride.",
+//     images: [
+//       "/placeholder.svg?height=400&width=600&text=Vintage+Bicycle+1",
+//       "/placeholder.svg?height=400&width=600&text=Vintage+Bicycle+2",
+//       "/placeholder.svg?height=400&width=600&text=Vintage+Bicycle+3",
+//       "/placeholder.svg?height=400&width=600&text=Vintage+Bicycle+4",
+//     ],
+//     location: "Brooklyn, NY",
+//     latitude: 40.6782,
+//     longitude: -73.9442,
+//     postedBy: "Jane Doe",
+//     postedDate: "2024-02-23",
+//     category: "Transportation",
+//     email: "jane.doe@example.com",
+//     phoneNumber: "+1234567890",
+//   },
+//   // Add more mock products as needed
+// ];
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [isClient, setIsClient] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
-  const product = products.find((p) => p.id === params.id);
   const { toast } = useToast();
+
+  // Use the new hook to fetch item data
+  const { data: product, isLoading, error } = useItem(params.id);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Handle loading and error states
+  if (isLoading) {
+    return <p>Loading product details...</p>;
+  }
+
+  if (error) {
+    return <p>Error loading product: {error.message}</p>;
+  }
 
   if (!product) {
     notFound();
   }
 
   // Leaflet uses the default icon path from your server's root, so we need to update it
-  useEffect(() => {
-    delete L.Icon.Default.prototype._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: "/leaflet/marker-icon-2x.png",
-      iconUrl: "/leaflet/marker-icon.png",
-      shadowUrl: "/leaflet/marker-shadow.png",
-    });
-  }, []);
+  // useEffect(() => {
+  //   delete L.Icon.Default.prototype._getIconUrl;
+  //   L.Icon.Default.mergeOptions({
+  //     iconRetinaUrl: "/leaflet/marker-icon-2x.png",
+  //     iconUrl: "/leaflet/marker-icon.png",
+  //     shadowUrl: "/leaflet/marker-shadow.png",
+  //   });
+  // }, []);
 
   const handleReportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,7 +123,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   };
 
   const handleShare = (platform: string) => {
-    const url = `${window.location.origin}/product/${params.id}`;
+    const url = `${window.location.origin}/items/${params.id}`; // Corrected URL path
     let shareUrl = "";
 
     switch (platform) {
@@ -130,7 +142,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       case "messenger":
         shareUrl = `https://www.facebook.com/dialog/send?link=${encodeURIComponent(
           url
-        )}&app_id=YOUR_FACEBOOK_APP_ID`;
+        )}&app_id=YOUR_FACEBOOK_APP_ID`; // Replace YOUR_FACEBOOK_APP_ID
         break;
       case "whatsapp":
         shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(
@@ -145,28 +157,44 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   };
 
   const handleContact = (method: string) => {
+    if (!product?.user || !product?.user) {
+      toast({
+        title: "Contact Information Missing",
+        description: "The seller has not provided this contact information.",
+        variant: "destructive",
+      });
+      return;
+    }
     switch (method) {
       case "email":
-        window.location.href = `mailto:${product.email}`;
+        window.location.href = `mailto:${product.user}`;
         break;
       case "whatsapp":
         window.open(
-          `https://wa.me/${product.phoneNumber.replace(/[^0-9]/g, "")}`,
+          `https://wa.me/${product.user.phoneNumber.replace(/[^0-9]/g, "")}`,
           "_blank",
           "noopener,noreferrer"
         );
         break;
       case "chat":
-        // Implement your own chat functionality here
-        console.log("Opening chat with the owner");
+        toast({
+          title: "Chat",
+          description: "Chat functionality to be implemented.",
+        });
         break;
     }
   };
 
+  const imagesForCarousel = product.imageUrl ? [product.imageUrl] : [];
+
+  // if (product.imageUrl) {
+  //   imagesForCarousel.push(product.imageUrl);
+  // }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <Link
-        href="/"
+        href="/items" // Corrected link to go back to the items listing page
         className="flex items-center text-green-600 hover:text-green-700 mb-4"
       >
         <ArrowLeft className="mr-2" size={20} />
@@ -174,7 +202,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       </Link>
       <div className="grid md:grid-cols-2 gap-8">
         <div>
-          <ImageCarousel images={product.images} alt={product.title} />
+          <ImageCarousel
+            images={imagesForCarousel}
+            alt={product.title || "Product Image"}
+          />
         </div>
         <div>
           <div className="flex justify-between items-start">
@@ -285,16 +316,16 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           <div className="space-y-2 mb-6">
             <div className="flex items-center text-gray-600 dark:text-gray-300">
               <MapPin size={20} className="mr-2" />
-              <span>{product.location}</span>
+              <span>{product.address}</span>
             </div>
             <div className="flex items-center text-gray-600 dark:text-gray-300">
               <User size={20} className="mr-2" />
-              <span>Posted by {product.postedBy}</span>
+              <span>Posted by {product.user}</span>
             </div>
             <div className="flex items-center text-gray-600 dark:text-gray-300">
               <Calendar size={20} className="mr-2" />
               <span>
-                Posted on {new Date(product.postedDate).toLocaleDateString()}
+                Posted on {new Date(product.postedOn).toLocaleDateString()}
               </span>
             </div>
           </div>
@@ -303,7 +334,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               Category
             </h2>
             <p className="text-green-600 dark:text-green-300">
-              {product.category}
+              {product.category?.name}
             </p>
           </div>
           <div className="space-y-4 mb-6">
@@ -334,10 +365,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               {/* Add other contact methods here */}
             </div>
           </div>
-          <ProductActions productId={product.id} />
+          <ProductActions productId={product.id?.toString() || ""} />
         </div>
       </div>
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <h2 className="text-2xl font-bold text-green-800 dark:text-green-200 mb-4">
           Location
         </h2>
@@ -361,7 +392,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             </MapContainer>
           </div>
         )}
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -3,7 +3,11 @@
     "categories": "Categories",
     "about": "About",
     "contact": "Contact",
-    "addItem": "Add Item"
+    "addItem": "Add Item",
+    "allItems": "All Items",
+    "itemsPublished": "Items Published",
+    "itemsTaken": "Items Taken",
+    "userSettings": "User Settings"
   },
   "search": {
     "placeholder": "Search items..."

@@ -14,15 +14,18 @@ OpenAPI.BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 type ApiRouteHandler<T = any> = (
   client: ApiClient,
   jwt: string,
-  request: NextRequest
+  request: NextRequest,
+  context: { params?: { [key: string]: string | string[] } }
 ) => Promise<NextResponse<T>>;
 
 export function withApiClient<T = any>(handler: ApiRouteHandler<T>) {
   return async (
     request: NextRequest,
-    context?: { params?: { [key: string]: string | string[] } }
+    context: { params?: { [key: string]: string | string[] } } = {}
   ): Promise<NextResponse<T | { error: string }>> => {
     const jwt = await getServerJwt();
+
+    console.log("JWT in API route:", jwt);
 
     if (!jwt) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -33,7 +36,7 @@ export function withApiClient<T = any>(handler: ApiRouteHandler<T>) {
         BASE: OpenAPI.BASE,
         TOKEN: async () => jwt,
       });
-      return await handler(client, jwt, request);
+      return await handler(client, jwt, request, context);
     } catch (error) {
       if (error instanceof ApiError) {
         return NextResponse.json(error.body as { error: string }, {
