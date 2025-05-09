@@ -140,7 +140,7 @@ export default function ItemsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {data?.map((item) => (
+            {data?.content?.map((item) => (
               <Card key={item.id}>
                 <CardHeader>
                   <CardTitle>{item.title}</CardTitle>
@@ -155,7 +155,7 @@ export default function ItemsPage() {
                     {item.description}
                   </p>
                   <p className="text-sm">
-                    <strong>Category:</strong> {item.category.name}
+                    <strong>Category:</strong> {item.category?.name}
                   </p>
                   <p className="text-sm">
                     <strong>Condition:</strong> {item.conditionDescription}

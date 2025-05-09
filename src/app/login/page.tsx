@@ -6,20 +6,28 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
-import { supabaseBrowserClient } from "@/src/lib/createBrowserClient";
+import { useLogin } from "@/src/hooks/use-login";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+  const { mutate: login, isPending, error } = useLogin();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically validate the user credentials
-    // For this example, we'll just set a flag in localStorage
-    // localStorage.setItem("isLoggedIn", "true");
-    // router.push("/");
-    await signIn();
+    login(
+      { email, password },
+      {
+        onSuccess: () => {
+          router.push("/");
+        },
+        // onError: (err) => {
+        //   // Handle error, e.g., show a notification
+        //   console.error("Login failed:", err);
+        // }
+      }
+    );
   };
 
   const handleGoogleLogin = () => {
@@ -27,15 +35,6 @@ export default function LoginPage() {
     // For this example, we'll just simulate a successful login
     localStorage.setItem("isLoggedIn", "true");
     router.push("/");
-  };
-
-  const signIn = async () => {
-    const { error } = await supabaseBrowserClient.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) console.error("Login error:", error.message);
-    else alert("Login successful.");
   };
 
   return (
@@ -77,11 +76,17 @@ export default function LoginPage() {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-green-700 dark:border-green-600 dark:text-white"
             />
           </div>
+          {error && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              Login failed. Please try again or check your credentials.
+            </p>
+          )}
           <button
             type="submit"
-            className="w-full bg-green-600 text-white rounded-md py-2 px-4 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-300"
+            disabled={isPending}
+            className="w-full bg-green-600 text-white rounded-md py-2 px-4 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
           >
-            Log In
+            {isPending ? "Logging in..." : "Log In"}
           </button>
         </form>
         <div className="mt-4">

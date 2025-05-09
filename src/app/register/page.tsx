@@ -6,21 +6,29 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
-import { supabaseBrowserClient } from "@/src/lib/createBrowserClient";
+import { useRegister } from "@/src/hooks/user-register";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+  const { mutate: signUp, isPending, error } = useRegister();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the registration data to your backend
-    // For this example, we'll just set a flag in localStorage
-    // localStorage.setItem("isLoggedIn", "true");
-    // router.push("/");
-    await signUp();
+    signUp(
+      { email, password, name },
+      {
+        onSuccess: () => {
+          router.push("/");
+        },
+        // onError: (err) => {
+        //   // Error is already handled by the `error` state from useMutation
+        //   console.error("Registration failed:", err);
+        // }
+      }
+    );
   };
 
   const handleGoogleRegister = () => {
@@ -28,15 +36,6 @@ export default function RegisterPage() {
     // For this example, we'll just simulate a successful registration
     localStorage.setItem("isLoggedIn", "true");
     router.push("/");
-  };
-
-  const signUp = async () => {
-    const { error } = await supabaseBrowserClient.auth.signUp({
-      email,
-      password,
-    });
-    if (error) console.error("Signup error:", error.message);
-    else alert("Signup successful. Check your email to confirm.");
   };
 
   return (
@@ -94,11 +93,17 @@ export default function RegisterPage() {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-green-700 dark:border-green-600 dark:text-white"
             />
           </div>
+          {error && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              Registration failed: Please try again later.
+            </p>
+          )}
           <button
             type="submit"
-            className="w-full bg-green-600 text-white rounded-md py-2 px-4 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-300"
+            disabled={isPending}
+            className="w-full bg-green-600 text-white rounded-md py-2 px-4 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
           >
-            Register
+            {isPending ? "Registering..." : "Register"}
           </button>
         </form>
         <div className="mt-4">

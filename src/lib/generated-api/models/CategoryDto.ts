@@ -3,12 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 export type CategoryDto = {
-    id?: number | null;
-    name?: string | null;
-    description?: string | null;
-    parentId?: number | null;
-    parentTitle?: string | null;
-    createdAt?: string | null;
-    active?: boolean | null;
+    id?: number;
+    name?: string;
+    description?: string;
+    parentId?: number;
+    parentTitle?: string;
+    createdAt?: string;
+    active?: boolean;
 };
 

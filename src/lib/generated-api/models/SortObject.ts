@@ -2,6 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type Instant = {
+export type SortObject = {
+    empty?: boolean;
+    unsorted?: boolean;
+    sorted?: boolean;
 };
 

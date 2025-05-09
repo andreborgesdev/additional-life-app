@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type SourcePlatformDto = {
-    id?: number | null;
-    name?: string | null;
+    id?: number;
+    name?: string;
 };
 

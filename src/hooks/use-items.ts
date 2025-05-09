@@ -1,10 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ItemResponse } from "../lib/api-client";
+import { ItemResponse, PageItemResponse } from "../lib/api-client";
 
 export const useItems = () => {
-  return useQuery<ItemResponse[]>({
+  return useQuery<PageItemResponse>({
     queryKey: ["items"],
     queryFn: async () => {
       const response = await fetch("/api/items");

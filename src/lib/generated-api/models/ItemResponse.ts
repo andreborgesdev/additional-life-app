@@ -3,26 +3,25 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CategoryDto } from './CategoryDto';
-import type { Instant } from './Instant';
 import type { SourcePlatformDto } from './SourcePlatformDto';
 export type ItemResponse = {
-    id?: number | null;
-    title?: string | null;
-    description?: string | null;
-    address?: string | null;
-    isTaken?: boolean | null;
-    postedOn?: Instant | null;
-    updatedAt?: Instant | null;
-    imageUrl?: string | null;
-    itemType?: ItemResponse.itemType | null;
-    externalUrl?: string | null;
-    originalPostedOn?: Instant | null;
-    pickupInstructions?: string | null;
-    conditionDescription?: string | null;
-    active?: boolean | null;
-    user?: string | null;
-    category?: CategoryDto | null;
-    sourcePlatform?: SourcePlatformDto | null;
+    id?: number;
+    title?: string;
+    description?: string;
+    address?: string;
+    postedOn?: string;
+    updatedAt?: string;
+    imageUrl?: string;
+    itemType?: ItemResponse.itemType;
+    externalUrl?: string;
+    originalPostedOn?: string;
+    pickupInstructions?: string;
+    conditionDescription?: string;
+    active?: boolean;
+    user?: string;
+    category?: CategoryDto;
+    sourcePlatform?: SourcePlatformDto;
+    taken?: boolean;
 };
 export namespace ItemResponse {
     export enum itemType {

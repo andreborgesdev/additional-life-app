@@ -11,10 +11,13 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { CategoryDto } from './models/CategoryDto';
-export type { Instant } from './models/Instant';
 export { ItemRequest } from './models/ItemRequest';
 export { ItemResponse } from './models/ItemResponse';
+export type { Pageable } from './models/Pageable';
+export type { PageableObject } from './models/PageableObject';
+export type { PageItemResponse } from './models/PageItemResponse';
+export type { SortObject } from './models/SortObject';
 export type { SourcePlatformDto } from './models/SourcePlatformDto';
-export type { Void } from './models/Void';
 
-export { DefaultService } from './services/DefaultService';
+export { CategoryControllerService } from './services/CategoryControllerService';
+export { ItemApiService } from './services/ItemApiService';

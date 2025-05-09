@@ -1,5 +1,4 @@
-import { ApiClient } from "@/src/lib/api-client";
-import { withApiClient } from "@/src/lib/api-route-handler";
+import { ApiClient, withApiClient } from "@/src/lib/api-client";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +15,7 @@ const getItemsHandler = async (
   const direction = "desc";
 
   // Call Spring Boot using OpenAPI client
-  const result = await client.default.getApiV1Items({
+  const result = await client.itemApi.getAllItems({
     page,
     size,
     sortBy,
