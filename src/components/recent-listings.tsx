@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useItems } from "../hooks/use-items";
+import { LoadingSpinner } from "./ui/loading-spinner";
 
 export default function RecentListings() {
   const { data, isLoading, error } = useItems({
@@ -12,7 +13,13 @@ export default function RecentListings() {
     direction: "desc",
   });
 
-  if (isLoading) return <p>Loading recent listings...</p>;
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>Loading product...</p>
+        <LoadingSpinner className="h-5 w-5" />
+      </div>
+    );
   if (error) return <p>Error loading recent listings: {error.message}</p>;
 
   return (

@@ -5,11 +5,11 @@
 import type { BaseHttpRequest } from './core/BaseHttpRequest';
 import type { OpenAPIConfig } from './core/OpenAPI';
 import { AxiosHttpRequest } from './core/AxiosHttpRequest';
-import { CategoryControllerService } from './services/CategoryControllerService';
+import { CategoryApiService } from './services/CategoryApiService';
 import { ItemApiService } from './services/ItemApiService';
 type HttpRequestConstructor = new (config: OpenAPIConfig) => BaseHttpRequest;
 export class ApiClient {
-    public readonly categoryController: CategoryControllerService;
+    public readonly categoryApi: CategoryApiService;
     public readonly itemApi: ItemApiService;
     public readonly request: BaseHttpRequest;
     constructor(config?: Partial<OpenAPIConfig>, HttpRequest: HttpRequestConstructor = AxiosHttpRequest) {
@@ -24,7 +24,7 @@ export class ApiClient {
             HEADERS: config?.HEADERS,
             ENCODE_PATH: config?.ENCODE_PATH,
         });
-        this.categoryController = new CategoryControllerService(this.request);
+        this.categoryApi = new CategoryApiService(this.request);
         this.itemApi = new ItemApiService(this.request);
     }
 }

@@ -18,7 +18,7 @@ export type ItemResponse = {
     pickupInstructions?: string;
     conditionDescription?: string;
     active?: boolean;
-    user?: string;
+    owner?: string;
     category?: CategoryDto;
     sourcePlatform?: SourcePlatformDto;
     taken?: boolean;

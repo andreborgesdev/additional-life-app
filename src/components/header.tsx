@@ -26,6 +26,9 @@ import {
 } from "@/src/components/ui/dropdown-menu";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
+import useSupabaseBrowser from "../lib/supabase/supabase-browser";
+import { useSession } from "../app/auth-provider";
+import { useLogout } from "../hooks/user-logout";
 
 const languages = [
   { code: "en", name: "English" },
@@ -37,10 +40,11 @@ const languages = [
 export default function Header() {
   const [mounted, setMounted] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const router = useRouter();
   const { t, i18n, ready } = useTranslation("common");
+  const { session } = useSession();
+  const logout = useLogout();
 
   useEffect(() => {
     setMounted(true);
@@ -60,11 +64,9 @@ export default function Header() {
       // Optionally, you might want to save the determined initial state to localStorage here
       // localStorage.setItem("color-mode", newDarkModeState ? "dark" : "light");
     }
+
     setDarkMode(newDarkModeState);
     document.documentElement.classList.toggle("dark", newDarkModeState);
-
-    // Initialize Logged In State
-    setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
 
     // Initialize Language from localStorage
     const persistedLanguage = localStorage.getItem("language");
@@ -85,12 +87,6 @@ export default function Header() {
     localStorage.setItem("color-mode", newDarkMode ? "dark" : "light");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    setIsLoggedIn(false);
-    router.push("/");
-  };
-
   const changeLanguage = async (lng: string) => {
     try {
       await i18n.changeLanguage(lng); // Ensure i18next processes the change
@@ -104,6 +100,10 @@ export default function Header() {
   };
 
   if (!mounted) return null;
+
+  const handleLogout = () => {
+    logout.mutate();
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-green-600 dark:bg-green-800">
@@ -139,13 +139,15 @@ export default function Header() {
           >
             {t("nav.contact")}
           </Link> */}
-          <Link
-            href="/create-product"
-            className="text-white dark:text-green-100 hover:text-green-200"
-          >
-            <PlusCircle className="inline-block mr-1" size={18} />
-            {t("nav.addItem")}
-          </Link>
+          {session && (
+            <Link
+              href="/create-item"
+              className="text-white dark:text-green-100 hover:text-green-200"
+            >
+              <PlusCircle className="inline-block mr-1" size={18} />
+              {t("nav.addItem")}
+            </Link>
+          )}
         </nav>
         <div className="flex items-center space-x-4">
           <SearchDropdown />
@@ -177,7 +179,7 @@ export default function Header() {
           >
             {darkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-          {isLoggedIn && (
+          {session && (
             <Link
               href="/notifications"
               className="p-2 rounded-full hover:bg-green-700 dark:hover:bg-green-600 text-white dark:text-green-100 relative"
@@ -193,7 +195,7 @@ export default function Header() {
               )}
             </Link>
           )}
-          {isLoggedIn ? (
+          {session ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -224,7 +226,7 @@ export default function Header() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
-                  {t("auth.logout")}
+                  {logout.isPending ? "Logging out..." : t("auth.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

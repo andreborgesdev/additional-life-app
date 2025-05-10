@@ -1,29 +1,55 @@
-import { UseItemsProps } from "@/src/hooks/use-items";
-import { ApiClient, withApiClient } from "@/src/lib/api-client";
+import {
+  ApiClient,
+  withApiClient,
+  ItemRequest,
+  ItemResponse,
+} from "@/src/lib/api-client";
 import { NextRequest, NextResponse } from "next/server";
 
+// Ensure dynamic behavior for SSR JWT handling
 export const dynamic = "force-dynamic";
 
 const getItemsHandler = async (
   client: ApiClient,
   jwt: string,
-  _request: NextRequest,
-  _context: { params?: { [key: string]: string | string[] } }
+  _request: NextRequest
 ) => {
-  const page = parseInt(_request.nextUrl.searchParams.get("page") || "0", 10);
-  const size = parseInt(_request.nextUrl.searchParams.get("size") || "10", 10);
-  const sortBy = _request.nextUrl.searchParams.get("sortBy") || "postedOn";
-  const direction = _request.nextUrl.searchParams.get("direction") || "desc";
+  const url = _request.nextUrl;
+  const page = parseInt(url.searchParams.get("page") || "0", 10);
+  const size = parseInt(url.searchParams.get("size") || "10", 10);
+  const sortBy = url.searchParams.get("sortBy") || "postedOn";
+  const direction = url.searchParams.get("direction") || "desc";
 
-  // Call Spring Boot using OpenAPI client
-  const result = await client.itemApi.getAllItems(
-    page,
-    size,
-    sortBy,
-    direction
-  );
+  const items = await client.itemApi.getAllItems(page, size, sortBy, direction);
+  return NextResponse.json(items);
+};
 
-  return NextResponse.json(result);
+const postItemHandler = async (
+  client: ApiClient,
+  jwt: string,
+  request: NextRequest
+) => {
+  const body = await request.json();
+
+  // Type safety: validate shape if needed
+  const item: ItemRequest = {
+    title: body.title,
+    description: body.description,
+    address: body.address,
+    categoryId: body.categoryId,
+    itemType: body.itemType || "INTERNAL",
+    imageUrl: body.imageUrl,
+    pickupInstructions: body.pickupInstructions,
+    conditionDescription: body.conditionDescription,
+    externalUrl: body.externalUrl,
+    originalPostedOn: body.originalPostedOn,
+  };
+
+  const created = await client.itemApi.createItem(item);
+  return NextResponse.json(created, { status: 201 });
 };
 
 export const GET = withApiClient(getItemsHandler);
+export const POST = withApiClient<ItemResponse | { message: string }>(
+  postItemHandler
+);

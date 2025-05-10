@@ -8,7 +8,7 @@ function getSupabaseBrowserClient() {
   );
 }
 
-function useSupabaseBrowser(): any {
+function useSupabaseBrowser() {
   return useMemo(getSupabaseBrowserClient, []);
 }
 

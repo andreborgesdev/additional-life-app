@@ -43,6 +43,7 @@ import {
 } from "@/src/components/ui/dropdown-menu";
 import { useToast } from "@/src/hooks/use-toast";
 import { useItem } from "@/src/hooks/use-item";
+import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
 
 // This is mock data. In a real application, you'd fetch this from an API or database.
 // const products = [
@@ -85,7 +86,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   // Handle loading and error states
   if (isLoading) {
-    return <p>Loading product details...</p>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>Loading product...</p>
+        <LoadingSpinner className="h-5 w-5" />
+      </div>
+    );
   }
 
   if (error) {

@@ -14,8 +14,13 @@ export const useItems = ({ page, size, sortBy, direction }: UseItemsProps) => {
   return useQuery<PageItemResponse>({
     queryKey: ["items", page, size, sortBy, direction],
     queryFn: async () => {
+      const queryPage = page === undefined ? 0 : page;
+      const querySize = size === undefined ? 10 : size;
+      const querySortBy = sortBy === undefined ? "postedOn" : sortBy;
+      const queryDirection = direction === undefined ? "desc" : direction;
+
       const response = await fetch(
-        `/api/items?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`
+        `/api/items?page=${queryPage}&size=${querySize}&sortBy=${querySortBy}&direction=${queryDirection}`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch items");

@@ -1,4 +1,3 @@
-import { useSupabaseServer } from "./supabase-server";
 import { getServerSession } from "./supabase-server-session";
 
 export const getServerJwt = async (): Promise<string | null> => {

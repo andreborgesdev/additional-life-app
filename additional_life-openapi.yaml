@@ -7,7 +7,9 @@ servers:
   description: Generated server url
 tags:
 - name: Item API
-  description: Item management operations
+  description: Item operations
+- name: Category API
+  description: Category operations
 paths:
   /api/v1/items/{id}:
     get:
@@ -445,13 +447,15 @@ paths:
   /api/v1/categories:
     get:
       tags:
-      - category-controller
+      - Category API
+      summary: Get all categories
+      description: Retrieves a list of all categories
       operationId: getAllCategories
       responses:
         "200":
-          description: OK
+          description: Categories retrieved successfully
           content:
-            '*/*':
+            application/json:
               schema:
                 type: array
                 items:
@@ -459,7 +463,9 @@ paths:
   /api/v1/categories/{parentId}/subcategories:
     get:
       tags:
-      - category-controller
+      - Category API
+      summary: Get subcategories by parent ID
+      description: Retrieves a list of subcategories for a given parent category ID
       operationId: getSubcategories
       parameters:
       - name: parentId
@@ -470,9 +476,17 @@ paths:
           format: int64
       responses:
         "200":
-          description: OK
+          description: Subcategories retrieved successfully
           content:
-            '*/*':
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryDto"
+        "404":
+          description: Parent category not found
+          content:
+            application/json:
               schema:
                 type: array
                 items:
@@ -480,7 +494,9 @@ paths:
   /api/v1/categories/{id}:
     get:
       tags:
-      - category-controller
+      - Category API
+      summary: Get category by ID
+      description: Retrieves a category by its unique identifier
       operationId: getCategoryById
       parameters:
       - name: id
@@ -491,21 +507,29 @@ paths:
           format: int64
       responses:
         "200":
-          description: OK
+          description: Category found
           content:
-            '*/*':
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryDto"
+        "404":
+          description: Category not found
+          content:
+            application/json:
               schema:
                 $ref: "#/components/schemas/CategoryDto"
   /api/v1/categories/root:
     get:
       tags:
-      - category-controller
+      - Category API
+      summary: Get root categories
+      description: Retrieves a list of all root categories (categories without a parent)
       operationId: getRootCategories
       responses:
         "200":
-          description: OK
+          description: Root categories retrieved successfully
           content:
-            '*/*':
+            application/json:
               schema:
                 type: array
                 items:
@@ -605,7 +629,7 @@ components:
           type: string
         active:
           type: boolean
-        user:
+        owner:
           type: string
           format: uuid
         category:

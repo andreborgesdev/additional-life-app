@@ -21,6 +21,7 @@ import {
 } from "@/src/components/ui/select";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { useItems } from "@/src/hooks/use-items";
+import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
 
 const categories = [
   "Furniture",
@@ -44,7 +45,13 @@ export default function ItemsPage() {
   const [sortBy, setSortBy] = useState<"title" | "category">("title");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  if (isLoading) return <p>Loading items...</p>;
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>Loading product...</p>
+        <LoadingSpinner className="h-5 w-5" />
+      </div>
+    );
   if (error) return <p>Error loading items: {error.message}</p>;
 
   return (
