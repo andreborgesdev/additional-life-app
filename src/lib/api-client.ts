@@ -9,7 +9,7 @@ import { ApiClient, ApiError } from "./generated-api";
 export * from "./generated-api";
 
 // Configure the base URL for the generated API client
-OpenAPI.BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+OpenAPI.BASE = process.env.API_URL || "http://localhost:8080";
 
 type ApiRouteHandler<T = any> = (
   client: ApiClient,
