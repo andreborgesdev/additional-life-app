@@ -80,22 +80,21 @@ export default function CategoriesPage() {
       </h1>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {categories?.map((category) => {
-          console.log("Category:", category);
           // Ensure category and category.slug are defined before trying to access iconMap
-          // const IconComponent =
-          //   category && category.slug
-          //     ? iconMap[category.slug] || Recycle
-          //     : Recycle;
+          const IconComponent =
+            category && category.slug
+              ? iconMap[category.slug] || Recycle
+              : Recycle;
           return (
             <Link
               key={category.id || category.slug} // Use category.id if available, otherwise slug
               href={`/categories/${category.slug}`}
               className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex flex-col items-center justify-center transition-transform hover:scale-105 cursor-pointer"
             >
-              {/* <IconComponent
+              <IconComponent
                 size={48}
                 className="text-green-600 dark:text-green-400 mb-4"
-              /> */}
+              />
               <span className="text-green-800 dark:text-green-200 font-medium text-center">
                 {category.name}
               </span>

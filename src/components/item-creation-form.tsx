@@ -49,7 +49,8 @@ const categories = [
 
 //   return position === null ? null : <Marker position={position}></Marker>;
 // }
-import { CategoryDto, ItemRequest } from "../lib/api-client";
+import type { CategoryDto } from "../lib/generated-api";
+import { ItemRequest } from "../lib/generated-api";
 
 export default function ItemCreationForm() {
   const [title, setTitle] = useState("");

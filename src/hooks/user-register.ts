@@ -5,6 +5,7 @@ import useSupabaseBrowser from "../lib/supabase/supabase-browser";
 
 export const useRegister = () => {
   const queryClient = useQueryClient();
+  const supabase = useSupabaseBrowser();
 
   return useMutation({
     mutationFn: async ({
@@ -16,7 +17,6 @@ export const useRegister = () => {
       password: string;
       name: string;
     }) => {
-      const supabase = useSupabaseBrowser();
       const { error } = await supabase.auth.signUp({
         email,
         password,

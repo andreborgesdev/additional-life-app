@@ -35,20 +35,22 @@ export const useCategoryById = (categoryId: string) => {
   });
 };
 
-export const useSubcategories = (parentId: string) => {
+export const useSubcategories = (categoryParentId: string) => {
   return useQuery<CategoryDto[], Error>({
-    queryKey: ["subcategories", parentId],
+    queryKey: ["subcategories", categoryParentId],
     queryFn: async () => {
-      if (!parentId) {
+      if (!categoryParentId) {
         throw new Error("Parent ID is required to fetch subcategories.");
       }
-      const response = await fetch(`/api/categories/${parentId}/subcategories`);
+      const response = await fetch(
+        `/api/categories/${categoryParentId}/subcategories`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch subcategories");
       }
       return response.json();
     },
-    enabled: !!parentId, // Only run the query if parentId is a truthy value
+    enabled: !!categoryParentId, // Only run the query if parentId is a truthy value
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 };

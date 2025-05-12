@@ -10,11 +10,10 @@ import {
   LogIn,
   User,
   Bell,
-  List,
   Globe,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useTranslation } from "next-i18next";
+import { useTranslation } from "react-i18next"; // Corrected import
 import { SearchDropdown } from "./search-dropdown";
 import {
   DropdownMenu,
@@ -26,7 +25,6 @@ import {
 } from "@/src/components/ui/dropdown-menu";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
-import useSupabaseBrowser from "../lib/supabase/supabase-browser";
 import { useSession } from "../app/auth-provider";
 import { useLogout } from "../hooks/user-logout";
 
