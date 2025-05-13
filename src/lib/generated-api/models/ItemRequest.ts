@@ -9,11 +9,10 @@ export type ItemRequest = {
     imageUrl?: string;
     itemType: ItemRequest.itemType;
     externalUrl?: string;
-    originalPostedOn?: string;
     pickupInstructions?: string;
     conditionDescription?: string;
-    categoryId?: number;
-    sourcePlatformId?: number;
+    categoryId: number;
+    sourcePlatformId: number;
 };
 export namespace ItemRequest {
     export enum itemType {

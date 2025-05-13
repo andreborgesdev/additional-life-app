@@ -6,8 +6,19 @@ import { PageItemResponse } from "../lib/api-client";
 export interface UseItemsProps {
   page?: number;
   size?: number;
-  sortBy?: "title" | "category" | "postedOn";
-  direction?: "asc" | "desc";
+  sortBy?: SortBy;
+  direction?: QueryDirection;
+}
+
+export enum SortBy {
+  // RELEVANCE = "postedOn",
+  TITLE = "name",
+  POSTED_ON = "postedOn",
+}
+
+export enum QueryDirection {
+  ASC = "asc",
+  DESC = "desc",
 }
 
 export const useItems = ({ page, size, sortBy, direction }: UseItemsProps) => {
@@ -17,7 +28,8 @@ export const useItems = ({ page, size, sortBy, direction }: UseItemsProps) => {
       const queryPage = page === undefined ? 0 : page;
       const querySize = size === undefined ? 10 : size;
       const querySortBy = sortBy === undefined ? "postedOn" : sortBy;
-      const queryDirection = direction === undefined ? "desc" : direction;
+      const queryDirection =
+        direction === undefined ? QueryDirection.DESC : direction;
 
       const response = await fetch(
         `/api/items?page=${queryPage}&size=${querySize}&sortBy=${querySortBy}&direction=${queryDirection}`

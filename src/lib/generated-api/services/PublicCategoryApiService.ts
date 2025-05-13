@@ -5,7 +5,7 @@
 import type { CategoryDto } from '../models/CategoryDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-export class CategoryApiService {
+export class PublicCategoryApiService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
     /**
      * Get all categories
@@ -17,27 +17,6 @@ export class CategoryApiService {
         return this.httpRequest.request({
             method: 'GET',
             url: '/api/v1/categories',
-        });
-    }
-    /**
-     * Get subcategories by parent ID
-     * Retrieves a list of subcategories for a given parent category ID
-     * @param parentId
-     * @returns CategoryDto Subcategories retrieved successfully
-     * @throws ApiError
-     */
-    public getSubcategories(
-        parentId: number,
-    ): CancelablePromise<Array<CategoryDto>> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/categories/{parentId}/subcategories',
-            path: {
-                'parentId': parentId,
-            },
-            errors: {
-                404: `Parent category not found`,
-            },
         });
     }
     /**
@@ -58,6 +37,21 @@ export class CategoryApiService {
             },
             errors: {
                 404: `Category not found`,
+            },
+        });
+    }
+    /**
+     * Get subcategories by parent ID
+     * Retrieves a list of subcategories for a given parent category ID
+     * @returns CategoryDto Subcategories retrieved successfully
+     * @throws ApiError
+     */
+    public getSubcategories(): CancelablePromise<Array<CategoryDto>> {
+        return this.httpRequest.request({
+            method: 'GET',
+            url: '/api/v1/categories/{id}/subcategories',
+            errors: {
+                404: `Parent category not found`,
             },
         });
     }

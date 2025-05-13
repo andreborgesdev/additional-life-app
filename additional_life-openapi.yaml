@@ -8,36 +8,12 @@ servers:
 tags:
 - name: Item API
   description: Item operations
-- name: Category API
-  description: Category operations
+- name: Public Category API
+  description: Public category operations
+- name: Public Item API
+  description: Public item operations
 paths:
   /api/v1/items/{id}:
-    get:
-      tags:
-      - Item API
-      summary: Get item by ID
-      description: Retrieves an item by its unique identifier
-      operationId: getItemById
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: Item found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ItemResponse"
-        "404":
-          description: Item not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ItemResponse"
     put:
       tags:
       - Item API
@@ -95,49 +71,6 @@ paths:
         "404":
           description: Item not found
   /api/v1/items:
-    get:
-      tags:
-      - Item API
-      summary: Get paginated list of all active items
-      description: Retrieves a paginated list of all active items with sorting options
-      operationId: getAllItems
-      parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 0
-          minimum: 0
-      - name: size
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 10
-          maximum: 100
-          minimum: 1
-      - name: sortBy
-        in: query
-        required: false
-        schema:
-          type: string
-          default: postedOn
-      - name: direction
-        in: query
-        required: false
-        schema:
-          type: string
-          default: desc
-      responses:
-        "200":
-          description: Items retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PageItemResponse"
     post:
       tags:
       - Item API
@@ -228,6 +161,139 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ItemResponse"
+  /api/v1/public/items:
+    get:
+      tags:
+      - Public Item API
+      summary: Get paginated list of available items
+      description: Retrieves a paginated list of items that are active and not taken
+      operationId: getItems
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          maximum: 100
+          minimum: 1
+      - name: sortBy
+        in: query
+        required: false
+        schema:
+          type: string
+          default: postedOn
+      - name: direction
+        in: query
+        required: false
+        schema:
+          type: string
+          default: desc
+      responses:
+        "200":
+          description: Available items retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PageItemResponse"
+  /api/v1/public/items/{id}:
+    get:
+      tags:
+      - Public Item API
+      summary: Get item by ID
+      description: Retrieves an item by its unique identifier
+      operationId: getItemById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Item found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemResponse"
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemResponse"
+  /api/v1/public/items/user/{userId}:
+    get:
+      tags:
+      - Public Item API
+      summary: Get all items from a specific user
+      description: Retrieves all active items posted by the specified user
+      operationId: getUserItems
+      responses:
+        "200":
+          description: Items retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ItemResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ItemResponse"
+  /api/v1/public/items/search:
+    get:
+      tags:
+      - Public Item API
+      summary: Search items by keyword
+      description: Searches for items containing the specified keyword in title or
+        description
+      operationId: searchItems
+      parameters:
+      - name: keyword
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: Search completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PageItemResponse"
+  /api/v1/ping:
+    get:
+      tags:
+      - ping-controller
+      operationId: ping
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
   /api/v1/items/{id}/available:
     get:
       tags:
@@ -251,30 +317,6 @@ paths:
                 type: object
                 additionalProperties:
                   type: object
-  /api/v1/items/user/{userId}:
-    get:
-      tags:
-      - Item API
-      summary: Get all items from a specific user
-      description: Retrieves all active items posted by the specified user
-      operationId: getUserItems
-      responses:
-        "200":
-          description: Items retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ItemResponse"
-        "404":
-          description: User not found
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ItemResponse"
   /api/v1/items/type/{itemType}:
     get:
       tags:
@@ -306,32 +348,6 @@ paths:
                 $ref: "#/components/schemas/PageItemResponse"
         "400":
           description: Invalid item type
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PageItemResponse"
-  /api/v1/items/search:
-    get:
-      tags:
-      - Item API
-      summary: Search items by keyword
-      description: Searches for items containing the specified keyword in title or
-        description
-      operationId: searchItems
-      parameters:
-      - name: keyword
-        in: query
-        required: true
-        schema:
-          type: string
-      - name: pageable
-        in: query
-        required: true
-        schema:
-          $ref: "#/components/schemas/Pageable"
-      responses:
-        "200":
-          description: Search completed successfully
           content:
             application/json:
               schema:
@@ -400,54 +416,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PageItemResponse"
-  /api/v1/items/available:
-    get:
-      tags:
-      - Item API
-      summary: Get paginated list of available items
-      description: Retrieves a paginated list of items that are active and not taken
-      operationId: getAvailableItems
-      parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 0
-          minimum: 0
-      - name: size
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 10
-          maximum: 100
-          minimum: 1
-      - name: sortBy
-        in: query
-        required: false
-        schema:
-          type: string
-          default: postedOn
-      - name: direction
-        in: query
-        required: false
-        schema:
-          type: string
-          default: desc
-      responses:
-        "200":
-          description: Available items retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PageItemResponse"
   /api/v1/categories:
     get:
       tags:
-      - Category API
+      - Public Category API
       summary: Get all categories
       description: Retrieves a list of all categories
       operationId: getAllCategories
@@ -460,41 +432,10 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/CategoryDto"
-  /api/v1/categories/{parentId}/subcategories:
-    get:
-      tags:
-      - Category API
-      summary: Get subcategories by parent ID
-      description: Retrieves a list of subcategories for a given parent category ID
-      operationId: getSubcategories
-      parameters:
-      - name: parentId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: Subcategories retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CategoryDto"
-        "404":
-          description: Parent category not found
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CategoryDto"
   /api/v1/categories/{id}:
     get:
       tags:
-      - Category API
+      - Public Category API
       summary: Get category by ID
       description: Retrieves a category by its unique identifier
       operationId: getCategoryById
@@ -518,10 +459,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CategoryDto"
+  /api/v1/categories/{id}/subcategories:
+    get:
+      tags:
+      - Public Category API
+      summary: Get subcategories by parent ID
+      description: Retrieves a list of subcategories for a given parent category ID
+      operationId: getSubcategories
+      parameters: []
+      responses:
+        "200":
+          description: Subcategories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryDto"
+        "404":
+          description: Parent category not found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryDto"
   /api/v1/categories/root:
     get:
       tags:
-      - Category API
+      - Public Category API
       summary: Get root categories
       description: Retrieves a list of all root categories (categories without a parent)
       operationId: getRootCategories
@@ -551,6 +517,7 @@ components:
           minLength: 1
         imageUrl:
           type: string
+          minLength: 1
         itemType:
           type: string
           enum:
@@ -558,9 +525,6 @@ components:
           - EXTERNAL
         externalUrl:
           type: string
-        originalPostedOn:
-          type: string
-          format: date-time
         pickupInstructions:
           type: string
         conditionDescription:
@@ -572,7 +536,9 @@ components:
           type: integer
           format: int64
       required:
+      - categoryId
       - itemType
+      - sourcePlatformId
     CategoryDto:
       type: object
       properties:
@@ -620,9 +586,6 @@ components:
           - EXTERNAL
         externalUrl:
           type: string
-        originalPostedOn:
-          type: string
-          format: date-time
         pickupInstructions:
           type: string
         conditionDescription:

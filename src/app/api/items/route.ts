@@ -3,24 +3,26 @@ import {
   withApiClient,
   ItemRequest,
   ItemResponse,
+  withPublicApiClient,
 } from "@/src/lib/api-client";
 import { NextRequest, NextResponse } from "next/server";
 
 // Ensure dynamic behavior for SSR JWT handling
 export const dynamic = "force-dynamic";
 
-const getItemsHandler = async (
-  client: ApiClient,
-  jwt: string,
-  _request: NextRequest
-) => {
+const getItemsHandler = async (client: ApiClient, _request: NextRequest) => {
   const url = _request.nextUrl;
   const page = parseInt(url.searchParams.get("page") || "0", 10);
   const size = parseInt(url.searchParams.get("size") || "10", 10);
   const sortBy = url.searchParams.get("sortBy") || "postedOn";
   const direction = url.searchParams.get("direction") || "desc";
 
-  const items = await client.itemApi.getAllItems(page, size, sortBy, direction);
+  const items = await client.publicItemApi.getItems(
+    page,
+    size,
+    sortBy,
+    direction
+  );
   return NextResponse.json(items);
 };
 
@@ -42,14 +44,13 @@ const postItemHandler = async (
     pickupInstructions: body.pickupInstructions,
     conditionDescription: body.conditionDescription,
     externalUrl: body.externalUrl,
-    originalPostedOn: body.originalPostedOn,
   };
 
   const created = await client.itemApi.createItem(item);
   return NextResponse.json(created, { status: 201 });
 };
 
-export const GET = withApiClient(getItemsHandler);
+export const GET = withPublicApiClient(getItemsHandler);
 export const POST = withApiClient<ItemResponse | { message: string }>(
   postItemHandler
 );

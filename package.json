@@ -23,7 +23,7 @@
     "@radix-ui/react-toast": "^1.2.13",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.4",
-    "@tanstack/react-query": "^5.75.6",
+    "@tanstack/react-query": "^5.76.0",
     "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -44,11 +44,12 @@
     "react-leaflet": "^5.0.0",
     "react-slick": "^0.30.3",
     "slick-carousel": "^1.8.1",
-    "tailwind-merge": "^3.2.0",
+    "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.4"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.17",
     "@types/node": "^20.17.46",
     "@types/react": "^18.3.21",
     "@types/react-dom": "^18.3.7",

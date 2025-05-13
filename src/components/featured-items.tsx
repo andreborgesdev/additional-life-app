@@ -15,7 +15,7 @@ export default function FeaturedItems() {
 
   if (isLoading)
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center">
         <p>Loading product...</p>
         <LoadingSpinner className="h-5 w-5" />
       </div>

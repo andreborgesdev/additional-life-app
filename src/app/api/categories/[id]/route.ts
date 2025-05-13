@@ -1,4 +1,8 @@
-import { ApiClient, withApiClient } from "@/src/lib/api-client";
+import {
+  ApiClient,
+  withApiClient,
+  withPublicApiClient,
+} from "@/src/lib/api-client";
 import { NextRequest, NextResponse } from "next/server";
 import { CategoryDto } from "@/src/lib/api-client"; // Assuming CategoryDto is the response type
 
@@ -8,18 +12,23 @@ type RouteContext = { params?: { id?: string | string[] | undefined } };
 
 const getCategoryByIdHandler = async (
   client: ApiClient,
-  jwt: string,
   _request: NextRequest,
   context: RouteContext
 ): Promise<NextResponse<CategoryDto | { error: string }>> => {
   const idFromParams = context.params?.id;
   if (!idFromParams) {
-    return NextResponse.json({ error: "Category ID is required in path" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Category ID is required in path" },
+      { status: 400 }
+    );
   }
   const idStr = Array.isArray(idFromParams) ? idFromParams[0] : idFromParams;
 
   if (!idStr) {
-    return NextResponse.json({ error: "Category ID is missing or invalid" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Category ID is missing or invalid" },
+      { status: 400 }
+    );
   }
 
   const categoryIdNumber = parseInt(idStr, 10);
@@ -35,7 +44,9 @@ const getCategoryByIdHandler = async (
     // The operationId in the OpenAPI spec is not explicitly defined for GET /api/v1/categories/{id},
     // but typically it would be something like 'getCategoryById'.
     // Please verify the actual method name in your generated ApiClient.
-    const category = await client.categoryApi.getCategoryById(categoryIdNumber);
+    const category = await client.publicCategoryApi.getCategoryById(
+      categoryIdNumber
+    );
     return NextResponse.json(category);
   } catch (error: any) {
     console.error("Error fetching category by ID:", error);
@@ -45,4 +56,4 @@ const getCategoryByIdHandler = async (
   }
 };
 
-export const GET = withApiClient(getCategoryByIdHandler);
+export const GET = withPublicApiClient(getCategoryByIdHandler);

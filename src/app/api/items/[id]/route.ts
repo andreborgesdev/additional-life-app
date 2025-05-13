@@ -3,6 +3,7 @@ import {
   withApiClient,
   ItemResponse,
   ItemRequest,
+  withPublicApiClient,
 } from "@/src/lib/api-client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -15,7 +16,6 @@ type RouteContext = {
 
 const getItemByIdHandler = async (
   client: ApiClient,
-  jwt: string,
   _request: NextRequest,
   context: RouteContext
 ): Promise<NextResponse<ItemResponse | { error: string }>> => {
@@ -34,7 +34,9 @@ const getItemByIdHandler = async (
   }
 
   try {
-    const result: ItemResponse = await client.itemApi.getItemById(itemIdNumber);
+    const result: ItemResponse = await client.publicItemApi.getItemById(
+      itemIdNumber
+    );
     return NextResponse.json(result);
   } catch (error: any) {
     console.error("Error fetching item by ID:", error);
@@ -44,7 +46,7 @@ const getItemByIdHandler = async (
   }
 };
 
-export const GET = withApiClient(getItemByIdHandler);
+export const GET = withPublicApiClient(getItemByIdHandler);
 
 const updateItemHandler = async (
   client: ApiClient,

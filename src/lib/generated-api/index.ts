@@ -19,5 +19,7 @@ export type { PageItemResponse } from './models/PageItemResponse';
 export type { SortObject } from './models/SortObject';
 export type { SourcePlatformDto } from './models/SourcePlatformDto';
 
-export { CategoryApiService } from './services/CategoryApiService';
 export { ItemApiService } from './services/ItemApiService';
+export { PingControllerService } from './services/PingControllerService';
+export { PublicCategoryApiService } from './services/PublicCategoryApiService';
+export { PublicItemApiService } from './services/PublicItemApiService';

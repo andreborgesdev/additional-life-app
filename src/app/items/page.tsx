@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { Checkbox } from "@/src/components/ui/checkbox";
-import { useItems } from "@/src/hooks/use-items";
+import { QueryDirection, SortBy, useItems } from "@/src/hooks/use-items";
 import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
 
 const categories = [
@@ -34,16 +34,65 @@ const categories = [
 
 const conditions = ["New", "Like New", "Good", "Fair", "Poor"];
 
+enum SortByOptions {
+  RELEVANCE,
+  TITLE_ASC,
+  TITLE_DESC,
+  POSTED_ON_ASC,
+  POSTED_ON_DESC,
+}
+
+const sortByOptions = [
+  {
+    value: SortByOptions.RELEVANCE,
+    label: "Relevance",
+    sortBy: SortBy.POSTED_ON,
+    direction: QueryDirection.DESC,
+  },
+  {
+    value: SortByOptions.TITLE_ASC,
+    label: "Title A-Z",
+    sortBy: SortBy.TITLE,
+    direction: QueryDirection.ASC,
+  },
+  {
+    value: SortByOptions.TITLE_DESC,
+    label: "Title Z-A",
+    sortBy: SortBy.TITLE,
+    direction: QueryDirection.DESC,
+  },
+  {
+    value: SortByOptions.POSTED_ON_ASC,
+    label: "Newly Posted",
+    sortBy: SortBy.POSTED_ON,
+    direction: QueryDirection.ASC,
+  },
+  {
+    value: SortByOptions.POSTED_ON_DESC,
+    label: "Oldest",
+    sortBy: SortBy.POSTED_ON,
+    direction: QueryDirection.DESC,
+  },
+];
+
 export default function ItemsPage() {
   // const [items, setItems] = useState<Item[]>([]);
   // const [filteredItems, setFilteredItems] = useState<Item[]>([]);
-  const { data, isLoading, error } = useItems({});
   const [page, setPage] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<"title" | "category">("title");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortBy, setSortBy] = useState<SortByOptions>(SortByOptions.RELEVANCE);
+
+  // Find the selected sort option object to pass to useItems
+  const selectedSortOptionDetails = sortByOptions.find(
+    (option) => option.value === sortBy
+  );
+
+  const { data, isLoading, error } = useItems({
+    sortBy: selectedSortOptionDetails?.sortBy,
+    direction: selectedSortOptionDetails?.direction,
+  });
 
   if (isLoading)
     return (
@@ -53,6 +102,10 @@ export default function ItemsPage() {
       </div>
     );
   if (error) return <p>Error loading items: {error.message}</p>;
+
+  const handleOnSortByChanged = (value: string) => {
+    setSortBy(Number(value) as SortByOptions);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -69,7 +122,7 @@ export default function ItemsPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div>
+          {/* <div>
             <Label htmlFor="category">Category</Label>
             <Select
               onValueChange={(value) => setSelectedCategory(value)}
@@ -87,7 +140,7 @@ export default function ItemsPage() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
           {/* TODO Add condition */}
           {/* <div>
             <Label>Condition</Label>
@@ -120,29 +173,21 @@ export default function ItemsPage() {
         <div className="md:col-span-3">
           <div className="flex justify-end mb-4 space-x-4">
             <Select
-              onValueChange={(value) =>
-                setSortBy(value as "title" | "category")
-              }
-              value={sortBy}
+              onValueChange={handleOnSortByChanged}
+              value={sortBy.toString()} // Ensure value is a string for Select
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="title">Title</SelectItem>
-                <SelectItem value="category">Category</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              onValueChange={(value) => setSortOrder(value as "asc" | "desc")}
-              value={sortOrder}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Order" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="asc">Ascending</SelectItem>
-                <SelectItem value="desc">Descending</SelectItem>
+                {sortByOptions.map((option) => (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value.toString()} // Ensure value is a string for SelectItem
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

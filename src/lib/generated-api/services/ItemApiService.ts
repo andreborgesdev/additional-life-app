@@ -11,27 +11,6 @@ import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class ItemApiService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
     /**
-     * Get item by ID
-     * Retrieves an item by its unique identifier
-     * @param id
-     * @returns ItemResponse Item found
-     * @throws ApiError
-     */
-    public getItemById(
-        id: number,
-    ): CancelablePromise<ItemResponse> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/items/{id}',
-            path: {
-                'id': id,
-            },
-            errors: {
-                404: `Item not found`,
-            },
-        });
-    }
-    /**
      * Update an existing item
      * Updates an item with the provided data
      * @param id
@@ -75,33 +54,6 @@ export class ItemApiService {
             },
             errors: {
                 404: `Item not found`,
-            },
-        });
-    }
-    /**
-     * Get paginated list of all active items
-     * Retrieves a paginated list of all active items with sorting options
-     * @param page
-     * @param size
-     * @param sortBy
-     * @param direction
-     * @returns PageItemResponse Items retrieved successfully
-     * @throws ApiError
-     */
-    public getAllItems(
-        page?: number,
-        size: number = 10,
-        sortBy: string = 'postedOn',
-        direction: string = 'desc',
-    ): CancelablePromise<PageItemResponse> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/items',
-            query: {
-                'page': page,
-                'size': size,
-                'sortBy': sortBy,
-                'direction': direction,
             },
         });
     }
@@ -186,21 +138,6 @@ export class ItemApiService {
         });
     }
     /**
-     * Get all items from a specific user
-     * Retrieves all active items posted by the specified user
-     * @returns ItemResponse Items retrieved successfully
-     * @throws ApiError
-     */
-    public getUserItems(): CancelablePromise<Array<ItemResponse>> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/items/user/{userId}',
-            errors: {
-                404: `User not found`,
-            },
-        });
-    }
-    /**
      * Get items by type
      * Retrieves a paginated list of items of the specified type (INTERNAL or EXTERNAL)
      * @param itemType
@@ -223,27 +160,6 @@ export class ItemApiService {
             },
             errors: {
                 400: `Invalid item type`,
-            },
-        });
-    }
-    /**
-     * Search items by keyword
-     * Searches for items containing the specified keyword in title or description
-     * @param keyword
-     * @param pageable
-     * @returns PageItemResponse Search completed successfully
-     * @throws ApiError
-     */
-    public searchItems(
-        keyword: string,
-        pageable: Pageable,
-    ): CancelablePromise<PageItemResponse> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/items/search',
-            query: {
-                'keyword': keyword,
-                'pageable': pageable,
             },
         });
     }
@@ -296,33 +212,6 @@ export class ItemApiService {
             },
             errors: {
                 404: `Category not found`,
-            },
-        });
-    }
-    /**
-     * Get paginated list of available items
-     * Retrieves a paginated list of items that are active and not taken
-     * @param page
-     * @param size
-     * @param sortBy
-     * @param direction
-     * @returns PageItemResponse Available items retrieved successfully
-     * @throws ApiError
-     */
-    public getAvailableItems(
-        page?: number,
-        size: number = 10,
-        sortBy: string = 'postedOn',
-        direction: string = 'desc',
-    ): CancelablePromise<PageItemResponse> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/items/available',
-            query: {
-                'page': page,
-                'size': size,
-                'sortBy': sortBy,
-                'direction': direction,
             },
         });
     }

@@ -2,9 +2,10 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
-import { notFound } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
+import { notFound, useRouter } from "next/navigation";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   ArrowLeft,
   MapPin,
@@ -18,9 +19,15 @@ import {
   Mail,
 } from "lucide-react";
 import ProductActions from "@/src/components/product-actions";
-// import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-// import "leaflet/dist/leaflet.css";
-// import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import type {
+  MapContainerProps,
+  TileLayerProps,
+  MarkerProps,
+  PopupProps,
+} from "react-leaflet";
+import type { LatLngExpression } from "leaflet";
 import ImageCarousel from "@/src/components/image-carousel";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -44,6 +51,7 @@ import {
 import { useToast } from "@/src/hooks/use-toast";
 import { useItem } from "@/src/hooks/use-item";
 import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
+import { useSession } from "../../auth-provider";
 
 // This is mock data. In a real application, you'd fetch this from an API or database.
 // const products = [
@@ -71,20 +79,57 @@ import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
 // ];
 
 export default function ProductPage({ params }: { params: { id: string } }) {
-  const [isClient, setIsClient] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
   const { toast } = useToast();
+  const { session } = useSession();
+  const router = useRouter();
 
-  // Use the new hook to fetch item data
+  const MapContainer = useMemo(
+    () =>
+      dynamic<MapContainerProps>(
+        () => import("react-leaflet").then((mod) => mod.MapContainer),
+        {
+          ssr: false,
+          loading: () => <p>Loading map...</p>,
+        }
+      ),
+    []
+  );
+  const TileLayer = useMemo(
+    () =>
+      dynamic<TileLayerProps>(
+        () => import("react-leaflet").then((mod) => mod.TileLayer),
+        {
+          ssr: false,
+        }
+      ),
+    []
+  );
+  const Marker = useMemo(
+    () =>
+      dynamic<MarkerProps>(
+        () => import("react-leaflet").then((mod) => mod.Marker),
+        {
+          ssr: false,
+        }
+      ),
+    []
+  );
+  const Popup = useMemo(
+    () =>
+      dynamic<PopupProps>(
+        () => import("react-leaflet").then((mod) => mod.Popup),
+        {
+          ssr: false,
+        }
+      ),
+    []
+  );
+
   const { data: product, isLoading, error } = useItem(params.id);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // Handle loading and error states
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -102,7 +147,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     notFound();
   }
 
-  // Leaflet uses the default icon path from your server's root, so we need to update it
   // useEffect(() => {
   //   delete L.Icon.Default.prototype._getIconUrl;
   //   L.Icon.Default.mergeOptions({
@@ -114,7 +158,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   const handleReportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the report to your backend
     console.log("Report submitted:", {
       reason: reportReason,
       description: reportDescription,
@@ -128,8 +171,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     });
   };
 
+  const handleIAmInterested = () => {
+    router.push(`/login`);
+  };
+
   const handleShare = (platform: string) => {
-    const url = `${window.location.origin}/items/${params.id}`; // Corrected URL path
+    const url = `${window.location.origin}/items/${params.id}`;
     let shareUrl = "";
 
     switch (platform) {
@@ -148,7 +195,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       case "messenger":
         shareUrl = `https://www.facebook.com/dialog/send?link=${encodeURIComponent(
           url
-        )}&app_id=YOUR_FACEBOOK_APP_ID`; // Replace YOUR_FACEBOOK_APP_ID
+        )}&app_id=YOUR_FACEBOOK_APP_ID`;
         break;
       case "whatsapp":
         shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(
@@ -163,7 +210,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   };
 
   const handleContact = (method: string) => {
-    if (!product?.user || !product?.user) {
+    if (!product?.owner) {
       toast({
         title: "Contact Information Missing",
         description: "The seller has not provided this contact information.",
@@ -193,14 +240,23 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   const imagesForCarousel = product.imageUrl ? [product.imageUrl] : [];
 
-  // if (product.imageUrl) {
-  //   imagesForCarousel.push(product.imageUrl);
-  // }
+  const productLatitude = (product as any)?.latitude;
+  const productLongitude = (product as any)?.longitude;
+
+  const hasValidCoordinates =
+    typeof productLatitude === "number" && typeof productLongitude === "number";
+
+  const mapCenter: LatLngExpression | undefined = hasValidCoordinates
+    ? [productLatitude, productLongitude]
+    : undefined;
+  const markerPosition: LatLngExpression | undefined = hasValidCoordinates
+    ? [productLatitude, productLongitude]
+    : undefined;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <Link
-        href="/items" // Corrected link to go back to the items listing page
+        href="/items"
         className="flex items-center text-green-600 hover:text-green-700 mb-4"
       >
         <ArrowLeft className="mr-2" size={20} />
@@ -343,45 +399,57 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               {product.category?.name}
             </p>
           </div>
-          <div className="space-y-4 mb-6">
-            <h2 className="text-xl font-semibold text-green-800 dark:text-green-200">
-              Contact the Owner
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={() => handleContact("email")}
-                className="flex items-center"
-              >
-                <Mail className="mr-2 h-4 w-4" />
-                Email
-              </Button>
-              <Button
-                onClick={() => handleContact("whatsapp")}
-                className="flex items-center"
-              >
-                <svg
-                  className="mr-2 h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                </svg>
-                WhatsApp
-              </Button>
-              {/* Add other contact methods here */}
+          {session ? (
+            <div>
+              <div className="space-y-4 mb-6">
+                <h2 className="text-xl font-semibold text-green-800 dark:text-green-200">
+                  Contact the Owner
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => handleContact("email")}
+                    className="flex items-center"
+                  >
+                    <Mail className="mr-2 h-4 w-4" />
+                    Email
+                  </Button>
+                  <Button
+                    onClick={() => handleContact("whatsapp")}
+                    className="flex items-center"
+                  >
+                    <svg
+                      className="mr-2 h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                    </svg>
+                    WhatsApp
+                  </Button>
+                </div>
+              </div>
+
+              <ProductActions productId={product.id?.toString() || ""} />
             </div>
-          </div>
-          <ProductActions productId={product.id?.toString() || ""} />
+          ) : (
+            <Button
+              className="w-full"
+              onClick={handleIAmInterested}
+              variant={"link"}
+            >
+              I am interested in this item!
+            </Button>
+          )}
         </div>
       </div>
       {/* <div className="mt-8">
         <h2 className="text-2xl font-bold text-green-800 dark:text-green-200 mb-4">
           Location
         </h2>
-        {isClient && (
-          <div className="h-[400px] rounded-lg overflow-hidden">
+        <div className="h-[400px] rounded-lg overflow-hidden">
+          {hasValidCoordinates && mapCenter && markerPosition ? (
             <MapContainer
-              center={[product.latitude, product.longitude]}
+              center={mapCenter}
               zoom={13}
               scrollWheelZoom={false}
               style={{ height: "100%", width: "100%" }}
@@ -390,14 +458,16 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
-              <Marker position={[product.latitude, product.longitude]}>
+              <Marker position={markerPosition}>
                 <Popup>
-                  {product.title} <br /> {product.location}
+                  {product.title} <br /> {product.address}
                 </Popup>
               </Marker>
             </MapContainer>
-          </div>
-        )}
+          ) : (
+            <p>Map data is not available for this item.</p>
+          )}
+        </div>
       </div> */}
     </div>
   );

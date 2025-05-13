@@ -119,12 +119,12 @@ export default function Header() {
           >
             {t("nav.allItems")}
           </Link>
-          <Link
+          {/* <Link
             href="/categories"
             className="text-white dark:text-green-100 hover:text-green-200"
           >
             {t("nav.categories")}
-          </Link>
+          </Link> */}
           {/* <Link
             href="/about"
             className="text-white dark:text-green-100 hover:text-green-200"
@@ -148,7 +148,7 @@ export default function Header() {
           )}
         </nav>
         <div className="flex items-center space-x-4">
-          <SearchDropdown />
+          {/* <SearchDropdown /> */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button

@@ -1,15 +1,18 @@
-import { ApiClient, withApiClient } from "@/src/lib/api-client";
+import {
+  ApiClient,
+  withApiClient,
+  withPublicApiClient,
+} from "@/src/lib/api-client";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 const getCategoriesHandler = async (
   client: ApiClient,
-  jwt: string,
   _request: NextRequest
 ) => {
   try {
-    const categories = await client.categoryApi.getAllCategories();
+    const categories = await client.publicCategoryApi.getAllCategories();
     return NextResponse.json(categories);
   } catch (error: any) {
     console.error("Failed to fetch categories:", error);
@@ -20,4 +23,4 @@ const getCategoriesHandler = async (
   }
 };
 
-export const GET = withApiClient(getCategoriesHandler);
+export const GET = withPublicApiClient(getCategoriesHandler);

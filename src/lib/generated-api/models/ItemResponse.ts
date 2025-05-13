@@ -14,7 +14,6 @@ export type ItemResponse = {
     imageUrl?: string;
     itemType?: ItemResponse.itemType;
     externalUrl?: string;
-    originalPostedOn?: string;
     pickupInstructions?: string;
     conditionDescription?: string;
     active?: boolean;

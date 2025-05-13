@@ -11,6 +11,13 @@ export * from "./generated-api";
 // Configure the base URL for the generated API client
 OpenAPI.BASE = process.env.API_URL || "http://localhost:8080";
 
+// Define a type for API route handlers that do not require JWT authentication
+type PublicApiRouteHandler<T = any> = (
+  client: ApiClient,
+  request: NextRequest,
+  context: { params?: { [key: string]: string | string[] } }
+) => Promise<NextResponse<T>>;
+
 type ApiRouteHandler<T = any> = (
   client: ApiClient,
   jwt: string,
@@ -44,6 +51,33 @@ export function withApiClient<T = any>(handler: ApiRouteHandler<T>) {
         });
       }
       console.error("Unexpected error in API route:", error);
+      return NextResponse.json(
+        { error: "Internal Server Error" },
+        { status: 500 }
+      );
+    }
+  };
+}
+
+export function withPublicApiClient<T = any>(
+  handler: PublicApiRouteHandler<T>
+) {
+  return async (
+    request: NextRequest,
+    context: { params?: { [key: string]: string | string[] } } = {}
+  ): Promise<NextResponse<T | { error: string }>> => {
+    try {
+      const client = new ApiClient({
+        BASE: OpenAPI.BASE,
+      });
+      return await handler(client, request, context);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        return NextResponse.json(error.body as { error: string }, {
+          status: error.status,
+        });
+      }
+      console.error("Unexpected error in public API route:", error);
       return NextResponse.json(
         { error: "Internal Server Error" },
         { status: 500 }
