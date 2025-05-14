@@ -1,10 +1,24 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { CategoryDto } from "../lib/api-client";
+import { CategoryResponse } from "../lib/api-client";
+
+export const useFeaturedCategories = () => {
+  return useQuery<CategoryResponse, Error>({
+    queryKey: ["featuredCategories"],
+    queryFn: async () => {
+      const response = await fetch("/api/categories/featured");
+      if (!response.ok) {
+        throw new Error("Failed to fetch featured categories");
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // cache for 5 minutes
+  });
+};
 
 export const useCategories = () => {
-  return useQuery<CategoryDto[], Error>({
+  return useQuery<CategoryResponse[], Error>({
     queryKey: ["categories"],
     queryFn: async () => {
       const response = await fetch("/api/categories");
@@ -18,7 +32,7 @@ export const useCategories = () => {
 };
 
 export const useCategoryById = (categoryId: string) => {
-  return useQuery<CategoryDto, Error>({
+  return useQuery<CategoryResponse, Error>({
     queryKey: ["category", categoryId],
     queryFn: async () => {
       if (!categoryId) {
@@ -36,7 +50,7 @@ export const useCategoryById = (categoryId: string) => {
 };
 
 export const useSubcategories = (categoryParentId: string) => {
-  return useQuery<CategoryDto[], Error>({
+  return useQuery<CategoryResponse[], Error>({
     queryKey: ["subcategories", categoryParentId],
     queryFn: async () => {
       if (!categoryParentId) {
@@ -56,7 +70,7 @@ export const useSubcategories = (categoryParentId: string) => {
 };
 
 export const useRootCategories = () => {
-  return useQuery<CategoryDto[], Error>({
+  return useQuery<CategoryResponse[], Error>({
     queryKey: ["rootCategories"],
     queryFn: async () => {
       const response = await fetch("/api/categories/root");

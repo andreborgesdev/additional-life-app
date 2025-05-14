@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ItemResponse } from "../lib/api-client"; // Assuming ItemResponse is exported from here or re-exported
+import { ItemResponse } from "../lib/api-client";
 
 export const useItem = (itemId: string) => {
   return useQuery<ItemResponse, Error>({

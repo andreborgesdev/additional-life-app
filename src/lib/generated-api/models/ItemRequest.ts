@@ -5,19 +5,19 @@
 export type ItemRequest = {
     title?: string;
     description?: string;
+    condition: ItemRequest.condition;
     address?: string;
     imageUrl?: string;
-    itemType: ItemRequest.itemType;
-    externalUrl?: string;
-    pickupInstructions?: string;
-    conditionDescription?: string;
     categoryId: number;
-    sourcePlatformId: number;
+    pickupPossible?: boolean;
+    deliveryPossible?: boolean;
 };
 export namespace ItemRequest {
-    export enum itemType {
-        INTERNAL = 'INTERNAL',
-        EXTERNAL = 'EXTERNAL',
+    export enum condition {
+        NEW = 'NEW',
+        LIKE_NEW = 'LIKE_NEW',
+        USED = 'USED',
+        DEFECTIVE = 'DEFECTIVE',
     }
 }
 

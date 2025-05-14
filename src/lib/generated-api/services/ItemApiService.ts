@@ -99,27 +99,6 @@ export class ItemApiService {
         });
     }
     /**
-     * Mark an item as taken
-     * Updates an item's status to indicate it has been taken
-     * @param id
-     * @returns ItemResponse Item marked as taken successfully
-     * @throws ApiError
-     */
-    public markItemAsTaken(
-        id: number,
-    ): CancelablePromise<ItemResponse> {
-        return this.httpRequest.request({
-            method: 'PATCH',
-            url: '/api/v1/items/{id}/taken',
-            path: {
-                'id': id,
-            },
-            errors: {
-                404: `Item not found`,
-            },
-        });
-    }
-    /**
      * Check if an item is available
      * Checks if an item exists, is active, and not taken
      * @param id
@@ -134,6 +113,21 @@ export class ItemApiService {
             url: '/api/v1/items/{id}/available',
             path: {
                 'id': id,
+            },
+        });
+    }
+    /**
+     * Get all items from a specific user
+     * Retrieves all active items posted by the specified user
+     * @returns ItemResponse Items retrieved successfully
+     * @throws ApiError
+     */
+    public getUserItems(): CancelablePromise<Array<ItemResponse>> {
+        return this.httpRequest.request({
+            method: 'GET',
+            url: '/api/v1/items/user/{userId}',
+            errors: {
+                404: `User not found`,
             },
         });
     }
@@ -160,58 +154,6 @@ export class ItemApiService {
             },
             errors: {
                 400: `Invalid item type`,
-            },
-        });
-    }
-    /**
-     * Get items by source platform
-     * Retrieves a paginated list of items from the specified source platform
-     * @param platformId
-     * @param pageable
-     * @returns PageItemResponse Items retrieved successfully
-     * @throws ApiError
-     */
-    public getItemsBySourcePlatform(
-        platformId: number,
-        pageable: Pageable,
-    ): CancelablePromise<PageItemResponse> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/items/platform/{platformId}',
-            path: {
-                'platformId': platformId,
-            },
-            query: {
-                'pageable': pageable,
-            },
-            errors: {
-                404: `Source platform not found`,
-            },
-        });
-    }
-    /**
-     * Get items by category
-     * Retrieves a paginated list of items in the specified category
-     * @param categoryId
-     * @param pageable
-     * @returns PageItemResponse Items retrieved successfully
-     * @throws ApiError
-     */
-    public getItemsByCategory(
-        categoryId: number,
-        pageable: Pageable,
-    ): CancelablePromise<PageItemResponse> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/items/category/{categoryId}',
-            path: {
-                'categoryId': categoryId,
-            },
-            query: {
-                'pageable': pageable,
-            },
-            errors: {
-                404: `Category not found`,
             },
         });
     }

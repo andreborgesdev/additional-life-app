@@ -1,5 +1,4 @@
 import { createBrowserClient } from "@supabase/ssr";
-import { useMemo } from "react";
 
 function getSupabaseBrowserClient() {
   return createBrowserClient(
@@ -9,7 +8,7 @@ function getSupabaseBrowserClient() {
 }
 
 function useSupabaseBrowser() {
-  return useMemo(getSupabaseBrowserClient, []);
+  return getSupabaseBrowserClient();
 }
 
 export default useSupabaseBrowser;

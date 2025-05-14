@@ -1,11 +1,9 @@
 "use client";
 
 import type React from "react";
-
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 import { notFound, useRouter } from "next/navigation";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import {
   ArrowLeft,
   MapPin,
@@ -19,15 +17,6 @@ import {
   Mail,
 } from "lucide-react";
 import ProductActions from "@/src/components/product-actions";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-import type {
-  MapContainerProps,
-  TileLayerProps,
-  MarkerProps,
-  PopupProps,
-} from "react-leaflet";
-import type { LatLngExpression } from "leaflet";
 import ImageCarousel from "@/src/components/image-carousel";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -52,6 +41,8 @@ import { useToast } from "@/src/hooks/use-toast";
 import { useItem } from "@/src/hooks/use-item";
 import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
 import { useSession } from "../../auth-provider";
+import dynamic from "next/dynamic";
+import MapCaller from "@/src/components/ui/map-caller";
 
 // This is mock data. In a real application, you'd fetch this from an API or database.
 // const products = [
@@ -86,48 +77,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const { session } = useSession();
   const router = useRouter();
 
-  const MapContainer = useMemo(
-    () =>
-      dynamic<MapContainerProps>(
-        () => import("react-leaflet").then((mod) => mod.MapContainer),
-        {
-          ssr: false,
-          loading: () => <p>Loading map...</p>,
-        }
-      ),
-    []
-  );
-  const TileLayer = useMemo(
-    () =>
-      dynamic<TileLayerProps>(
-        () => import("react-leaflet").then((mod) => mod.TileLayer),
-        {
-          ssr: false,
-        }
-      ),
-    []
-  );
-  const Marker = useMemo(
-    () =>
-      dynamic<MarkerProps>(
-        () => import("react-leaflet").then((mod) => mod.Marker),
-        {
-          ssr: false,
-        }
-      ),
-    []
-  );
-  const Popup = useMemo(
-    () =>
-      dynamic<PopupProps>(
-        () => import("react-leaflet").then((mod) => mod.Popup),
-        {
-          ssr: false,
-        }
-      ),
-    []
-  );
-
   const { data: product, isLoading, error } = useItem(params.id);
 
   if (isLoading) {
@@ -146,15 +95,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   if (!product) {
     notFound();
   }
-
-  // useEffect(() => {
-  //   delete L.Icon.Default.prototype._getIconUrl;
-  //   L.Icon.Default.mergeOptions({
-  //     iconRetinaUrl: "/leaflet/marker-icon-2x.png",
-  //     iconUrl: "/leaflet/marker-icon.png",
-  //     shadowUrl: "/leaflet/marker-shadow.png",
-  //   });
-  // }, []);
 
   const handleReportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,16 +182,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   const productLatitude = (product as any)?.latitude;
   const productLongitude = (product as any)?.longitude;
-
-  const hasValidCoordinates =
-    typeof productLatitude === "number" && typeof productLongitude === "number";
-
-  const mapCenter: LatLngExpression | undefined = hasValidCoordinates
-    ? [productLatitude, productLongitude]
-    : undefined;
-  const markerPosition: LatLngExpression | undefined = hasValidCoordinates
-    ? [productLatitude, productLongitude]
-    : undefined;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -447,26 +377,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           Location
         </h2>
         <div className="h-[400px] rounded-lg overflow-hidden">
-          {hasValidCoordinates && mapCenter && markerPosition ? (
-            <MapContainer
-              center={mapCenter}
-              zoom={13}
-              scrollWheelZoom={false}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <Marker position={markerPosition}>
-                <Popup>
-                  {product.title} <br /> {product.address}
-                </Popup>
-              </Marker>
-            </MapContainer>
-          ) : (
-            <p>Map data is not available for this item.</p>
-          )}
+          <MapCaller posix={[4.79029, -75.69003]} />
         </div>
       </div> */}
     </div>

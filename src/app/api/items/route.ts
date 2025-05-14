@@ -33,17 +33,15 @@ const postItemHandler = async (
 ) => {
   const body = await request.json();
 
-  // Type safety: validate shape if needed
   const item: ItemRequest = {
     title: body.title,
     description: body.description,
+    condition: body.condition as ItemRequest.condition,
     address: body.address,
     categoryId: body.categoryId,
-    itemType: body.itemType || "INTERNAL",
+    pickupPossible: body.pickupPossible,
+    deliveryPossible: body.deliveryPossible,
     imageUrl: body.imageUrl,
-    pickupInstructions: body.pickupInstructions,
-    conditionDescription: body.conditionDescription,
-    externalUrl: body.externalUrl,
   };
 
   const created = await client.itemApi.createItem(item);

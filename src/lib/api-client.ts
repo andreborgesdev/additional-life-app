@@ -45,12 +45,12 @@ export function withApiClient<T = any>(handler: ApiRouteHandler<T>) {
       });
       return await handler(client, jwt, request, context);
     } catch (error) {
+      console.error("Unexpected error in API route:", error);
       if (error instanceof ApiError) {
         return NextResponse.json(error.body as { error: string }, {
           status: error.status,
         });
       }
-      console.error("Unexpected error in API route:", error);
       return NextResponse.json(
         { error: "Internal Server Error" },
         { status: 500 }
@@ -72,12 +72,12 @@ export function withPublicApiClient<T = any>(
       });
       return await handler(client, request, context);
     } catch (error) {
+      console.error("Unexpected error in public API route:", error);
       if (error instanceof ApiError) {
         return NextResponse.json(error.body as { error: string }, {
           status: error.status,
         });
       }
-      console.error("Unexpected error in public API route:", error);
       return NextResponse.json(
         { error: "Internal Server Error" },
         { status: 500 }

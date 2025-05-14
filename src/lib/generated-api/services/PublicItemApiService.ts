@@ -58,21 +58,6 @@ export class PublicItemApiService {
         });
     }
     /**
-     * Get all items from a specific user
-     * Retrieves all active items posted by the specified user
-     * @returns ItemResponse Items retrieved successfully
-     * @throws ApiError
-     */
-    public getUserItems(): CancelablePromise<Array<ItemResponse>> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/public/items/user/{userId}',
-            errors: {
-                404: `User not found`,
-            },
-        });
-    }
-    /**
      * Search items by keyword
      * Searches for items containing the specified keyword in title or description
      * @param keyword
@@ -90,6 +75,32 @@ export class PublicItemApiService {
             query: {
                 'keyword': keyword,
                 'pageable': pageable,
+            },
+        });
+    }
+    /**
+     * Get items by category
+     * Retrieves a paginated list of items in the specified category
+     * @param categoryId
+     * @param pageable
+     * @returns PageItemResponse Items retrieved successfully
+     * @throws ApiError
+     */
+    public getItemsByCategory(
+        categoryId: number,
+        pageable: Pageable,
+    ): CancelablePromise<PageItemResponse> {
+        return this.httpRequest.request({
+            method: 'GET',
+            url: '/api/v1/public/items/category/{categoryId}',
+            path: {
+                'categoryId': categoryId,
+            },
+            query: {
+                'pageable': pageable,
+            },
+            errors: {
+                404: `Category not found`,
             },
         });
     }

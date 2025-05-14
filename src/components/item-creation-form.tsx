@@ -14,59 +14,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
+import { Checkbox } from "@/src/components/ui/checkbox";
 import { toast } from "@/src/hooks/use-toast";
-// import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet"; // Map features commented out for now
 import "leaflet/dist/leaflet.css";
-// import L from "leaflet";
 
-const categories = [
-  "Furniture",
-  "Clothing",
-  "Books",
-  "Electronics",
-  "Home & Garden",
-  "Sports & Outdoors",
-  "Kitchen & Dining",
-  "Office Supplies",
-  "Art & Crafts",
-  "Toys & Games",
-  "Automotive",
-  "Miscellaneous",
-];
-
-// function LocationMarker({
-//   position,
-//   setPosition,
-// }: {
-//   position: [number, number];
-//   setPosition: (pos: [number, number]) => void;
-// }) {
-//   const map = useMapEvents({
-//     click(e) {
-//       setPosition([e.latlng.lat, e.latlng.lng]);
-//     },
-//   });
-
-//   return position === null ? null : <Marker position={position}></Marker>;
-// }
 import type { CategoryDto } from "../lib/generated-api";
 import { ItemRequest } from "../lib/generated-api";
+import { Combobox } from "./ui/combobox";
+import { useSession } from "../app/auth-provider";
+import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
+import { uploadImage } from "../lib/supabase/storage/client";
+
+const conditionOptions = Object.values(ItemRequest.condition);
 
 export default function ItemCreationForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [categoryId, setCategoryId] = useState<string>(""); // Store category ID
-  const [address, setAddress] = useState(""); // Renamed from location to address
-  const [position, setPosition] = useState<[number, number]>([51.505, -0.09]); // Default position
-  const [image, setImage] = useState<File | null>(null); // Image handling remains basic
-  // const [isClient, setIsClient] = useState(false); // Related to map, commented out
+  const [condition, setCondition] = useState<ItemRequest.condition | "">("");
+  const [categoryId, setCategoryId] = useState<string>("");
+  const [address, setAddress] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [pickupPossible, setPickupPossible] = useState(false);
+  const [deliveryPossible, setDeliveryPossible] = useState(false);
   const router = useRouter();
   const [allCategories, setAllCategories] = useState<CategoryDto[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { session } = useSession();
+  const supabase = useSupabaseBrowser();
 
   useEffect(() => {
-    // setIsClient(true); // Related to map
     const fetchCategories = async () => {
       try {
         setIsLoadingCategories(true);
@@ -89,20 +67,26 @@ export default function ItemCreationForm() {
     };
 
     fetchCategories();
-    // delete L.Icon.Default.prototype._getIconUrl;
-    // L.Icon.Default.mergeOptions({
-    //   iconRetinaUrl: "/leaflet/marker-icon-2x.png",
-    //   iconUrl: "/leaflet/marker-icon.png",
-    //   shadowUrl: "/leaflet/marker-shadow.png",
-    // });
   }, []);
+
+  useEffect(() => {
+    if (!image) {
+      setImagePreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(image);
+    setImagePreviewUrl(objectUrl);
+
+    // Clean up the object URL
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [image]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    if (!title || !description || !categoryId || !address) {
-      // Removed position from validation for now
+    if (!title || !description || !categoryId || !address || !condition) {
       toast({
         title: "Error",
         description: "Please fill in all required fields.",
@@ -113,10 +97,10 @@ export default function ItemCreationForm() {
     }
 
     const selectedCat = allCategories.find(
-      (cat) => cat.id === parseInt(categoryId)
+      (cat) => cat.id?.toString() === categoryId // Compare with string categoryId
     );
 
-    if (!selectedCat) {
+    if (!selectedCat || typeof selectedCat.id !== "number") {
       toast({
         title: "Error",
         description: "Selected category is invalid.",
@@ -126,17 +110,54 @@ export default function ItemCreationForm() {
       return;
     }
 
+    let uploadedImageUrl: string | undefined = undefined;
+    if (image) {
+      if (!session) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to upload an image.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      try {
+        toast({
+          title: "Uploading Image",
+          description: "Please wait...",
+        });
+        const { imageUrl } = await uploadImage({
+          file: image,
+          userId: session.user.id,
+          bucket: "items-images",
+          folder: undefined,
+        });
+        uploadedImageUrl = imageUrl;
+        toast({
+          title: "Image Uploaded",
+          description: "Image uploaded successfully.",
+        });
+      } catch (uploadError: any) {
+        console.error("Failed to upload image:", uploadError);
+        toast({
+          title: "Image Upload Error",
+          description: uploadError.message || "Could not upload image.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     const itemData: ItemRequest = {
       title,
       description,
-      categoryId: selectedCat.id, // Ensure categoryId is a number
-      address,
-      // latitude: position[0], // Map feature
-      // longitude: position[1], // Map feature
-      itemType: ItemRequest.itemType.INTERNAL, // Default to INTERNAL
-      // imageUrl: "", // Optional: Handle image upload and URL separately
-      // conditionDescription: "", // Optional
-      // pickupInstructions: "", // Optional
+      condition: condition as ItemRequest.condition,
+      categoryId: selectedCat.id,
+      address: address,
+      pickupPossible: pickupPossible,
+      deliveryPossible: deliveryPossible,
+      imageUrl: uploadedImageUrl,
     };
 
     try {
@@ -158,7 +179,7 @@ export default function ItemCreationForm() {
         description: "Your item has been added successfully!",
       });
 
-      router.push("/"); // Redirect to home page or items page
+      router.push("/");
     } catch (error: any) {
       console.error("Failed to submit product:", error);
       toast({
@@ -196,34 +217,44 @@ export default function ItemCreationForm() {
         />
       </div>
       <div>
-        <Label htmlFor="category">Category</Label>
+        <Label htmlFor="condition">Condition</Label>
         <Select
-          value={categoryId}
-          onValueChange={setCategoryId}
+          value={condition}
+          onValueChange={(value) =>
+            setCondition(value as ItemRequest.condition)
+          }
           required
-          disabled={isSubmitting || isLoadingCategories}
+          disabled={isSubmitting}
         >
           <SelectTrigger>
-            <SelectValue
-              placeholder={
-                isLoadingCategories
-                  ? "Loading categories..."
-                  : "Select a category"
-              }
-            />
+            <SelectValue placeholder="Select item condition" />
           </SelectTrigger>
           <SelectContent>
-            {!isLoadingCategories &&
-              allCategories.map((cat) => (
-                <SelectItem
-                  key={cat.id}
-                  value={cat.id?.toString() ?? ""} // Ensure value is a string
-                >
-                  {cat.name}
-                </SelectItem>
-              ))}
+            {conditionOptions.map((cond) => (
+              <SelectItem key={cond} value={cond}>
+                {cond.charAt(0) +
+                  cond.slice(1).toLowerCase().replace(/_/g, " ")}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
+      </div>
+      <div>
+        <Label htmlFor="category">Category</Label>
+        <Combobox
+          items={allCategories.map((cat) => ({
+            value: cat.id?.toString() ?? "",
+            label: cat.name ?? "Unnamed Category",
+          }))}
+          value={categoryId}
+          onValueChange={setCategoryId}
+          placeholder={
+            isLoadingCategories ? "Loading categories..." : "Select a category"
+          }
+          disabled={isSubmitting || isLoadingCategories}
+          searchPlaceholder="Search category..."
+          emptyPlaceholder="No category found."
+        />
       </div>
       <div>
         <Label htmlFor="address">Address / Pickup Location</Label>
@@ -236,27 +267,32 @@ export default function ItemCreationForm() {
           disabled={isSubmitting}
         />
       </div>
-      {/* <div> // Map features commented out for now
-        <Label>Select Location on Map (Optional)</Label>
-        {isClient && (
-          <div className="h-[400px] rounded-lg overflow-hidden">
-            <MapContainer
-              center={position}
-              zoom={13}
-              scrollWheelZoom={false}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <LocationMarker position={position} setPosition={setPosition} />
-            </MapContainer>
-          </div>
-        )}
-      </div> */}
+      <div className="flex flex-col space-y-2">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="pickupPossible"
+            checked={pickupPossible}
+            onCheckedChange={(checked) => setPickupPossible(Boolean(checked))}
+            disabled={isSubmitting}
+          />
+          <Label htmlFor="pickupPossible" className="font-normal">
+            Pickup Possible
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="deliveryPossible"
+            checked={deliveryPossible}
+            onCheckedChange={(checked) => setDeliveryPossible(Boolean(checked))}
+            disabled={isSubmitting}
+          />
+          <Label htmlFor="deliveryPossible" className="font-normal">
+            Delivery Possible
+          </Label>
+        </div>
+      </div>
       <div>
-        <Label htmlFor="image">Image (Optional)</Label>
+        <Label htmlFor="image">Image</Label>
         <Input
           id="image"
           type="file"
@@ -264,6 +300,16 @@ export default function ItemCreationForm() {
           accept="image/*"
           disabled={isSubmitting}
         />
+        {imagePreviewUrl && (
+          <div className="mt-4">
+            <Label>Image Preview</Label>
+            <img
+              src={imagePreviewUrl}
+              alt="Image preview"
+              className="mt-2 max-h-60 w-auto rounded border"
+            />
+          </div>
+        )}
       </div>
       <Button
         type="submit"

@@ -15,7 +15,7 @@ import {
   Leaf,
   Dumbbell,
 } from "lucide-react";
-import { useCategories, useRootCategories } from "@/src/hooks/use-categories";
+import { useRootCategories } from "@/src/hooks/use-categories";
 import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
 
 // Map slugs to icons

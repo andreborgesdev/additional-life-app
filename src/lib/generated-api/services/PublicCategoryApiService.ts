@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { CategoryDto } from '../models/CategoryDto';
+import type { CategoryResponse } from '../models/CategoryResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class PublicCategoryApiService {
@@ -10,10 +10,10 @@ export class PublicCategoryApiService {
     /**
      * Get all categories
      * Retrieves a list of all categories
-     * @returns CategoryDto Categories retrieved successfully
+     * @returns CategoryResponse Categories retrieved successfully
      * @throws ApiError
      */
-    public getAllCategories(): CancelablePromise<Array<CategoryDto>> {
+    public getAllCategories(): CancelablePromise<Array<CategoryResponse>> {
         return this.httpRequest.request({
             method: 'GET',
             url: '/api/v1/categories',
@@ -23,12 +23,12 @@ export class PublicCategoryApiService {
      * Get category by ID
      * Retrieves a category by its unique identifier
      * @param id
-     * @returns CategoryDto Category found
+     * @returns CategoryResponse Category found
      * @throws ApiError
      */
     public getCategoryById(
         id: number,
-    ): CancelablePromise<CategoryDto> {
+    ): CancelablePromise<CategoryResponse> {
         return this.httpRequest.request({
             method: 'GET',
             url: '/api/v1/categories/{id}',
@@ -43,10 +43,10 @@ export class PublicCategoryApiService {
     /**
      * Get subcategories by parent ID
      * Retrieves a list of subcategories for a given parent category ID
-     * @returns CategoryDto Subcategories retrieved successfully
+     * @returns CategoryResponse Subcategories retrieved successfully
      * @throws ApiError
      */
-    public getSubcategories(): CancelablePromise<Array<CategoryDto>> {
+    public getSubcategories(): CancelablePromise<Array<CategoryResponse>> {
         return this.httpRequest.request({
             method: 'GET',
             url: '/api/v1/categories/{id}/subcategories',
@@ -58,13 +58,25 @@ export class PublicCategoryApiService {
     /**
      * Get root categories
      * Retrieves a list of all root categories (categories without a parent)
-     * @returns CategoryDto Root categories retrieved successfully
+     * @returns CategoryResponse Root categories retrieved successfully
      * @throws ApiError
      */
-    public getRootCategories(): CancelablePromise<Array<CategoryDto>> {
+    public getRootCategories(): CancelablePromise<Array<CategoryResponse>> {
         return this.httpRequest.request({
             method: 'GET',
             url: '/api/v1/categories/root',
+        });
+    }
+    /**
+     * Get featured categories
+     * Retrieves a list of featured categories
+     * @returns CategoryResponse Featured categories retrieved successfully
+     * @throws ApiError
+     */
+    public getFeaturedCategories(): CancelablePromise<Array<CategoryResponse>> {
+        return this.httpRequest.request({
+            method: 'GET',
+            url: '/api/v1/categories/featured',
         });
     }
 }
