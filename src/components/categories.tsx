@@ -14,9 +14,11 @@ import {
   Palette,
   Leaf,
   Dumbbell,
+  ArrowRight,
 } from "lucide-react";
 import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
 import { useFeaturedCategories } from "../hooks/use-categories";
+import { Button } from "./ui/button";
 
 // Map slugs to icons - ensure this covers all expected root category slugs
 const iconMap: { [key: string]: React.ElementType } = {
@@ -33,6 +35,16 @@ const iconMap: { [key: string]: React.ElementType } = {
   automotive: Truck,
   miscellaneous: Recycle, // Default/fallback icon
 };
+
+const iconMap2 = [
+  { name: "Household & Home Furnishings", icon: "🪑" },
+  { name: "Clothing & Accessories", icon: "👕" },
+  { name: "Books & Comics", icon: "📚" },
+  { name: "Computers & Networks", icon: "📱" },
+  { name: "Toys & Crafts", icon: "📱" },
+  { name: "Home & Garden", icon: "🌿" },
+  { name: "Sports", icon: "🚲" },
+];
 
 export default function Categories() {
   const { data: categories, isLoading, error } = useFeaturedCategories();
@@ -75,37 +87,43 @@ export default function Categories() {
   }
 
   return (
-    <section className="mb-12">
-      <h2 className="text-2xl font-semibold text-green-700 dark:text-green-300 mb-4">
-        Categories
-      </h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {categories.map((category) => {
-          const IconComponent = iconMap[category.slug] || Recycle; // Fallback to Recycle if no icon is mapped
-          return (
+    <section className="py-16">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center mb-10">
+          <h2 className="text-3xl font-bold text-green-800 dark:text-green-100">
+            Browse Categories
+          </h2>
+          <Button
+            asChild
+            variant="ghost"
+            className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+          >
+            <Link href="/categories">
+              View All Categories
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+          {categories.map((category) => (
             <Link
-              key={category.id} // Use category.id as key
-              href={`/categories/${category.slug}`}
-              className="bg-white dark:bg-green-800 rounded-lg shadow-md p-4 flex flex-col items-center justify-center transition-transform hover:scale-105 cursor-pointer"
+              key={category.id}
+              href={`/categories/${category.id}`}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 flex flex-col items-center justify-center transition-all hover:shadow-md hover:scale-105 cursor-pointer"
             >
-              <IconComponent
-                size={32}
-                className="text-green-600 dark:text-green-400 mb-2"
-              />
+              <span className="text-4xl mb-3">
+                {iconMap2.find((icon) => icon.name === category.name)?.icon}
+              </span>
               <span className="text-green-800 dark:text-green-200 font-medium text-center">
                 {category.name}
               </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {category.count} 152 items
+              </span>
             </Link>
-          );
-        })}
-      </div>
-      <div className="mt-6 text-center">
-        <Link
-          href="/categories"
-          className="inline-block px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors"
-        >
-          View All Categories
-        </Link>
+          ))}
+        </div>
       </div>
     </section>
   );

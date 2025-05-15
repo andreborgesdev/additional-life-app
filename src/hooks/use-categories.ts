@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CategoryResponse } from "../lib/api-client";
 
 export const useFeaturedCategories = () => {
-  return useQuery<CategoryResponse, Error>({
+  return useQuery<CategoryResponse[], Error>({
     queryKey: ["featuredCategories"],
     queryFn: async () => {
       const response = await fetch("/api/categories/featured");

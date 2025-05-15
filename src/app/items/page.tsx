@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -22,15 +22,16 @@ import {
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { QueryDirection, SortBy, useItems } from "@/src/hooks/use-items";
 import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
-
-const categories = [
-  "Furniture",
-  "Electronics",
-  "Clothing",
-  "Books",
-  "Home & Garden",
-  "Sports & Outdoors",
-];
+import { useTranslation } from "react-i18next";
+import {
+  useRootCategories,
+  useSubcategories,
+} from "@/src/hooks/use-categories";
+import { ArrowLeft, Check, ChevronDown } from "lucide-react";
+import { CategoryResponse } from "@/src/lib/generated-api";
+// import FiltersSheet from "@/src/components/filters-sheet"; // This was commented out
+import DetailedItemCard from "@/src/components/detailed-item-card";
+import CategoryFilter from "@/src/components/category-filter";
 
 const conditions = ["New", "Like New", "Good", "Fair", "Poor"];
 
@@ -76,15 +77,27 @@ const sortByOptions = [
 ];
 
 export default function ItemsPage() {
-  // const [items, setItems] = useState<Item[]>([]);
-  // const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [page, setPage] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    null
+  );
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortByOptions>(SortByOptions.RELEVANCE);
+  const { t, i18n, ready } = useTranslation("common");
 
-  // Find the selected sort option object to pass to useItems
+  const [categoryNavPath, setCategoryNavPath] = useState<CategoryResponse[]>(
+    []
+  );
+  const [currentCategoriesToDisplay, setCurrentCategoriesToDisplay] = useState<
+    CategoryResponse[]
+  >([]);
+  const [isLoadingDisplayedCategories, setIsLoadingDisplayedCategories] =
+    useState(false);
+
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const categoryFilterRef = useRef<HTMLDivElement>(null);
+
   const selectedSortOptionDetails = sortByOptions.find(
     (option) => option.value === sortBy
   );
@@ -92,7 +105,69 @@ export default function ItemsPage() {
   const { data, isLoading, error } = useItems({
     sortBy: selectedSortOptionDetails?.sortBy,
     direction: selectedSortOptionDetails?.direction,
+    categoryId: selectedCategoryId,
   });
+
+  const currentParentIdForNav =
+    categoryNavPath.length > 0
+      ? categoryNavPath[categoryNavPath.length - 1].id
+      : null;
+
+  const { data: rootCategories, isLoading: isLoadingRoot } = useRootCategories({
+    enabled: categoryNavPath.length === 0,
+  });
+
+  const { data: subcategories, isLoading: isLoadingSub } = useSubcategories(
+    currentParentIdForNav!,
+    {
+      enabled: !!currentParentIdForNav,
+    }
+  );
+
+  useEffect(() => {
+    setIsLoadingDisplayedCategories(isLoadingRoot || isLoadingSub);
+  }, [isLoadingRoot, isLoadingSub]);
+
+  useEffect(() => {
+    if (categoryNavPath.length === 0) {
+      if (rootCategories) {
+        setCurrentCategoriesToDisplay(rootCategories);
+      } else if (!isLoadingRoot) {
+        setCurrentCategoriesToDisplay([]);
+      }
+    } else {
+      if (subcategories) {
+        setCurrentCategoriesToDisplay(subcategories);
+      } else if (!isLoadingSub) {
+        setCurrentCategoriesToDisplay([]);
+      }
+    }
+  }, [
+    categoryNavPath,
+    rootCategories,
+    subcategories,
+    isLoadingRoot,
+    isLoadingSub,
+  ]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        categoryFilterRef.current &&
+        !categoryFilterRef.current.contains(event.target as Node)
+      ) {
+        setIsCategoryDropdownOpen(false);
+      }
+    }
+    if (isCategoryDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isCategoryDropdownOpen]);
 
   if (isLoading)
     return (
@@ -107,10 +182,33 @@ export default function ItemsPage() {
     setSortBy(Number(value) as SortByOptions);
   };
 
+  const handleCategoryListItemClick = (category: CategoryResponse) => {
+    setSelectedCategoryId(category.id);
+    setCategoryNavPath([...categoryNavPath, category]);
+  };
+
+  const handleCategoryBreadcrumbClick = (index: number) => {
+    if (index < 0) {
+      setCategoryNavPath([]);
+      setSelectedCategoryId(null);
+    } else {
+      const newPath = categoryNavPath.slice(0, index + 1);
+      setCategoryNavPath(newPath);
+      setSelectedCategoryId(newPath[newPath.length - 1].id);
+    }
+  };
+
+  const getCategoryDisplayText = () => {
+    if (categoryNavPath.length === 0) {
+      return "All categories";
+    }
+    return categoryNavPath.map((c) => c.name).join(" > ");
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">All Items</h1>
-
+      <h1 className="text-3xl font-bold mb-6">{t("items.allItems")}</h1>
+      {/* <FiltersSheet /> */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="space-y-4">
           <div>
@@ -122,25 +220,20 @@ export default function ItemsPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          {/* <div>
-            <Label htmlFor="category">Category</Label>
-            <Select
-              onValueChange={(value) => setSelectedCategory(value)}
-              value={selectedCategory || undefined}
-            >
-              <SelectTrigger id="category">
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div> */}
+          <CategoryFilter
+            categoryFilterRef={categoryFilterRef}
+            isCategoryDropdownOpen={isCategoryDropdownOpen}
+            setIsCategoryDropdownOpen={setIsCategoryDropdownOpen}
+            getCategoryDisplayText={getCategoryDisplayText}
+            handleCategoryBreadcrumbClick={handleCategoryBreadcrumbClick}
+            categoryNavPath={categoryNavPath}
+            isLoadingDisplayedCategories={isLoadingDisplayedCategories}
+            currentCategoriesToDisplay={currentCategoriesToDisplay}
+            handleCategoryListItemClick={handleCategoryListItemClick}
+            selectedCategoryId={selectedCategoryId}
+            isLoadingItems={isLoading}
+            totalElements={data?.totalElements}
+          />
           {/* TODO Add condition */}
           {/* <div>
             <Label>Condition</Label>
@@ -174,7 +267,7 @@ export default function ItemsPage() {
           <div className="flex justify-end mb-4 space-x-4">
             <Select
               onValueChange={handleOnSortByChanged}
-              value={sortBy.toString()} // Ensure value is a string for Select
+              value={sortBy.toString()}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Sort by" />
@@ -183,7 +276,7 @@ export default function ItemsPage() {
                 {sortByOptions.map((option) => (
                   <SelectItem
                     key={option.value}
-                    value={option.value.toString()} // Ensure value is a string for SelectItem
+                    value={option.value.toString()}
                   >
                     {option.label}
                   </SelectItem>
@@ -194,35 +287,7 @@ export default function ItemsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {data?.content?.map((item) => (
-              <Card key={item.id}>
-                <CardHeader>
-                  <CardTitle>{item.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <img
-                    src={item.imageUrl || "/placeholder.svg"}
-                    alt={item.title ? item.title : "Placeholder"}
-                    className="w-full h-48 object-cover mb-4 rounded-md"
-                  />
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    {item.description}
-                  </p>
-                  <p className="text-sm">
-                    <strong>Category:</strong> {item.category?.name}
-                  </p>
-                  <p className="text-sm">
-                    <strong>Condition:</strong> {item.conditionDescription}
-                  </p>
-                  <p className="text-sm">
-                    <strong>Location:</strong> {item.address}
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button asChild className="w-full">
-                    <Link href={`/items/${item.id}`}>View Details</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
+              <DetailedItemCard key={item.id} item={item} />
             ))}
           </div>
         </div>

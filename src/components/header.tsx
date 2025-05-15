@@ -119,12 +119,12 @@ export default function Header() {
           >
             {t("nav.allItems")}
           </Link>
-          {/* <Link
+          <Link
             href="/categories"
             className="text-white dark:text-green-100 hover:text-green-200"
           >
             {t("nav.categories")}
-          </Link> */}
+          </Link>
           {/* <Link
             href="/about"
             className="text-white dark:text-green-100 hover:text-green-200"
@@ -148,25 +148,40 @@ export default function Header() {
           )}
         </nav>
         <div className="flex items-center space-x-4">
-          {/* <SearchDropdown /> */}
+          <SearchDropdown />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-white dark:text-green-100"
+                className="text-white dark:text-green-100 hover:bg-green-700 dark:hover:bg-green-600 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-green-500 dark:border-green-700"
               >
-                <Globe className="h-5 w-5" />
-                <span className="sr-only">Select language</span>
+                <Globe className="h-4 w-4" />
+                <span className="text-sm font-medium">
+                  {languages
+                    .find((l) => l.code === (i18n.language || "en"))
+                    ?.code.toUpperCase()}
+                </span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent align="end" className="w-[160px] p-2">
+              <DropdownMenuLabel className="text-xs text-gray-500 dark:text-gray-400 px-2 pb-1.5">
+                {t("nav.selectLanguage")}
+              </DropdownMenuLabel>
               {languages.map((lang) => (
                 <DropdownMenuItem
                   key={lang.code}
                   onSelect={() => changeLanguage(lang.code)}
+                  className={`flex items-center gap-2 px-2 py-1.5 my-0.5 rounded-md cursor-pointer ${
+                    (i18n.language || "en") === lang.code
+                      ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 font-medium"
+                      : ""
+                  }`}
                 >
-                  {lang.name}
+                  <div className="w-5 h-5 flex items-center justify-center text-xs font-bold bg-gray-100 dark:bg-gray-800 rounded-full">
+                    {lang.code.toUpperCase()}
+                  </div>
+                  <span>{lang.name}</span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -206,18 +221,17 @@ export default function Header() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">John Doe</p>
+                    <p className="text-sm font-medium leading-none">
+                      {session.user.user_metadata.full_name}
+                    </p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      john.doe@example.com
+                      {session.user.user_metadata.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/items-published">{t("nav.itemsPublished")}</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/items-taken">{t("nav.itemsTaken")}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/user-settings">{t("nav.userSettings")}</Link>

@@ -16,7 +16,28 @@ export class PublicCategoryApiService {
     public getAllCategories(): CancelablePromise<Array<CategoryResponse>> {
         return this.httpRequest.request({
             method: 'GET',
-            url: '/api/v1/categories',
+            url: '/api/v1/public/categories',
+        });
+    }
+    /**
+     * Get subcategories by parent ID
+     * Retrieves a list of subcategories for a given parent category ID
+     * @param parentId
+     * @returns CategoryResponse Subcategories retrieved successfully
+     * @throws ApiError
+     */
+    public getSubcategories(
+        parentId: number,
+    ): CancelablePromise<Array<CategoryResponse>> {
+        return this.httpRequest.request({
+            method: 'GET',
+            url: '/api/v1/public/categories/{parentId}/subcategories',
+            path: {
+                'parentId': parentId,
+            },
+            errors: {
+                404: `Parent category not found`,
+            },
         });
     }
     /**
@@ -31,27 +52,12 @@ export class PublicCategoryApiService {
     ): CancelablePromise<CategoryResponse> {
         return this.httpRequest.request({
             method: 'GET',
-            url: '/api/v1/categories/{id}',
+            url: '/api/v1/public/categories/{id}',
             path: {
                 'id': id,
             },
             errors: {
                 404: `Category not found`,
-            },
-        });
-    }
-    /**
-     * Get subcategories by parent ID
-     * Retrieves a list of subcategories for a given parent category ID
-     * @returns CategoryResponse Subcategories retrieved successfully
-     * @throws ApiError
-     */
-    public getSubcategories(): CancelablePromise<Array<CategoryResponse>> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/categories/{id}/subcategories',
-            errors: {
-                404: `Parent category not found`,
             },
         });
     }
@@ -64,7 +70,7 @@ export class PublicCategoryApiService {
     public getRootCategories(): CancelablePromise<Array<CategoryResponse>> {
         return this.httpRequest.request({
             method: 'GET',
-            url: '/api/v1/categories/root',
+            url: '/api/v1/public/categories/root',
         });
     }
     /**
@@ -76,7 +82,7 @@ export class PublicCategoryApiService {
     public getFeaturedCategories(): CancelablePromise<Array<CategoryResponse>> {
         return this.httpRequest.request({
             method: 'GET',
-            url: '/api/v1/categories/featured',
+            url: '/api/v1/public/categories/featured',
         });
     }
 }

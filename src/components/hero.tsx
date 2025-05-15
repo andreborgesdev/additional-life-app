@@ -1,9 +1,20 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowRight, Leaf, Recycle, Users } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
+import { Button } from "./ui/button";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export default function Hero() {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
+
   return (
-    <section className="relative bg-green-50 dark:bg-green-900 overflow-hidden">
+    <section className="relative bg-green-50 dark:bg-green-900 py-10 md:py-32">
       <div className="absolute inset-0">
         <svg
           className="absolute w-full h-full"
@@ -44,65 +55,107 @@ export default function Hero() {
           </path>
         </svg>
       </div>
-      <div className="container mx-auto px-4 py-16 sm:py-20 md:py-24 lg:py-28 relative z-10">
-        <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-green-800 dark:text-green-100 mb-6">
-            Give a Second Life to Your Belongings
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="text-center max-w-3xl mx-auto">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-800 dark:text-white mb-6">
+            Give a{" "}
+            <span className="text-green-800 dark:text-green-400">
+              Second Life
+            </span>{" "}
+            to Your Belongings
           </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-green-700 dark:text-green-200 mb-8">
-            Join our community-driven marketplace where you can give away items
-            you no longer need and find treasures others are sharing.
+          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-10">
+            Join our community-driven marketplace where you can share items you
+            no longer need and find treasures others are sharing. Reduce waste,
+            help the environment, and connect with your community.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <Link
-              href="/items"
-              className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-full text-white bg-green-600 hover:bg-green-700 transition-colors duration-300"
+          <motion.div
+            className="max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <form className="flex items-center bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden">
+              <div className="pl-4 pr-2 py-1 flex-shrink-0">
+                <Search className="h-5 w-5 text-gray-400 dark:text-gray-300" />
+              </div>
+              <input
+                type="search"
+                name="search"
+                id="search"
+                placeholder="What are you looking for?"
+                className="w-full px-4 py-3 text-gray-700 dark:text-gray-200 bg-transparent focus:outline-none placeholder-gray-400 dark:placeholder-gray-500"
+              />
+              <button
+                type="submit"
+                className="px-6 py-3 bg-green-800 hover:bg-teal-600 text-white font-semibold transition-colors duration-300 focus:outline-none"
+              >
+                Search
+              </button>
+            </form>
+            {/* <div className="mt-6 text-sm text-gray-500 dark:text-gray-400">
+              Popular searches:{" "}
+              <Link
+                href="/items?q=furniture"
+                className="text-teal-600 dark:text-teal-400 hover:underline"
+              >
+                Furniture
+              </Link>
+              ,{" "}
+              <Link
+                href="/items?q=books"
+                className="text-teal-600 dark:text-teal-400 hover:underline"
+              >
+                Books
+              </Link>
+              ,{" "}
+              <Link
+                href="/items?q=electronics"
+                className="text-teal-600 dark:text-teal-400 hover:underline"
+              >
+                Electronics
+              </Link>
+              ,{" "}
+              <Link
+                href="/items?q=kitchen"
+                className="text-teal-600 dark:text-teal-400 hover:underline"
+              >
+                Kitchen
+              </Link>
+              ,{" "}
+              <Link
+                href="/items?q=garden"
+                className="text-teal-600 dark:text-teal-400 hover:underline"
+              >
+                Garden
+              </Link>
+            </div> */}
+          </motion.div>
+          <motion.div
+            className="flex flex-col sm:flex-row gap-4 justify-center mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <Button
+              asChild
+              size="lg"
+              className="bg-green-600 hover:bg-green-700 rounded-full"
             >
-              Browse Items
-              <ArrowRight className="ml-2 -mr-1 h-5 w-5" />
-            </Link>
-            <Link
-              href="/about"
-              className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-full text-green-700 bg-green-100 hover:bg-green-200 dark:text-green-100 dark:bg-green-800 dark:hover:bg-green-700 transition-colors duration-300"
+              <Link href="/items">
+                Browse Items
+                <ArrowRight className="ml-2 -mr-1 h-5 w-5" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="rounded-full"
             >
-              Learn More
-            </Link>
-          </div>
-        </div>
-        <div className="mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex items-center transition-transform hover:scale-105 duration-300">
-            <Leaf className="h-8 w-8 text-green-500 mr-4 flex-shrink-0" />
-            <div>
-              <h3 className="text-lg font-semibold text-green-800 dark:text-green-100">
-                Eco-Friendly
-              </h3>
-              <p className="mt-2 text-green-600 dark:text-green-300">
-                Reduce waste and help the environment
-              </p>
-            </div>
-          </div>
-          <div className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex items-center transition-transform hover:scale-105 duration-300">
-            <Recycle className="h-8 w-8 text-green-500 mr-4 flex-shrink-0" />
-            <div>
-              <h3 className="text-lg font-semibold text-green-800 dark:text-green-100">
-                Circular Economy
-              </h3>
-              <p className="mt-2 text-green-600 dark:text-green-300">
-                Promote reuse and sustainable consumption
-              </p>
-            </div>
-          </div>
-          <div className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex items-center transition-transform hover:scale-105 duration-300">
-            <Users className="h-8 w-8 text-green-500 mr-4 flex-shrink-0" />
-            <div>
-              <h3 className="text-lg font-semibold text-green-800 dark:text-green-100">
-                Community-Driven
-              </h3>
-              <p className="mt-2 text-green-600 dark:text-green-300">
-                Connect with like-minded individuals
-              </p>
-            </div>
-          </div>
+              <Link href="/create-item">Give Something Away</Link>
+            </Button>
+          </motion.div>
         </div>
       </div>
     </section>

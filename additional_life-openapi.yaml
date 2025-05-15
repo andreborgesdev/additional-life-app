@@ -263,6 +263,112 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PageItemResponse"
+  /api/v1/public/categories:
+    get:
+      tags:
+      - Public Category API
+      summary: Get all categories
+      description: Retrieves a list of all categories
+      operationId: getAllCategories
+      responses:
+        "200":
+          description: Categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryResponse"
+  /api/v1/public/categories/{parentId}/subcategories:
+    get:
+      tags:
+      - Public Category API
+      summary: Get subcategories by parent ID
+      description: Retrieves a list of subcategories for a given parent category ID
+      operationId: getSubcategories
+      parameters:
+      - name: parentId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Subcategories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryResponse"
+        "404":
+          description: Parent category not found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryResponse"
+  /api/v1/public/categories/{id}:
+    get:
+      tags:
+      - Public Category API
+      summary: Get category by ID
+      description: Retrieves a category by its unique identifier
+      operationId: getCategoryById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Category found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryResponse"
+        "404":
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryResponse"
+  /api/v1/public/categories/root:
+    get:
+      tags:
+      - Public Category API
+      summary: Get root categories
+      description: Retrieves a list of all root categories (categories without a parent)
+      operationId: getRootCategories
+      responses:
+        "200":
+          description: Root categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryResponse"
+  /api/v1/public/categories/featured:
+    get:
+      tags:
+      - Public Category API
+      summary: Get featured categories
+      description: Retrieves a list of featured categories
+      operationId: getFeaturedCategories
+      responses:
+        "200":
+          description: Featured categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryResponse"
   /api/v1/ping:
     get:
       tags:
@@ -357,106 +463,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PageItemResponse"
-  /api/v1/categories:
-    get:
-      tags:
-      - Public Category API
-      summary: Get all categories
-      description: Retrieves a list of all categories
-      operationId: getAllCategories
-      responses:
-        "200":
-          description: Categories retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CategoryResponse"
-  /api/v1/categories/{id}:
-    get:
-      tags:
-      - Public Category API
-      summary: Get category by ID
-      description: Retrieves a category by its unique identifier
-      operationId: getCategoryById
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: Category found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CategoryResponse"
-        "404":
-          description: Category not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CategoryResponse"
-  /api/v1/categories/{id}/subcategories:
-    get:
-      tags:
-      - Public Category API
-      summary: Get subcategories by parent ID
-      description: Retrieves a list of subcategories for a given parent category ID
-      operationId: getSubcategories
-      parameters: []
-      responses:
-        "200":
-          description: Subcategories retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CategoryResponse"
-        "404":
-          description: Parent category not found
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CategoryResponse"
-  /api/v1/categories/root:
-    get:
-      tags:
-      - Public Category API
-      summary: Get root categories
-      description: Retrieves a list of all root categories (categories without a parent)
-      operationId: getRootCategories
-      responses:
-        "200":
-          description: Root categories retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CategoryResponse"
-  /api/v1/categories/featured:
-    get:
-      tags:
-      - Public Category API
-      summary: Get featured categories
-      description: Retrieves a list of featured categories
-      operationId: getFeaturedCategories
-      responses:
-        "200":
-          description: Featured categories retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CategoryResponse"
 components:
   schemas:
     ItemRequest:
@@ -616,9 +622,9 @@ components:
       properties:
         empty:
           type: boolean
-        sorted:
-          type: boolean
         unsorted:
+          type: boolean
+        sorted:
           type: boolean
     Pageable:
       type: object

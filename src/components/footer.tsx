@@ -59,7 +59,7 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-xl font-semibold mb-4">Connect With Us</h3>
+            {/* <h3 className="text-xl font-semibold mb-4">Connect With Us</h3>
             <div className="flex space-x-4 mb-4">
               <a
                 href="#"
@@ -79,7 +79,7 @@ export default function Footer() {
               >
                 <Instagram size={24} />
               </a>
-            </div>
+            </div> */}
             <ul className="space-y-2">
               <li>
                 <Link

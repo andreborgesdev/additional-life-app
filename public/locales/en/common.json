@@ -4,10 +4,10 @@
     "about": "About",
     "contact": "Contact",
     "addItem": "Add Item",
-    "allItems": "All Items",
+    "allItems": "Items",
     "itemsPublished": "Items Published",
-    "itemsTaken": "Items Taken",
-    "userSettings": "User Settings"
+    "userSettings": "User Settings",
+    "selectLanguage": "Select Language"
   },
   "search": {
     "placeholder": "Search items..."
@@ -36,5 +36,8 @@
       "title": "Community-Driven",
       "description": "Connect with like-minded individuals"
     }
+  },
+  "items": {
+    "allItems": "Items"
   }
 }

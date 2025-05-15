@@ -3,7 +3,7 @@ import { Leaf, Recycle, Users, Heart } from "lucide-react";
 
 export default function AboutPage() {
   return (
-    <div className="bg-green-50 dark:bg-green-900 min-h-screen">
+    <div className="bg-green-50 dark:bg-green-900">
       <div className="container mx-auto px-4 py-16">
         <h1 className="text-4xl md:text-5xl font-bold text-green-800 dark:text-green-100 text-center mb-8">
           About Additional Life
@@ -19,7 +19,7 @@ export default function AboutPage() {
             items. We believe in the power of sharing and reusing to reduce
             waste, conserve resources, and build stronger communities.
           </p>
-          <div className="flex items-center justify-center">
+          {/* <div className="flex items-center justify-center">
             <Image
               src="/placeholder.svg?height=200&width=400"
               alt="People sharing items"
@@ -27,7 +27,7 @@ export default function AboutPage() {
               height={200}
               className="rounded-lg"
             />
-          </div>
+          </div> */}
         </div>
 
         <div className="max-w-3xl mx-auto bg-white dark:bg-green-800 rounded-lg shadow-lg p-8 mb-12">

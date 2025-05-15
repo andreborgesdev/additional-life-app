@@ -1,28 +1,39 @@
-import { ApiClient, withApiClient } from "@/src/lib/api-client";
+import {
+  ApiClient,
+  CategoryResponse,
+  withApiClient,
+  withPublicApiClient,
+} from "@/src/lib/api-client";
 import { NextRequest, NextResponse } from "next/server";
-import { CategoryDto } from "@/src/lib/api-client"; // Assuming CategoryDto is the response type for a list of categories
 
 export const dynamic = "force-dynamic";
 
 // Define the context type for route parameters
-type RouteContext = { params?: { parentId?: string | string[] | undefined } };
+type RouteContext = { params?: { id?: string | string[] | undefined } };
 
 const getSubcategoriesHandler = async (
   client: ApiClient,
-  jwt: string,
   _request: NextRequest,
   context: RouteContext
-): Promise<NextResponse<CategoryDto[] | { error: string }>> => {
-  const parentIdFromParams = context.params?.parentId;
+): Promise<NextResponse<CategoryResponse[] | { error: string }>> => {
+  const parentIdFromParams = context.params?.id;
 
   if (!parentIdFromParams) {
-    return NextResponse.json({ error: "Parent Category ID is required in path" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Parent Category ID is required in path" },
+      { status: 400 }
+    );
   }
 
-  const parentIdStr = Array.isArray(parentIdFromParams) ? parentIdFromParams[0] : parentIdFromParams;
+  const parentIdStr = Array.isArray(parentIdFromParams)
+    ? parentIdFromParams[0]
+    : parentIdFromParams;
 
   if (!parentIdStr) {
-    return NextResponse.json({ error: "Parent Category ID is missing or invalid" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Parent Category ID is missing or invalid" },
+      { status: 400 }
+    );
   }
 
   const parentIdNumber = parseInt(parentIdStr, 10);
@@ -34,9 +45,9 @@ const getSubcategoriesHandler = async (
   }
 
   try {
-    // Ensure your client.categoryApi has a method like getSubcategoriesByParentId or similar
-    // based on the operationId: getSubcategories
-    const subcategories = await client.categoryApi.getSubcategories(parentIdNumber);
+    const subcategories = await client.publicCategoryApi.getSubcategories(
+      parentIdNumber
+    );
     return NextResponse.json(subcategories);
   } catch (error: any) {
     console.error("Error fetching subcategories:", error);
@@ -46,4 +57,4 @@ const getSubcategoriesHandler = async (
   }
 };
 
-export const GET = withApiClient(getSubcategoriesHandler);
+export const GET = withPublicApiClient(getSubcategoriesHandler);

@@ -1,10 +1,10 @@
 import {
   ApiClient,
+  CategoryResponse,
   withApiClient,
   withPublicApiClient,
 } from "@/src/lib/api-client";
 import { NextRequest, NextResponse } from "next/server";
-import { CategoryDto } from "@/src/lib/api-client"; // Assuming CategoryDto is the response type
 
 export const dynamic = "force-dynamic";
 
@@ -14,24 +14,17 @@ const getCategoryByIdHandler = async (
   client: ApiClient,
   _request: NextRequest,
   context: RouteContext
-): Promise<NextResponse<CategoryDto | { error: string }>> => {
-  const idFromParams = context.params?.id;
-  if (!idFromParams) {
+): Promise<NextResponse<CategoryResponse | { error: string }>> => {
+  const { id } = context.params;
+
+  if (!id) {
     return NextResponse.json(
       { error: "Category ID is required in path" },
       { status: 400 }
     );
   }
-  const idStr = Array.isArray(idFromParams) ? idFromParams[0] : idFromParams;
 
-  if (!idStr) {
-    return NextResponse.json(
-      { error: "Category ID is missing or invalid" },
-      { status: 400 }
-    );
-  }
-
-  const categoryIdNumber = parseInt(idStr, 10);
+  const categoryIdNumber = parseInt(id, 10);
   if (isNaN(categoryIdNumber)) {
     return NextResponse.json(
       { error: "Invalid Category ID format" },
@@ -40,10 +33,6 @@ const getCategoryByIdHandler = async (
   }
 
   try {
-    // Assuming your client.categoryApi has a method like getCategoryById
-    // The operationId in the OpenAPI spec is not explicitly defined for GET /api/v1/categories/{id},
-    // but typically it would be something like 'getCategoryById'.
-    // Please verify the actual method name in your generated ApiClient.
     const category = await client.publicCategoryApi.getCategoryById(
       categoryIdNumber
     );
