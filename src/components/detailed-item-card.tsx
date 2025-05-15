@@ -19,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+import { Skeleton } from "./ui/skeleton";
 
 export const getTimeAgo = (dateString: string) => {
   const date = new Date(dateString);
@@ -36,7 +37,7 @@ interface DetailedItemCardProps {
   item: ItemResponse;
 }
 
-const conditionDetails = [
+export const conditionDetails = [
   { key: ItemResponse.condition.NEW, placeholder: "New", color: "green" },
   {
     key: ItemResponse.condition.LIKE_NEW,
@@ -100,7 +101,7 @@ export default function DetailedItemCard({ item }: DetailedItemCardProps) {
         )} */}
       </div>
 
-      <Link href={`/item/${item.id}`} className="block">
+      <Link href={`/items/${item.id}`} className="block">
         <div className="relative h-48 overflow-hidden">
           <Image
             src={item.imageUrl || "/placeholder.svg"}
@@ -150,5 +151,25 @@ export default function DetailedItemCard({ item }: DetailedItemCardProps) {
         </CardFooter>
       </Link>
     </Card>
+  );
+}
+
+export function DetailedItemCardSkeleton() {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+      <Skeleton className="w-full h-48" /> {/* Image placeholder */}
+      <div className="p-4">
+        <Skeleton className="h-6 w-3/4 mb-2" /> {/* Title placeholder */}
+        <Skeleton className="h-4 w-1/2 mb-1" /> {/* Category placeholder */}
+        <Skeleton className="h-4 w-1/3 mb-3" /> {/* Location placeholder */}
+        <Skeleton className="h-4 w-full mb-1" /> {/* Description line 1 */}
+        <Skeleton className="h-4 w-5/6 mb-4" /> {/* Description line 2 */}
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-4 w-1/4" /> {/* Posted by placeholder */}
+          <Skeleton className="h-8 w-24 rounded" />{" "}
+          {/* View Details button placeholder */}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,26 +1,27 @@
 import Image from "next/image";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 
 const testimonials = [
   {
     id: 1,
-    name: "Sarah Johnson",
+    name: "Léonard Gage",
     avatar: "/public/avatar.png",
     text: "I've been able to declutter my home while helping others find items they need. The platform is so easy to use!",
-    location: "Portland, OR",
+    location: "Geneva",
   },
   {
     id: 2,
-    name: "Michael Chen",
+    name: "Margarete König",
     avatar: "/public/avatar.png",
     text: "As a college student on a budget, Additional Life has been a game-changer. I've furnished my entire apartment for free!",
-    location: "Boston, MA",
+    location: "Interlaken",
   },
   {
     id: 3,
-    name: "Priya Patel",
+    name: "Joāo Silva",
     avatar: "/public/avatar.png",
     text: "I love the community aspect. I've met wonderful people in my neighborhood through exchanging items.",
-    location: "Austin, TX",
+    location: "Payerne",
   },
 ];
 
@@ -40,13 +41,18 @@ export default function Testimonials() {
             >
               <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
                 <div className="rounded-full border-4 border-white dark:border-gray-800 overflow-hidden">
-                  <Image
+                  {/* <Image
                     src={testimonial.avatar || "/placeholder.svg"}
                     alt={testimonial.name}
                     width={60}
                     height={60}
                     className="rounded-full"
-                  />
+                  /> */}
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback>
+                      {testimonial.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
               </div>
               <div className="pt-8 text-center">

@@ -153,7 +153,7 @@ export default function Hero() {
               size="lg"
               className="rounded-full"
             >
-              <Link href="/create-item">Give Something Away</Link>
+              <Link href="/create-item/new">Give Something Away</Link>
             </Button>
           </motion.div>
         </div>

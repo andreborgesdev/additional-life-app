@@ -16,7 +16,7 @@ export default function SimpleItemCard({ item }: SimpleItemCardProps) {
       key={item.id}
       className="overflow-hidden group hover:shadow-lg transition-all duration-300 hover:translate-y-[-5px]"
     >
-      <Link href={`/item/${item.id}`} className="block">
+      <Link href={`/items/${item.id}`} className="block">
         <div className="relative">
           <Image
             src={item.imageUrl || "/placeholder.svg"}

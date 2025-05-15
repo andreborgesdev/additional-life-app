@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import Image from "next/image"
-import Slider from "react-slick"
-import "slick-carousel/slick/slick.css"
-import "slick-carousel/slick/slick-theme.css"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import React, { useState } from "react";
+import Image from "next/image";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ImageCarouselProps {
-  images: string[]
-  alt: string
+  images: string[];
+  alt: string;
 }
 
 const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, alt }) => {
-  const [currentSlide, setCurrentSlide] = useState(0)
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const settings = {
     dots: false,
@@ -25,27 +25,27 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, alt }) => {
     accessibility: true,
     arrows: false,
     beforeChange: (current: number, next: number) => setCurrentSlide(next),
-  }
+  };
 
-  const sliderRef = React.useRef<Slider>(null)
+  const sliderRef = React.useRef<Slider>(null);
 
   const goToPrev = () => {
     if (sliderRef.current) {
-      sliderRef.current.slickPrev()
+      sliderRef.current.slickPrev();
     }
-  }
+  };
 
   const goToNext = () => {
     if (sliderRef.current) {
-      sliderRef.current.slickNext()
+      sliderRef.current.slickNext();
     }
-  }
+  };
 
   const goToSlide = (index: number) => {
     if (sliderRef.current) {
-      sliderRef.current.slickGoTo(index)
+      sliderRef.current.slickGoTo(index);
     }
-  }
+  };
 
   return (
     <div className="relative">
@@ -81,7 +81,9 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, alt }) => {
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`w-16 h-16 rounded-md overflow-hidden ${currentSlide === index ? "ring-2 ring-green-500" : ""}`}
+            className={`w-16 h-16 rounded-md overflow-hidden ${
+              currentSlide === index ? "ring-2 ring-green-500" : ""
+            }`}
             aria-label={`Go to image ${index + 1}`}
           >
             <Image
@@ -95,8 +97,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, alt }) => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ImageCarousel
-
+export default ImageCarousel;

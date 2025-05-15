@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { notFound, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -15,8 +15,12 @@ import {
   Facebook,
   MessageCircle,
   Mail,
+  Eye,
+  Clock,
+  Package,
+  MapPinHouse,
+  Truck,
 } from "lucide-react";
-import ProductActions from "@/src/components/product-actions";
 import ImageCarousel from "@/src/components/image-carousel";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -39,10 +43,21 @@ import {
 } from "@/src/components/ui/dropdown-menu";
 import { useToast } from "@/src/hooks/use-toast";
 import { useItem } from "@/src/hooks/use-item";
-import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
+import { Skeleton } from "@/src/components/ui/skeleton";
 import { useSession } from "../../auth-provider";
-import dynamic from "next/dynamic";
-import MapCaller from "@/src/components/ui/map-caller";
+import { motion } from "framer-motion";
+import { Badge } from "@/src/components/ui/badge";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/src/components/ui/avatar";
+import {
+  conditionDetails,
+  getTimeAgo,
+} from "@/src/components/detailed-item-card";
+import { Separator } from "@/src/components/ui/separator";
+import { getUserFullNameByUUID } from "@/src/lib/supabase/auth/supabase-get-user";
 
 // This is mock data. In a real application, you'd fetch this from an API or database.
 // const products = [
@@ -69,6 +84,17 @@ import MapCaller from "@/src/components/ui/map-caller";
 //   // Add more mock products as needed
 // ];
 
+// Animation variants
+const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.5 } },
+};
+
+const slideUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
@@ -77,22 +103,17 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const { session } = useSession();
   const router = useRouter();
 
-  const { data: product, isLoading, error } = useItem(params.id);
+  const { data: item, isLoading, error } = useItem(params.id);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p>Loading product...</p>
-        <LoadingSpinner className="h-5 w-5" />
-      </div>
-    );
+    return <ProductSkeleton />;
   }
 
   if (error) {
     return <p>Error loading product: {error.message}</p>;
   }
 
-  if (!product) {
+  if (!item) {
     notFound();
   }
 
@@ -150,7 +171,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   };
 
   const handleContact = (method: string) => {
-    if (!product?.owner) {
+    if (!item?.owner) {
       toast({
         title: "Contact Information Missing",
         description: "The seller has not provided this contact information.",
@@ -160,11 +181,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     }
     switch (method) {
       case "email":
-        window.location.href = `mailto:${product.user}`;
+        window.location.href = `mailto:${item.owner}`;
         break;
       case "whatsapp":
         window.open(
-          `https://wa.me/${product.user.phoneNumber.replace(/[^0-9]/g, "")}`,
+          `https://wa.me/${item.user.phoneNumber.replace(/[^0-9]/g, "")}`,
           "_blank",
           "noopener,noreferrer"
         );
@@ -178,10 +199,14 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     }
   };
 
-  const imagesForCarousel = product.imageUrl ? [product.imageUrl] : [];
+  const handleChatClick = () => {
+    router.push(`/chat/${productId}`);
+  };
 
-  const productLatitude = (product as any)?.latitude;
-  const productLongitude = (product as any)?.longitude;
+  const imagesForCarousel = item.imageUrl ? [item.imageUrl] : [];
+
+  const productLatitude = (item as any)?.latitude;
+  const productLongitude = (item as any)?.longitude;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -193,17 +218,41 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         Back to listings
       </Link>
       <div className="grid md:grid-cols-2 gap-8">
-        <div>
+        <motion.div initial="hidden" animate="visible" variants={fadeIn}>
           <ImageCarousel
             images={imagesForCarousel}
-            alt={product.title || "Product Image"}
+            alt={item.title || "Product Image"}
           />
-        </div>
-        <div>
+        </motion.div>
+        <motion.div initial="hidden" animate="visible" variants={slideUp}>
           <div className="flex justify-between items-start">
-            <h1 className="text-3xl font-bold text-green-800 dark:text-green-200 mb-4">
-              {product.title}
-            </h1>
+            <div>
+              <h1 className="text-3xl font-bold text-green-800 dark:text-green-200 mb-2">
+                {item.title}
+              </h1>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <Badge
+                  variant="outline"
+                  className="bg-green-50 text-green-800 dark:bg-green-900 dark:text-green-100"
+                >
+                  {item.category?.name}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="bg-blue-50 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+                >
+                  Condition:{" "}
+                  {
+                    conditionDetails.find((c) => c.key === item.condition)
+                      ?.placeholder
+                  }
+                </Badge>
+                {/* <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
+                  <Eye className="w-4 h-4 mr-1" />
+                  100 views
+                </div> */}
+              </div>
+            </div>
             <div className="flex space-x-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -302,32 +351,51 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               </Dialog>
             </div>
           </div>
+          <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <Avatar className="h-12 w-12">
+              <AvatarImage
+                src={`/placeholder.svg?height=100&width=100&text=${(
+                  item.owner || "U"
+                ).charAt(0)}`}
+              />
+              <AvatarFallback>
+                {(item.owner || item.owner || "U").charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium text-gray-900 dark:text-gray-100">
+                {item.owner}
+              </p>
+              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                <Clock className="mr-1 h-4 w-4" />
+                <span>Posted {getTimeAgo(item.postedOn)}</span>
+              </div>
+            </div>
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-4">
+            Description
+          </h2>
           <p className="text-gray-600 dark:text-gray-300 mb-4">
-            {product.description}
+            {item.description}
           </p>
+          <Separator className="my-4" />
           <div className="space-y-2 mb-6">
             <div className="flex items-center text-gray-600 dark:text-gray-300">
               <MapPin size={20} className="mr-2" />
-              <span>{product.address}</span>
+              <span>{item.address}</span>
             </div>
-            <div className="flex items-center text-gray-600 dark:text-gray-300">
-              <User size={20} className="mr-2" />
-              <span>Posted by {product.user}</span>
-            </div>
-            <div className="flex items-center text-gray-600 dark:text-gray-300">
-              <Calendar size={20} className="mr-2" />
-              <span>
-                Posted on {new Date(product.postedOn).toLocaleDateString()}
-              </span>
-            </div>
-          </div>
-          <div className="bg-green-100 dark:bg-green-800 p-4 rounded-lg mb-6">
-            <h2 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
-              Category
-            </h2>
-            <p className="text-green-600 dark:text-green-300">
-              {product.category?.name}
-            </p>
+            {item.pickupPossible && (
+              <div className="flex items-center text-gray-600 dark:text-gray-300">
+                <MapPinHouse size={20} className="mr-2" />
+                <span>Pickup Available</span>
+              </div>
+            )}
+            {item.deliveryPossible && (
+              <div className="flex items-center text-gray-600 dark:text-gray-300">
+                <Truck size={20} className="mr-2" />
+                <span>Shipping Available</span>
+              </div>
+            )}
           </div>
           {session ? (
             <div>
@@ -335,31 +403,122 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 <h2 className="text-xl font-semibold text-green-800 dark:text-green-200">
                   Contact the Owner
                 </h2>
-                <div className="flex flex-wrap gap-2">
+                {/* <Dialog
+                  open={isContactDialogOpen}
+                  onOpenChange={setIsContactDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button className="w-full bg-green-600 hover:bg-green-700">
+                      <MessageCircle className="mr-2 h-5 w-5" />
+                      Contact About This Item
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Contact About: {product.title}</DialogTitle>
+                      <DialogDescription>
+                        Send a message to the owner about this item. Choose your
+                        preferred contact method.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleContactSubmit}>
+                      <div className="grid gap-4 py-4">
+                        <RadioGroup
+                          value={contactMethod}
+                          onValueChange={(value) =>
+                            setContactMethod(
+                              value as "email" | "phone" | "chat"
+                            )
+                          }
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="email" id="contact-email" />
+                            <Label
+                              htmlFor="contact-email"
+                              className="flex items-center"
+                            >
+                              <Mail className="mr-2 h-4 w-4" />
+                              Email
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="phone" id="contact-phone" />
+                            <Label
+                              htmlFor="contact-phone"
+                              className="flex items-center"
+                            >
+                              <Phone className="mr-2 h-4 w-4" />
+                              Phone
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="chat" id="contact-chat" />
+                            <Label
+                              htmlFor="contact-chat"
+                              className="flex items-center"
+                            >
+                              <MessageCircle className="mr-2 h-4 w-4" />
+                              In-App Chat
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                        <div className="grid gap-2">
+                          <Label htmlFor="contact-message">Your Message</Label>
+                          <Textarea
+                            id="contact-message"
+                            value={contactMessage}
+                            onChange={(e) => setContactMessage(e.target.value)}
+                            placeholder="Hi, I'm interested in this item. Is it still available?"
+                            rows={4}
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit">Send Message</Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog> */}
+
+                {/* <div className="flex flex-col sm:flex-row gap-3">
                   <Button
-                    onClick={() => handleContact("email")}
-                    className="flex items-center"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setContactMethod("email");
+                      setIsContactDialogOpen(true);
+                    }}
                   >
-                    <Mail className="mr-2 h-4 w-4" />
+                    <Mail className="mr-2 h-5 w-5" />
                     Email
                   </Button>
                   <Button
-                    onClick={() => handleContact("whatsapp")}
-                    className="flex items-center"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setContactMethod("phone");
+                      setIsContactDialogOpen(true);
+                    }}
                   >
-                    <svg
-                      className="mr-2 h-4 w-4"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                    </svg>
-                    WhatsApp
+                    <Phone className="mr-2 h-5 w-5" />
+                    Call
                   </Button>
-                </div>
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setContactMethod("chat");
+                      setIsContactDialogOpen(true);
+                    }}
+                  >
+                    <MessageCircle className="mr-2 h-5 w-5" />
+                    Chat
+                  </Button>
+                </div> */}
               </div>
-
-              <ProductActions productId={product.id?.toString() || ""} />
+              <Button className="w-full" onClick={handleChatClick}>
+                Chat with Owner
+              </Button>
             </div>
           ) : (
             <Button
@@ -370,7 +529,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               I am interested in this item!
             </Button>
           )}
-        </div>
+        </motion.div>
       </div>
       {/* <div className="mt-8">
         <h2 className="text-2xl font-bold text-green-800 dark:text-green-200 mb-4">
@@ -380,6 +539,66 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           <MapCaller posix={[4.79029, -75.69003]} />
         </div>
       </div> */}
+    </div>
+  );
+}
+
+function ProductSkeleton() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <Skeleton className="h-6 w-40 mb-4" /> {/* Back to listings skeleton */}
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Left Column: Image Carousel Skeleton */}
+        <div>
+          <Skeleton className="h-[400px] w-full rounded-lg" />
+        </div>
+
+        {/* Right Column: Product Details Skeleton */}
+        <div>
+          <div className="flex justify-between items-start mb-4">
+            <Skeleton className="h-10 w-3/4" /> {/* Title */}
+            <div className="flex space-x-2">
+              <Skeleton className="h-8 w-20 rounded" /> {/* Share button */}
+              <Skeleton className="h-8 w-20 rounded" /> {/* Report button */}
+            </div>
+          </div>
+          <Skeleton className="h-4 w-full mb-2" /> {/* Description line 1 */}
+          <Skeleton className="h-4 w-5/6 mb-2" /> {/* Description line 2 */}
+          <Skeleton className="h-4 w-4/6 mb-6" /> {/* Description line 3 */}
+          <div className="space-y-3 mb-6">
+            <div className="flex items-center">
+              <Skeleton className="h-5 w-5 mr-2 rounded-full" />
+              <Skeleton className="h-5 w-1/2" /> {/* Location */}
+            </div>
+            <div className="flex items-center">
+              <Skeleton className="h-5 w-5 mr-2 rounded-full" />
+              <Skeleton className="h-5 w-2/3" /> {/* Posted by */}
+            </div>
+            <div className="flex items-center">
+              <Skeleton className="h-5 w-5 mr-2 rounded-full" />
+              <Skeleton className="h-5 w-1/3" /> {/* Posted on */}
+            </div>
+          </div>
+          <div className="p-4 rounded-lg mb-6 bg-gray-100 dark:bg-gray-800">
+            <Skeleton className="h-6 w-1/3 mb-2" /> {/* Category title */}
+            <Skeleton className="h-4 w-1/2" /> {/* Category name */}
+          </div>
+          <div>
+            <Skeleton className="h-8 w-1/2 mb-4" />{" "}
+            {/* Contact title / I am interested button */}
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-10 w-24 rounded" />{" "}
+              {/* Contact button 1 */}
+              <Skeleton className="h-10 w-24 rounded" />{" "}
+              {/* Contact button 2 */}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="mt-8">
+        <Skeleton className="h-8 w-1/4 mb-4" />
+        <Skeleton className="h-[400px] w-full rounded-lg" />
+      </div>
     </div>
   );
 }

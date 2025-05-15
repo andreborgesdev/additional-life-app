@@ -19,7 +19,7 @@ export type ItemResponse = {
     category?: CategoryResponse;
     sourceExternalPlatform?: ItemResponse.sourceExternalPlatform;
     pickupPossible?: boolean;
-    deliveryPossible?: boolean;
+    shippingPossible?: boolean;
 };
 export namespace ItemResponse {
     export enum condition {

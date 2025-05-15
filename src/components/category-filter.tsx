@@ -9,7 +9,6 @@ interface CategoryFilter {
   categoryFilterRef: React.RefObject<HTMLDivElement>;
   isCategoryDropdownOpen: boolean;
   setIsCategoryDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  getCategoryDisplayText: () => string;
   handleCategoryBreadcrumbClick: (index: number) => void;
   categoryNavPath: CategoryResponse[];
   isLoadingDisplayedCategories: boolean;
@@ -24,7 +23,6 @@ const CategoryFilter: React.FC<CategoryFilter> = ({
   categoryFilterRef,
   isCategoryDropdownOpen,
   setIsCategoryDropdownOpen,
-  getCategoryDisplayText,
   handleCategoryBreadcrumbClick,
   categoryNavPath,
   isLoadingDisplayedCategories,
@@ -34,6 +32,13 @@ const CategoryFilter: React.FC<CategoryFilter> = ({
   isLoadingItems,
   totalElements,
 }) => {
+  const getCategoryDisplayText = () => {
+    if (categoryNavPath.length === 0) {
+      return "All categories";
+    }
+    return categoryNavPath.map((c) => c.name).join(" > ");
+  };
+
   return (
     <div className="relative" ref={categoryFilterRef}>
       <Label>Category</Label>

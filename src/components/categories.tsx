@@ -16,9 +16,9 @@ import {
   Dumbbell,
   ArrowRight,
 } from "lucide-react";
-import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
 import { useFeaturedCategories } from "../hooks/use-categories";
 import { Button } from "./ui/button";
+import { Skeleton } from "./ui/skeleton";
 
 // Map slugs to icons - ensure this covers all expected root category slugs
 const iconMap: { [key: string]: React.ElementType } = {
@@ -40,33 +40,53 @@ const iconMap2 = [
   { name: "Household & Home Furnishings", icon: "🪑" },
   { name: "Clothing & Accessories", icon: "👕" },
   { name: "Books & Comics", icon: "📚" },
-  { name: "Computers & Networks", icon: "📱" },
-  { name: "Toys & Crafts", icon: "📱" },
+  { name: "Computers & Networks", icon: "💻" },
+  { name: "Toys & Crafts", icon: "🧸" },
   { name: "Home & Garden", icon: "🌿" },
   { name: "Sports", icon: "🚲" },
 ];
+
+function CategoryCardSkeleton() {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 flex flex-col items-center justify-center">
+      <Skeleton className="h-10 w-10 rounded-full mb-3" />{" "}
+      {/* Icon placeholder */}
+      <Skeleton className="h-4 w-20 mb-1" /> {/* Category name placeholder */}
+      <Skeleton className="h-3 w-16" /> {/* Item count placeholder */}
+    </div>
+  );
+}
+
+function CategoriesSkeleton() {
+  return (
+    <section className="py-16">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center mb-10">
+          <Skeleton className="h-8 w-1/3" /> {/* Title placeholder */}
+          <Skeleton className="h-8 w-36" /> {/* View All button placeholder */}
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <CategoryCardSkeleton key={index} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function Categories() {
   const { data: categories, isLoading, error } = useFeaturedCategories();
 
   if (isLoading) {
-    return (
-      <section className="mb-12">
-        <h2 className="text-2xl font-semibold text-green-700 dark:text-green-300 mb-4">
-          Categories
-        </h2>
-        <div className="flex justify-center items-center h-32">
-          <LoadingSpinner className="h-8 w-8 text-green-600" />
-        </div>
-      </section>
-    );
+    return <CategoriesSkeleton />;
   }
 
   if (error) {
     return (
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold text-green-700 dark:text-green-300 mb-4">
-          Categories
+        <h2 className="text-3xl font-bold text-green-800 dark:text-green-100">
+          Browse Categories
         </h2>
         <p className="text-red-500 text-center">Could not load categories.</p>
       </section>
@@ -76,8 +96,8 @@ export default function Categories() {
   if (!categories || categories.length === 0) {
     return (
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold text-green-700 dark:text-green-300 mb-4">
-          Categories
+        <h2 className="text-3xl font-bold text-green-800 dark:text-green-100">
+          Browse Categories
         </h2>
         <p className="text-gray-500 dark:text-gray-400 text-center">
           No categories found.

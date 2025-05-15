@@ -26,7 +26,7 @@ import {
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import { useSession } from "../app/auth-provider";
-import { useLogout } from "../hooks/user-logout";
+import { useLogout } from "../hooks/use-logout";
 
 const languages = [
   { code: "en", name: "English" },
@@ -119,12 +119,12 @@ export default function Header() {
           >
             {t("nav.allItems")}
           </Link>
-          <Link
+          {/* <Link
             href="/categories"
             className="text-white dark:text-green-100 hover:text-green-200"
           >
             {t("nav.categories")}
-          </Link>
+          </Link> */}
           {/* <Link
             href="/about"
             className="text-white dark:text-green-100 hover:text-green-200"
@@ -139,7 +139,7 @@ export default function Header() {
           </Link> */}
           {session && (
             <Link
-              href="/create-item"
+              href="/create-item/new"
               className="text-white dark:text-green-100 hover:text-green-200"
             >
               <PlusCircle className="inline-block mr-1" size={18} />

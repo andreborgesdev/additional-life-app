@@ -9,12 +9,16 @@ import { ItemApiService } from './services/ItemApiService';
 import { PingControllerService } from './services/PingControllerService';
 import { PublicCategoryApiService } from './services/PublicCategoryApiService';
 import { PublicItemApiService } from './services/PublicItemApiService';
+import { PublicUserApiService } from './services/PublicUserApiService';
+import { UserApiService } from './services/UserApiService';
 type HttpRequestConstructor = new (config: OpenAPIConfig) => BaseHttpRequest;
 export class ApiClient {
     public readonly itemApi: ItemApiService;
     public readonly pingController: PingControllerService;
     public readonly publicCategoryApi: PublicCategoryApiService;
     public readonly publicItemApi: PublicItemApiService;
+    public readonly publicUserApi: PublicUserApiService;
+    public readonly userApi: UserApiService;
     public readonly request: BaseHttpRequest;
     constructor(config?: Partial<OpenAPIConfig>, HttpRequest: HttpRequestConstructor = AxiosHttpRequest) {
         this.request = new HttpRequest({
@@ -32,6 +36,8 @@ export class ApiClient {
         this.pingController = new PingControllerService(this.request);
         this.publicCategoryApi = new PublicCategoryApiService(this.request);
         this.publicItemApi = new PublicItemApiService(this.request);
+        this.publicUserApi = new PublicUserApiService(this.request);
+        this.userApi = new UserApiService(this.request);
     }
 }
 

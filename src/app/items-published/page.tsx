@@ -72,7 +72,7 @@ export default function ItemsPublishedPage() {
             </CardContent>
             <CardFooter>
               <Button asChild>
-                <Link href={`/product/${item.id}`}>View Details</Link>
+                <Link href={`/items/${item.id}`}>View Details</Link>
               </Button>
             </CardFooter>
           </Card>

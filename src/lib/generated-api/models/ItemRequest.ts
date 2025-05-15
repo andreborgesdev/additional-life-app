@@ -10,7 +10,7 @@ export type ItemRequest = {
     imageUrl?: string;
     categoryId: number;
     pickupPossible?: boolean;
-    deliveryPossible?: boolean;
+    shippingPossible?: boolean;
 };
 export namespace ItemRequest {
     export enum condition {

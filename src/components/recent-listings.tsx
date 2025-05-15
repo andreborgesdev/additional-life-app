@@ -3,10 +3,40 @@
 import Image from "next/image";
 import Link from "next/link";
 import { SortBy, useItems } from "../hooks/use-items";
-import { LoadingSpinner } from "./ui/loading-spinner";
 import { Button } from "./ui/button";
 import { ArrowRight } from "lucide-react";
 import SimpleItemCard from "./simple-item-card";
+import { Skeleton } from "./ui/skeleton";
+
+function SimpleItemCardSkeleton() {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-all hover:shadow-md">
+      <Skeleton className="w-full h-40" /> {/* Image placeholder */}
+      <div className="p-3">
+        <Skeleton className="h-5 w-3/4 mb-1" /> {/* Title placeholder */}
+        <Skeleton className="h-3 w-1/2 mb-2" /> {/* Category placeholder */}
+        <Skeleton className="h-3 w-1/3" /> {/* Location placeholder */}
+      </div>
+    </div>
+  );
+}
+
+function RecentListingsSkeleton() {
+  return (
+    <section className="mb-12">
+      <div className="flex items-center justify-between mb-1">
+        <Skeleton className="h-8 w-1/4" /> {/* Title placeholder */}
+        <Skeleton className="h-8 w-32" /> {/* View All button placeholder */}
+      </div>
+      <Skeleton className="h-4 w-3/4 mb-6" /> {/* Subtitle placeholder */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <SimpleItemCardSkeleton key={index} />
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export default function RecentListings() {
   const { data, isLoading, error } = useItems({
@@ -17,22 +47,13 @@ export default function RecentListings() {
   });
 
   if (isLoading) {
-    return (
-      <section className="mb-12">
-        <h2 className="text-2xl font-semibold text-green-700 dark:text-green-300 mb-4">
-          Recent Listings
-        </h2>
-        <div className="flex justify-center items-center h-32">
-          <LoadingSpinner className="h-8 w-8 text-green-600" />
-        </div>
-      </section>
-    );
+    return <RecentListingsSkeleton />;
   }
 
   if (error) {
     return (
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold text-green-700 dark:text-green-300 mb-4">
+        <h2 className="text-3xl font-bold text-green-800 dark:text-green-100">
           Recent Listings
         </h2>
         <p className="text-red-500 text-center">

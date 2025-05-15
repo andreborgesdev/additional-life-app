@@ -41,7 +41,7 @@ export default function NotificationsPage() {
         description: "Jane Smith requested your Wooden Bookshelf.",
         date: "2023-06-14T15:45:00Z",
         read: false,
-        link: "/product/2",
+        link: "/items/2",
       },
       {
         id: "3",
@@ -49,7 +49,7 @@ export default function NotificationsPage() {
         description: "Don't forget to pick up the Potted Plants today at 5 PM.",
         date: "2023-06-13T09:00:00Z",
         read: true,
-        link: "/product/3",
+        link: "/items/3",
       },
     ];
     setNotifications(mockNotifications);

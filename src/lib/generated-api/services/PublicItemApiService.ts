@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ItemResponse } from '../models/ItemResponse';
-import type { Pageable } from '../models/Pageable';
 import type { PageItemResponse } from '../models/PageItemResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -12,27 +11,36 @@ export class PublicItemApiService {
     /**
      * Get paginated list of available items
      * Retrieves a paginated list of items that are active and not taken
-     * @param page
-     * @param size
-     * @param sortBy
-     * @param direction
+     * @param query Full-text search query
+     * @param category Item category
+     * @param condition Item condition
+     * @param sortBy Sort field
+     * @param sortDirection Sort direction
+     * @param page Page number (zero-based)
+     * @param size Page size
      * @returns PageItemResponse Available items retrieved successfully
      * @throws ApiError
      */
     public getItems(
-        page?: number,
-        size: number = 10,
+        query?: string,
+        category?: string,
+        condition?: string,
         sortBy: string = 'postedOn',
-        direction: string = 'desc',
+        sortDirection?: 'asc' | 'desc',
+        page?: number,
+        size: number = 20,
     ): CancelablePromise<PageItemResponse> {
         return this.httpRequest.request({
             method: 'GET',
             url: '/api/v1/public/items',
             query: {
+                'query': query,
+                'category': category,
+                'condition': condition,
+                'sortBy': sortBy,
+                'sortDirection': sortDirection,
                 'page': page,
                 'size': size,
-                'sortBy': sortBy,
-                'direction': direction,
             },
         });
     }
@@ -54,53 +62,6 @@ export class PublicItemApiService {
             },
             errors: {
                 404: `Item not found`,
-            },
-        });
-    }
-    /**
-     * Search items by keyword
-     * Searches for items containing the specified keyword in title or description
-     * @param keyword
-     * @param pageable
-     * @returns PageItemResponse Search completed successfully
-     * @throws ApiError
-     */
-    public searchItems(
-        keyword: string,
-        pageable: Pageable,
-    ): CancelablePromise<PageItemResponse> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/public/items/search',
-            query: {
-                'keyword': keyword,
-                'pageable': pageable,
-            },
-        });
-    }
-    /**
-     * Get items by category
-     * Retrieves a paginated list of items in the specified category
-     * @param categoryId
-     * @param pageable
-     * @returns PageItemResponse Items retrieved successfully
-     * @throws ApiError
-     */
-    public getItemsByCategory(
-        categoryId: number,
-        pageable: Pageable,
-    ): CancelablePromise<PageItemResponse> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/public/items/category/{categoryId}',
-            path: {
-                'categoryId': categoryId,
-            },
-            query: {
-                'pageable': pageable,
-            },
-            errors: {
-                404: `Category not found`,
             },
         });
     }
