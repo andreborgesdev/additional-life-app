@@ -15,6 +15,9 @@ const nextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
+  images: {
+    domains: ["bmxkdcjbtchixtkruzit.supabase.co"],
+  },
 };
 
 module.exports = nextConfig;

@@ -1,17 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
+import { useState, useEffect } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
-import { Label } from "@/src/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -19,36 +10,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-import { Checkbox } from "@/src/components/ui/checkbox";
-import { QueryDirection, SortBy, useItems } from "@/src/hooks/use-items";
-import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
-import { useTranslation } from "react-i18next";
+import { QueryDirection, SortBy, useItems } from "@/src/hooks/use-items"; // Assuming UseItemsProps is implicitly defined by useItems params
+import { useTranslation } from "react-i18next"; // Assuming this is correctly set up
 import {
   useRootCategories,
-  useSubcategories,
+  // useSubcategories, // No longer needed here
 } from "@/src/hooks/use-categories";
 import {
-  ArrowLeft,
-  Check,
   ChevronDown,
   LayoutGrid,
-  List,
   MapPin,
   Search,
-  Tag,
   X,
+  ListIcon,
 } from "lucide-react";
 import { CategoryResponse } from "@/src/lib/generated-api";
-// import FiltersSheet from "@/src/components/filters-sheet"; // This was commented out
 import DetailedItemCard, {
   DetailedItemCardSkeleton,
-} from "@/src/components/detailed-item-card";
-import CategoryFilter from "@/src/components/category-filter";
-import FiltersSheet from "@/src/components/filters-sheet";
+} from "@/src/components/shared/detailed-item-card";
+import { motion } from "framer-motion";
+import { useToast } from "@/src/hooks/use-toast";
+import { Skeleton } from "@/src/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/src/components/ui/toggle-group";
 import { Badge } from "@/src/components/ui/badge";
-import { Skeleton } from "@/src/components/ui/skeleton";
+import FiltersSheet from "@/src/components/items/filters-sheet";
+// import CategorySelector from "@/src/components/items/category-selector"; // No longer directly used
+import CategoryFilter from "@/src/components/category-filter";
+import { buildCategoryPath } from "@/src/components/items/category-selector"; // Import for building path
 
+// Definitions from the new version of the file provided by user
 const conditions = ["New", "Like New", "Good", "Fair", "Poor"];
 
 enum SortByOptions {
@@ -63,8 +53,8 @@ const sortByOptions = [
   {
     value: SortByOptions.RELEVANCE,
     label: "Relevance",
-    sortBy: SortBy.POSTED_ON,
-    direction: QueryDirection.DESC,
+    sortBy: SortBy.POSTED_ON, // Maps to API's SortBy enum
+    direction: QueryDirection.DESC, // Maps to API's QueryDirection enum
   },
   {
     value: SortByOptions.TITLE_ASC,
@@ -80,28 +70,20 @@ const sortByOptions = [
   },
   {
     value: SortByOptions.POSTED_ON_ASC,
-    label: "Newly Posted",
-    sortBy: SortBy.POSTED_ON,
-    direction: QueryDirection.ASC,
-  },
-  {
-    value: SortByOptions.POSTED_ON_DESC,
-    label: "Oldest",
+    label: "Newly Posted", // Changed from "Date Posted" to match UI
     sortBy: SortBy.POSTED_ON,
     direction: QueryDirection.DESC,
   },
-];
-
-const locations = [
-  "New York, NY",
-  "Los Angeles, CA",
-  "Chicago, IL",
-  "Seattle, WA",
-  "Austin, TX",
-  "Boston, MA",
+  {
+    value: SortByOptions.POSTED_ON_DESC,
+    label: "Oldest", // Changed from "Category" to match UI
+    sortBy: SortBy.POSTED_ON, // Assuming sorting by POSTED_ON for "Oldest"
+    direction: QueryDirection.ASC,
+  },
 ];
 
 function ItemsPageSkeleton() {
+  // ... (Skeleton component remains largely the same as in the initial user prompt)
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header: Title and Search */}
@@ -120,7 +102,6 @@ function ItemsPageSkeleton() {
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
           <div className="flex flex-wrap gap-4 items-center">
             <Skeleton className="h-10 w-[180px]" /> {/* Category Filter */}
-            <Skeleton className="h-10 w-[180px]" /> {/* Location Select */}
             <Skeleton className="h-10 w-[180px]" /> {/* Sort By Select */}
             <Skeleton className="h-10 w-[80px]" /> {/* View Mode Toggle */}
             <Skeleton className="h-9 w-28 ml-auto" />{" "}
@@ -157,26 +138,18 @@ export default function ItemsPage() {
     null
   );
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
-
   const [sortBy, setSortBy] = useState<SortByOptions>(SortByOptions.RELEVANCE);
-  const { t, i18n, ready } = useTranslation("common");
+  const { t } = useTranslation("common");
   const [viewMode, setViewMode] = useState<"grid" | "row">("grid");
   const [activeFilterTags, setActiveFilterTags] = useState<
     { id: string; label: string; type: string }[]
   >([]);
+  const { toast } = useToast();
 
-  const [categoryNavPath, setCategoryNavPath] = useState<CategoryResponse[]>(
-    []
+  const [favoriteItems, setFavoriteItems] = useState<string[]>([]);
+  const [itemsType, setItemsType] = useState<"all" | "internal" | "external">(
+    "all"
   );
-  const [currentCategoriesToDisplay, setCurrentCategoriesToDisplay] = useState<
-    CategoryResponse[]
-  >([]);
-  const [isLoadingDisplayedCategories, setIsLoadingDisplayedCategories] =
-    useState(false);
-
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
-  const categoryFilterRef = useRef<HTMLDivElement>(null);
 
   const selectedSortOptionDetails = sortByOptions.find(
     (option) => option.value === sortBy
@@ -184,132 +157,154 @@ export default function ItemsPage() {
 
   const {
     data: items,
-    isLoading,
+    isLoading: isLoadingItems,
     error,
+    refetch,
   } = useItems({
-    sortBy: selectedSortOptionDetails?.sortBy,
-    direction: selectedSortOptionDetails?.direction,
+    page,
+    size: 10,
+    sortBy: selectedSortOptionDetails?.sortBy || SortBy.POSTED_ON,
+    direction: selectedSortOptionDetails?.direction || QueryDirection.DESC,
+    query: searchTerm || undefined,
+    category: selectedCategoryId || undefined,
+    condition:
+      selectedConditions.length > 0 ? selectedConditions.join(",") : undefined,
   });
 
-  const currentParentIdForNav =
-    categoryNavPath.length > 0
-      ? categoryNavPath[categoryNavPath.length - 1].id
-      : null;
+  const { data: allCategoriesData, isLoading: isLoadingAllCategories } =
+    useRootCategories(); // Assuming this fetches ALL categories needed by CategoryFilter
 
-  const { data: rootCategories, isLoading: isLoadingRoot } = useRootCategories({
-    enabled: categoryNavPath.length === 0,
-  });
-
-  const { data: subcategories, isLoading: isLoadingSub } = useSubcategories(
-    currentParentIdForNav!,
-    {
-      enabled: !!currentParentIdForNav,
-    }
-  );
+  // Removed useEffect for isLoadingDisplayedCategories
+  // Removed useEffect for setCurrentCategoriesToDisplay based on navPath
+  // Removed useEffect for handleClickOutside for category dropdown (internal to CategoryFilter)
 
   useEffect(() => {
-    setIsLoadingDisplayedCategories(isLoadingRoot || isLoadingSub);
-  }, [isLoadingRoot, isLoadingSub]);
-
-  useEffect(() => {
-    if (categoryNavPath.length === 0) {
-      if (rootCategories) {
-        setCurrentCategoriesToDisplay(rootCategories);
-      } else if (!isLoadingRoot) {
-        setCurrentCategoriesToDisplay([]);
+    const newTags: { id: string; label: string; type: string }[] = [];
+    if (selectedCategoryId && allCategoriesData) {
+      let categoryLabel = `ID: ${selectedCategoryId}`;
+      const path = buildCategoryPath(selectedCategoryId, allCategoriesData);
+      if (path.length > 0) {
+        categoryLabel = path.map((c) => c.name).join(" > ");
+      } else {
+        const selectedCat = allCategoriesData.find(
+          (c) => c.id?.toString() === selectedCategoryId
+        );
+        if (selectedCat && selectedCat.name) {
+          categoryLabel = selectedCat.name;
+        } else {
+          categoryLabel = "Selected Category";
+        }
       }
-    } else {
-      if (subcategories) {
-        setCurrentCategoriesToDisplay(subcategories);
-      } else if (!isLoadingSub) {
-        setCurrentCategoriesToDisplay([]);
-      }
+      newTags.push({
+        id: `category-${selectedCategoryId}`,
+        label: `Category: ${categoryLabel}`,
+        type: "category",
+      });
     }
+    selectedConditions.forEach((condition) => {
+      newTags.push({
+        id: `condition-${condition}`,
+        label: `Condition: ${condition}`,
+        type: "condition",
+      });
+    });
+    if (itemsType !== "all") {
+      newTags.push({
+        id: `type-${itemsType}`,
+        label: `Type: ${
+          itemsType.charAt(0).toUpperCase() + itemsType.slice(1)
+        }`,
+        type: "itemsType",
+      });
+    }
+    setActiveFilterTags(newTags);
   }, [
-    categoryNavPath,
-    rootCategories,
-    subcategories,
-    isLoadingRoot,
-    isLoadingSub,
+    selectedCategoryId,
+    // categoryNavPath, // Removed
+    selectedConditions,
+    itemsType,
+    allCategoriesData, // Added dependency
   ]);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        categoryFilterRef.current &&
-        !categoryFilterRef.current.contains(event.target as Node)
-      ) {
-        setIsCategoryDropdownOpen(false);
-      }
-    }
-    if (isCategoryDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isCategoryDropdownOpen]);
-
-  if (isLoading && !items) {
-    // Show skeleton only on initial load
+  // Initial load skeleton
+  if (isLoadingItems && !items) {
     return <ItemsPageSkeleton />;
   }
 
   if (error) return <p>Error loading items: {error.message}</p>;
 
-  const activeFilterCount = () => {
+  // This is where client-side filtering for itemsType would happen if API doesn't support it
+  // For now, we assume items.data.content already reflects server-side filtering or no filtering for itemsType
+  const finalItemsToDisplay = items?.content || [];
+
+  const getActiveFilterCount = () => {
     let count = 0;
     if (selectedCategoryId) count++;
     count += selectedConditions.length;
-    if (selectedLocation) count++;
+    if (itemsType !== "all") count++;
     return count;
   };
+  const activeFilterCount = getActiveFilterCount();
 
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedCategoryId(null);
+    // setCategoryNavPath([]); // Removed
     setSelectedConditions([]);
-    setSelectedLocation(null);
+    setSortBy(SortByOptions.RELEVANCE);
+    setItemsType("all");
+    setPage(0);
+    refetch();
   };
 
   const removeFilterTag = (tagId: string, type: string) => {
     if (type === "category") {
       setSelectedCategoryId(null);
+      // setCategoryNavPath([]); // Removed
     } else if (type === "condition") {
       const condition = tagId.replace("condition-", "");
       setSelectedConditions((prev) => prev.filter((c) => c !== condition));
-    } else if (type === "location") {
-      setSelectedLocation(null);
+    } else if (type === "itemsType") {
+      setItemsType("all");
     }
+    setPage(0);
+    refetch();
   };
 
   const handleOnSortByChanged = (value: string) => {
     setSortBy(Number(value) as SortByOptions);
+    setPage(0);
+    refetch();
   };
 
-  const handleCategoryBreadcrumbClick = (index: number) => {
-    if (index < 0) {
-      setCategoryNavPath([]);
-      setSelectedCategoryId(null);
-    } else {
-      const newPath = categoryNavPath.slice(0, index + 1);
-      setCategoryNavPath(newPath);
-      setSelectedCategoryId(newPath[newPath.length - 1].id);
-    }
+  // Renamed from setSelectedCategory and handleCategoryListItemClick
+  // This is the callback for CategoryFilter
+  const handleApplyCategoryFilter = (category: CategoryResponse | null) => {
+    setSelectedCategoryId(category ? category.id?.toString() ?? null : null);
+    // CategoryFilter now handles its own display, no need to manage nav path here
+    setPage(0);
+    refetch();
   };
 
-  const handleCategoryListItemClick = (category: CategoryResponse) => {
-    setSelectedCategoryId(category.id);
-    setCategoryNavPath([...categoryNavPath, category]);
+  const toggleFavorite = (itemId: string) => {
+    setFavoriteItems((prev) => {
+      const isCurrentlyFavorite = prev.includes(itemId);
+      if (isCurrentlyFavorite) {
+        toast({ title: "Removed from favorites" });
+        return prev.filter((id) => id !== itemId);
+      } else {
+        toast({ title: "Added to favorites" });
+        return [...prev, itemId];
+      }
+    });
+    // Here you would also make an API call to update the favorite status on the server
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h1 className="text-3xl font-bold text-green-800 dark:text-green-200">
-          All Items
+          {t("all_items_title")} {/* Example of using t function */}
         </h1>
 
         <div className="flex items-center mt-4 md:mt-0">
@@ -319,80 +314,92 @@ export default function ItemsPage() {
               size={18}
             />
             <Input
-              placeholder="Search items..."
+              placeholder={t("search_items_placeholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              // Consider adding a debounce here or trigger search on button click/enter
               className="pl-10 w-full md:w-[300px]"
             />
           </div>
 
-          {/* <FiltersSheet /> */}
+          <FiltersSheet
+            activeFilterCount={activeFilterCount}
+            clearFilters={clearFilters}
+            allCategories={allCategoriesData || []}
+            selectedCategory={selectedCategoryId}
+            setSelectedCategory={(value) => {
+              const newCatId = value === "all" ? null : value;
+              const categoryObject =
+                newCatId && allCategoriesData
+                  ? allCategoriesData.find(
+                      (cat) => cat.id?.toString() === newCatId
+                    )
+                  : null;
+              handleApplyCategoryFilter(
+                categoryObject ||
+                  (newCatId
+                    ? ({ id: parseInt(newCatId, 10) } as CategoryResponse)
+                    : null)
+              );
+            }}
+            conditions={conditions}
+            selectedConditions={selectedConditions}
+            setSelectedConditions={(newConditions) => {
+              setSelectedConditions(newConditions);
+              setPage(0);
+              refetch(); // Trigger re-fetch
+            }}
+            sortByOptions={sortByOptions.map((opt) => ({
+              ...opt,
+              value: opt.value.toString(),
+            }))} // Ensure value is string for Select
+            currentSortByValue={sortBy.toString()}
+            setSortBy={handleOnSortByChanged}
+            // Props for itemsType if FiltersSheet handles it
+            itemsType={itemsType}
+            setItemsType={(newType) => {
+              setItemsType(newType as "all" | "internal" | "external");
+              setPage(0);
+              refetch(); // Trigger re-fetch
+            }}
+          />
         </div>
       </div>
 
       {/* Desktop Filter Bar */}
       <div className="hidden md:block mb-6">
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 items-center">
             <CategoryFilter
-              categoryFilterRef={categoryFilterRef}
-              isCategoryDropdownOpen={isCategoryDropdownOpen}
-              setIsCategoryDropdownOpen={setIsCategoryDropdownOpen}
-              handleCategoryBreadcrumbClick={handleCategoryBreadcrumbClick}
-              categoryNavPath={categoryNavPath}
-              isLoadingDisplayedCategories={isLoadingDisplayedCategories}
-              currentCategoriesToDisplay={currentCategoriesToDisplay}
-              handleCategoryListItemClick={handleCategoryListItemClick}
+              allCategories={allCategoriesData}
+              isLoadingAllCategories={isLoadingAllCategories}
+              onApplyFilter={handleApplyCategoryFilter}
               selectedCategoryId={selectedCategoryId}
-              isLoadingItems={isLoading}
+              isLoadingItems={isLoadingItems}
               totalElements={items?.totalElements}
             />
-
-            <div>
-              <Select
-                onValueChange={(value) =>
-                  setSelectedLocation(value === "all" ? null : value)
-                }
-                value={selectedLocation || "all"}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <div className="flex items-center">
-                    <MapPin className="mr-2 h-4 w-4" />
-                    <span>{selectedLocation || "All Locations"}</span>
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
-                  {locations.map((location) => (
-                    <SelectItem key={location} value={location}>
-                      {location}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
             <div>
               <Select
                 onValueChange={handleOnSortByChanged}
-                value={sortBy.toString()}
+                value={sortBy.toString()} // Ensure value is string for Select
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Sort by" />
+                  {/* <ChevronDown className="mr-2 h-4 w-4" /> Replaced by SelectValue placeholder */}
+                  <SelectValue placeholder={t("sort_by_placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {sortByOptions.map((option) => (
                     <SelectItem
                       key={option.value}
-                      value={option.value.toString()}
+                      value={option.value.toString()} // Ensure value is string
                     >
-                      {option.label}
+                      {t(option.label.toLowerCase().replace(/ /g, "_"))}{" "}
+                      {/* Example for i18n keys */}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-
             <div>
               <ToggleGroup
                 type="single"
@@ -404,22 +411,22 @@ export default function ItemsPage() {
               >
                 <ToggleGroupItem
                   value="grid"
-                  aria-label="Grid view"
+                  aria-label={t("grid_view_aria_label")}
                   className="data-[state=on]:bg-green-100 data-[state=on]:text-green-800 dark:data-[state=on]:bg-green-800 dark:data-[state=on]:text-green-100"
                 >
                   <LayoutGrid className="h-4 w-4" />
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="row"
-                  aria-label="Row view"
+                  aria-label={t("row_view_aria_label")}
                   className="data-[state=on]:bg-green-100 data-[state=on]:text-green-800 dark:data-[state=on]:bg-green-800 dark:data-[state=on]:text-green-100"
                 >
-                  <List className="h-4 w-4" />
+                  <ListIcon className="h-4 w-4" />{" "}
+                  {/* Changed from List to ListIcon */}
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
-
-            {activeFilterCount() > 0 && (
+            {activeFilterCount > 0 && (
               <Button
                 variant="outline"
                 size="sm"
@@ -427,7 +434,7 @@ export default function ItemsPage() {
                 className="ml-auto"
               >
                 <X className="mr-2 h-4 w-4" />
-                Clear Filters
+                {t("clear_filters_button")}
               </Button>
             )}
           </div>
@@ -451,9 +458,12 @@ export default function ItemsPage() {
                       ? prev.filter((c) => c !== condition)
                       : [...prev, condition]
                   );
+                  setPage(0);
+                  refetch(); // Trigger re-fetch
                 }}
               >
-                {condition}
+                {t(condition.toLowerCase().replace(/ /g, "_"))}{" "}
+                {/* i18n for condition */}
                 {selectedConditions.includes(condition) && (
                   <X className="ml-1 h-3 w-3" />
                 )}
@@ -465,7 +475,7 @@ export default function ItemsPage() {
           {activeFilterTags.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">
-                Active filters:
+                {t("active_filters_label")}:
               </span>
               {activeFilterTags.map((tag) => (
                 <Badge
@@ -473,7 +483,8 @@ export default function ItemsPage() {
                   variant="secondary"
                   className="flex items-center gap-1 bg-green-50 text-green-800 dark:bg-green-900 dark:text-green-100"
                 >
-                  {tag.label}
+                  {tag.label}{" "}
+                  {/* Label is already formatted with "Category:", "Condition:", etc. */}
                   <X
                     className="h-3 w-3 cursor-pointer"
                     onClick={() => removeFilterTag(tag.id, tag.type)}
@@ -488,67 +499,157 @@ export default function ItemsPage() {
       {/* Results Count */}
       <div className="flex justify-between items-center mb-4">
         <span className="text-sm text-gray-500 dark:text-gray-400">
-          {isLoading ? ( // Show skeleton for count if loading more items
+          {isLoadingItems && items ? ( // Show skeleton for count if loading more items but previous data exists
             <Skeleton className="h-5 w-24" />
           ) : (
-            `${items?.totalElements} ${
-              items?.totalElements === 1 ? "item" : "items"
-            } found`
+            t("items_found_count", { count: items?.totalElements || 0 })
           )}
         </span>
       </div>
 
-      {/* Loading State for subsequent loads or filtering */}
-      {isLoading && items ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {Array.from({ length: items.content?.length || 4 }).map(
-            (_, index) => (
-              <DetailedItemCardSkeleton key={index} />
-            )
+      {/* Loading State for subsequent loads or filtering (when itemsData exists) */}
+      {isLoadingItems && items ? (
+        <div
+          className={`${
+            viewMode === "grid"
+              ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+              : "space-y-4"
+          }`}
+        >
+          {(items.content || Array.from({ length: items.size || 4 })).map(
+            // Use existing items or skeleton placeholders
+            (item, index) =>
+              item && item.id ? ( // Ensure item and item.id exist for key and card
+                viewMode === "grid" ? (
+                  <DetailedItemCardSkeleton key={item.id.toString()} />
+                ) : (
+                  <DetailedItemCardSkeleton key={item.id.toString()} />
+                ) // Simplified for now
+              ) : (
+                <DetailedItemCardSkeleton key={`skeleton-${index}`} />
+              )
           )}
         </div>
       ) : (
         <>
           {/* Items Display */}
-          {viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {items?.content?.map((item) => (
-                <DetailedItemCard key={item.id} item={item} />
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {items?.content?.map((item) => (
-                <DetailedItemCard key={item.id} item={item} />
-              ))}
-            </div>
-          )}
-
-          {/* Empty State */}
-          {items?.empty && (
-            <div className="text-center py-16 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
-                <Search className="h-8 w-8 text-gray-400" />
+          {finalItemsToDisplay.length > 0 ? (
+            viewMode === "grid" ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {finalItemsToDisplay.map(
+                  (item) =>
+                    item.id !== undefined && ( // Ensure item.id is defined before rendering
+                      <motion.div
+                        key={item.id.toString()} // Use toString for key if id is number
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <DetailedItemCard
+                          item={item} // Pass the whole item object
+                          isFavorite={favoriteItems.includes(
+                            item.id.toString()
+                          )}
+                          onToggleFavorite={() =>
+                            toggleFavorite(item.id.toString())
+                          } // id is checked by outer condition
+                          viewMode={viewMode} // Pass viewMode dynamically
+                        />
+                      </motion.div>
+                    )
+                )}
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                No items found
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
-                We couldn't find any items matching your current filters. Try
-                adjusting your search criteria or browse all items.
-              </p>
-              <Button onClick={clearFilters} variant="outline" className="mr-2">
-                Clear Filters
-              </Button>
-              <Button
-                onClick={() => setSearchTerm("")}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                Browse All Items
-              </Button>
-            </div>
+            ) : (
+              <div className="space-y-4">
+                {finalItemsToDisplay.map(
+                  (item) =>
+                    item.id !== undefined && ( // Ensure item.id is defined
+                      <motion.div
+                        key={item.id.toString()} // Use toString for key
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <DetailedItemCard
+                          item={item}
+                          isFavorite={favoriteItems.includes(
+                            item.id.toString()
+                          )}
+                          onToggleFavorite={() =>
+                            toggleFavorite(item.id.toString())
+                          } // id is checked by outer condition
+                          viewMode={viewMode} // Pass viewMode dynamically
+                        />
+                      </motion.div>
+                    )
+                )}
+              </div>
+            )
+          ) : (
+            <>
+              {/* Empty State - only show if not loading and no items */}
+              {!isLoadingItems && items?.empty && (
+                <div className="text-center py-16 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
+                    <Search className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    {t("no_items_found_title")}
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
+                    {t("no_items_found_description")}
+                  </p>
+                  <Button
+                    onClick={clearFilters}
+                    variant="outline"
+                    className="mr-2"
+                  >
+                    {t("clear_filters_button")}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setSearchTerm("");
+                      clearFilters(); // Also clear other filters for "Browse All"
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {t("browse_all_items_button")}
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </>
+      )}
+
+      {/* Pagination (Example) - Implement based on itemsData.totalPages, itemsData.number */}
+      {items && items.totalPages && items.totalPages > 1 && (
+        <div className="mt-8 flex justify-center">
+          <Button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0 || isLoadingItems}
+            variant="outline"
+            className="mr-2"
+          >
+            {t("previous_page_button")}
+          </Button>
+          <span className="self-center text-sm">
+            {t("page_indicator", {
+              currentPage: page + 1,
+              totalPages: items.totalPages,
+            })}
+          </span>
+          <Button
+            onClick={() =>
+              setPage((p) => Math.min(items.totalPages - 1, p + 1))
+            }
+            disabled={page >= items.totalPages - 1 || isLoading}
+            variant="outline"
+            className="ml-2"
+          >
+            {t("next_page_button")}
+          </Button>
+        </div>
       )}
     </div>
   );

@@ -7,19 +7,12 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./ui/card";
+} from "@/src/components/ui/card";
 import Image from "next/image";
-import { Button } from "./ui/button";
-import { ItemResponse } from "../lib/generated-api";
-import { Badge } from "./ui/badge";
-import { Clock, Heart, MapPin, Star, Tag } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "./ui/tooltip";
-import { Skeleton } from "./ui/skeleton";
+import { Button } from "@/src/components/ui/button";
+import { ItemResponse } from "@/src/lib/generated-api";
+import { Clock, MapPin, Tag } from "lucide-react";
+import { Skeleton } from "@/src/components/ui/skeleton";
 
 export const getTimeAgo = (dateString: string) => {
   const date = new Date(dateString);

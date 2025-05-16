@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { Card, CardContent } from "./ui/card";
+import { Card, CardContent } from "@/src/components/ui/card";
 import Image from "next/image";
 import { Clock, MapPin } from "lucide-react";
-import { Badge } from "./ui/badge";
-import { getTimeAgo } from "./detailed-item-card";
-import { ItemResponse } from "../lib/generated-api";
+import { Badge } from "@/src/components/ui/badge";
+import { getTimeAgo } from "@/src/components/shared/detailed-item-card";
+import { ItemResponse } from "@/src/lib/generated-api";
 
 interface SimpleItemCardProps {
   item: ItemResponse;

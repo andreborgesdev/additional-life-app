@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, Search } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@/src/components/ui/button";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
@@ -153,7 +153,7 @@ export default function Hero() {
               size="lg"
               className="rounded-full"
             >
-              <Link href="/create-item/new">Give Something Away</Link>
+              <Link href="/items/create/new">Give Something Away</Link>
             </Button>
           </motion.div>
         </div>

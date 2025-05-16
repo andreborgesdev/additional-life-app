@@ -22,7 +22,7 @@ export const useLogout = () => {
       router.refresh();
 
       // Optionally redirect to login page
-      router.push("/login");
+      router.push("/user/login");
     },
   });
 };

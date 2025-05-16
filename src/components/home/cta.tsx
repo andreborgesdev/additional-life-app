@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "./ui/button";
+import { Button } from "@/src/components/ui/button";
 import { Leaf, Recycle, Users, Heart } from "lucide-react";
 
 export default function Cta() {
@@ -58,7 +58,7 @@ export default function Cta() {
             size="lg"
             className="bg-white text-green-700 hover:bg-green-50 rounded-full"
           >
-            <Link href="/register">Sign Up Now</Link>
+            <Link href="/user/register">Sign Up Now</Link>
           </Button>
           <Button
             asChild

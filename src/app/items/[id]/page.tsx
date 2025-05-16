@@ -21,7 +21,7 @@ import {
   MapPinHouse,
   Truck,
 } from "lucide-react";
-import ImageCarousel from "@/src/components/image-carousel";
+import ImageCarousel from "@/src/components/shared/image-carousel";
 import { Button } from "@/src/components/ui/button";
 import {
   Dialog,
@@ -55,7 +55,7 @@ import {
 import {
   conditionDetails,
   getTimeAgo,
-} from "@/src/components/detailed-item-card";
+} from "@/src/components/shared/detailed-item-card";
 import { Separator } from "@/src/components/ui/separator";
 import { getUserFullNameByUUID } from "@/src/lib/supabase/auth/supabase-get-user";
 
@@ -133,7 +133,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   };
 
   const handleIAmInterested = () => {
-    router.push(`/login`);
+    router.push(`/user/login`);
   };
 
   const handleShare = (platform: string) => {

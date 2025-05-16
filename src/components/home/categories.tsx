@@ -16,9 +16,9 @@ import {
   Dumbbell,
   ArrowRight,
 } from "lucide-react";
-import { useFeaturedCategories } from "../hooks/use-categories";
-import { Button } from "./ui/button";
-import { Skeleton } from "./ui/skeleton";
+import { useFeaturedCategories } from "../../hooks/use-categories";
+import { Button } from "@/src/components/ui/button";
+import { Skeleton } from "@/src/components/ui/skeleton";
 
 // Map slugs to icons - ensure this covers all expected root category slugs
 const iconMap: { [key: string]: React.ElementType } = {

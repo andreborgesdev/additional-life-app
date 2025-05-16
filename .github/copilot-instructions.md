@@ -1,0 +1,12 @@
+# COPILOT EDITS OPERATIONAL GUIDELINES
+
+## PRIME DIRECTIVE
+
+    Always implement the latest best practices and industry standards.
+    Try to refactor the code to be more readable and maintainable.
+    Do not add comments at all!
+    Keep the code as clean as possible.
+    Write code that is easy to understand and maintain.
+    Do not add any unnecessary complexity to the code.
+    Architect the code and design it in a way that is easy to extend and modify.
+    Architect the code and design like a senior engineer.

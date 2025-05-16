@@ -1,5 +1,5 @@
 import { SlidersHorizontal } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@/src/components/ui/button";
 import {
   Sheet,
   SheetClose,
@@ -8,19 +8,52 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "./ui/sheet";
-import { Label } from "./ui/label";
+} from "@/src/components/ui/sheet";
+import { Label } from "@/src/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
-import { Checkbox } from "./ui/checkbox";
-import { Separator } from "./ui/separator";
+} from "@/src/components/ui/select";
+import { Checkbox } from "@/src/components/ui/checkbox";
+import { Separator } from "@/src/components/ui/separator";
+import React from "react";
 
-export default function FiltersSheet() {
+interface FiltersSheetProps {
+  activeFilterCount: number;
+  categories: string[];
+  conditions: string[];
+  selectedCategory: string | null;
+  setSelectedCategory: (value: string | null) => void;
+  selectedConditions: string[];
+  setSelectedConditions: (value: string[]) => void;
+  selectedLocation: string | null;
+  setSelectedLocation: (value: string | null) => void;
+  sortBy: string;
+  setSortBy: (value: string) => void;
+  sortOrder: string;
+  setSortOrder: (value: string) => void;
+  clearFilters: () => void;
+}
+
+export default function FiltersSheet({
+  activeFilterCount,
+  categories,
+  conditions,
+  selectedCategory,
+  setSelectedCategory,
+  selectedConditions,
+  setSelectedConditions,
+  selectedLocation,
+  setSelectedLocation,
+  sortBy,
+  setSortBy,
+  sortOrder,
+  setSortOrder,
+  clearFilters,
+}: FiltersSheetProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -52,7 +85,7 @@ export default function FiltersSheet() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
+                {(categories || []).map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
                   </SelectItem>
@@ -88,38 +121,11 @@ export default function FiltersSheet() {
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="mobile-location">Location</Label>
-            <Select
-              onValueChange={(value) =>
-                setSelectedLocation(value === "all" ? null : value)
-              }
-              value={selectedLocation || "all"}
-            >
-              <SelectTrigger id="mobile-location">
-                <SelectValue placeholder="Select a location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
-                {locations.map((location) => (
-                  <SelectItem key={location} value={location}>
-                    {location}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           <Separator />
 
           <div>
             <Label htmlFor="mobile-sortBy">Sort By</Label>
-            <Select
-              onValueChange={(value) =>
-                setSortBy(value as "newest" | "title" | "category")
-              }
-              value={sortBy}
-            >
+            <Select onValueChange={(value) => setSortBy(value)} value={sortBy}>
               <SelectTrigger id="mobile-sortBy">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -134,7 +140,7 @@ export default function FiltersSheet() {
           <div>
             <Label htmlFor="mobile-sortOrder">Order</Label>
             <Select
-              onValueChange={(value) => setSortOrder(value as "asc" | "desc")}
+              onValueChange={(value) => setSortOrder(value)}
               value={sortOrder}
             >
               <SelectTrigger id="mobile-sortOrder">

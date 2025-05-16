@@ -3,13 +3,14 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
-import Header from "@/src/components/header";
-import Footer from "@/src/components/footer";
+import Header from "@/src/components/shared/header";
+import Footer from "@/src/components/shared/footer";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { ReactQueryClientProvider } from "./react-query-client-provider";
 import { I18nAppProvider } from "./i18n-provider";
 import { AuthProvider } from "./auth-provider";
+import { Toaster } from "@/src/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,6 +31,7 @@ export default function RootLayout({
         <ReactQueryClientProvider>
           <I18nAppProvider>
             <AuthProvider>
+              <Toaster />
               <Header />
               <div className="pt-16">
                 {" "}

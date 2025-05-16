@@ -8,11 +8,14 @@ export interface UseItemsProps {
   size?: number;
   sortBy?: SortBy;
   direction?: QueryDirection;
+  query?: string;
+  category?: string;
+  condition?: string;
 }
 
 export enum SortBy {
   // RELEVANCE = "postedOn",
-  TITLE = "name",
+  TITLE = "title",
   POSTED_ON = "postedOn",
 }
 
@@ -21,9 +24,26 @@ export enum QueryDirection {
   DESC = "desc",
 }
 
-export const useItems = ({ page, size, sortBy, direction }: UseItemsProps) => {
+export const useItems = ({
+  page,
+  size,
+  sortBy,
+  direction,
+  query,
+  category,
+  condition,
+}: UseItemsProps) => {
   return useQuery<PageItemResponse>({
-    queryKey: ["items", page, size, sortBy, direction],
+    queryKey: [
+      "items",
+      page,
+      size,
+      sortBy,
+      direction,
+      query,
+      category,
+      condition,
+    ],
     queryFn: async () => {
       const queryPage = page === undefined ? 0 : page;
       const querySize = size === undefined ? 10 : size;
@@ -31,9 +51,17 @@ export const useItems = ({ page, size, sortBy, direction }: UseItemsProps) => {
       const queryDirection =
         direction === undefined ? QueryDirection.DESC : direction;
 
-      const response = await fetch(
-        `/api/items?page=${queryPage}&size=${querySize}&sortBy=${querySortBy}&direction=${queryDirection}`
-      );
+      const queryParams = new URLSearchParams({
+        page: queryPage.toString(),
+        size: querySize.toString(),
+        sortBy: querySortBy,
+        direction: queryDirection,
+        ...(query && { query }),
+        ...(category && { category }),
+        ...(condition && { condition }),
+      });
+
+      const response = await fetch(`/api/items?${queryParams.toString()}`);
       if (!response.ok) {
         throw new Error("Failed to fetch items");
       }

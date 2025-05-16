@@ -88,4 +88,46 @@ export class UserApiService {
             url: '/api/v1/users',
         });
     }
+    /**
+     * Get user by Supabase ID
+     * Retrieves a user by their Supabase ID
+     * @param supabaseId
+     * @returns UserResponse User found
+     * @throws ApiError
+     */
+    public getUserBySupabaseId(
+        supabaseId: string,
+    ): CancelablePromise<UserResponse> {
+        return this.httpRequest.request({
+            method: 'GET',
+            url: '/api/v1/users/supabase/{supabaseId}',
+            path: {
+                'supabaseId': supabaseId,
+            },
+            errors: {
+                404: `User not found`,
+            },
+        });
+    }
+    /**
+     * Get user by email
+     * Retrieves a user by their email address
+     * @param email
+     * @returns UserResponse User found
+     * @throws ApiError
+     */
+    public getUserByEmail(
+        email: string,
+    ): CancelablePromise<UserResponse> {
+        return this.httpRequest.request({
+            method: 'GET',
+            url: '/api/v1/users/email/{email}',
+            path: {
+                'email': email,
+            },
+            errors: {
+                404: `User not found`,
+            },
+        });
+    }
 }

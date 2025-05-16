@@ -1,10 +1,10 @@
-import Hero from "@/src/components/hero";
-import FeaturedItems from "@/src/components/featured-items";
-import Categories from "@/src/components/categories";
-import RecentListings from "@/src/components/recent-listings";
-import StatsSection from "../components/stats-section";
-import Cta from "../components/cta";
-import Testimonials from "../components/testimonials";
+import Hero from "@/src/components/home/hero";
+import FeaturedItems from "@/src/components/home/featured-items";
+import Categories from "@/src/components/home/categories";
+import RecentListings from "@/src/components/home/recent-listings";
+import StatsSection from "../components/home/stats-section";
+import Cta from "@/src/components/home/cta";
+import Testimonials from "@/src/components/home/testimonials";
 
 export default function Home() {
   return (

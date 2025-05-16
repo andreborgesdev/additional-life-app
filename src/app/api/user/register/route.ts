@@ -42,9 +42,9 @@ const registerHandler = async (client: ApiClient, request: NextRequest) => {
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err: any) {
     // Rollback: delete Supabase user if backend registration fails
-    if (data?.user?.id) {
-      await supabase.auth.admin.deleteUser(data.user.id);
-    }
+    // if (data?.user?.id) {
+    //   await supabase.auth.admin.deleteUser(data.user.id);
+    // }
     throw err;
   }
 };

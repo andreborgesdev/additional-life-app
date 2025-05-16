@@ -1,22 +1,9 @@
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+import { Card } from "@/src/components/ui/card";
 import Image from "next/image";
-import { Button } from "./ui/button";
-import { ItemResponse } from "../lib/generated-api";
-import { Badge } from "./ui/badge";
-import { Clock, Heart, MapPin, Star, Tag } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "./ui/tooltip";
+import { Button } from "@/src/components/ui/button";
+import { ItemResponse } from "@/src/lib/generated-api";
+import { MapPin, Tag } from "lucide-react";
 import { getTimeAgo } from "./detailed-item-card";
 
 interface DetailedItemCardListProps {
