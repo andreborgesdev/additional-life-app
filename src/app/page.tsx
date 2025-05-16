@@ -13,8 +13,8 @@ export default function Home() {
       <main className="container mx-auto px-4 py-8">
         <StatsSection />
         <Categories />
-        {/* <FeaturedItems />
-        <RecentListings /> */}
+        <FeaturedItems />
+        <RecentListings />
         <Testimonials />
       </main>
       <Cta />

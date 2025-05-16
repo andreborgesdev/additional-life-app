@@ -1,38 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Recycle,
-  Truck,
-  Shirt,
-  Book,
-  Coffee,
-  Tv,
-  Sofa,
-  Utensils,
-  Briefcase,
-  Palette,
-  Leaf,
-  Dumbbell,
-} from "lucide-react";
 import { useRootCategories } from "@/src/hooks/use-categories";
 import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
-
-// Map slugs to icons
-const iconMap: { [key: string]: React.ElementType } = {
-  furniture: Sofa,
-  clothing: Shirt,
-  books: Book,
-  electronics: Tv,
-  "home-and-garden": Leaf,
-  "sports-and-outdoors": Dumbbell,
-  "kitchen-and-dining": Utensils,
-  "office-supplies": Briefcase,
-  "art-and-crafts": Palette,
-  "toys-and-games": Coffee, // Assuming Coffee icon is for Toys & Games as per original
-  automotive: Truck,
-  miscellaneous: Recycle,
-};
+import Image from "next/image";
+import { iconMap } from "@/src/components/home/categories";
 
 export default function CategoriesPage() {
   const { data: categories, isLoading, error } = useRootCategories();
@@ -65,10 +37,6 @@ export default function CategoriesPage() {
       </h1>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {categories?.map((category) => {
-          const IconComponent =
-            category && category.name
-              ? iconMap[category.name] || Recycle
-              : Recycle;
           return (
             <Link
               key={category.id}
@@ -78,10 +46,19 @@ export default function CategoriesPage() {
               }}
               className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex flex-col items-center justify-center transition-transform hover:scale-105 cursor-pointer"
             >
-              <IconComponent
-                size={48}
-                className="text-green-600 dark:text-green-400 mb-4"
-              />
+              {category.imageUrl ? (
+                <Image
+                  src={category.imageUrl}
+                  alt={category.name}
+                  width={80}
+                  height={80}
+                  className="rounded-full mb-3 object-cover"
+                />
+              ) : (
+                <span className="text-4xl mb-3">
+                  {iconMap.find((icon) => icon.name === category.name)?.icon}
+                </span>
+              )}
               <span className="text-green-800 dark:text-green-200 font-medium text-center">
                 {category.name}
               </span>

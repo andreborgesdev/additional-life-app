@@ -21,23 +21,7 @@ import { Button } from "@/src/components/ui/button";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import Image from "next/image";
 
-// Map slugs to icons - ensure this covers all expected root category slugs
-const iconMap: { [key: string]: React.ElementType } = {
-  furniture: Sofa,
-  clothing: Shirt,
-  books: Book,
-  electronics: Tv,
-  "home-and-garden": Leaf,
-  "sports-and-outdoors": Dumbbell,
-  "kitchen-and-dining": Utensils,
-  "office-supplies": Briefcase,
-  "art-and-crafts": Palette,
-  "toys-and-games": Coffee, // Assuming Coffee icon is for Toys & Games
-  automotive: Truck,
-  miscellaneous: Recycle, // Default/fallback icon
-};
-
-const iconMap2 = [
+export const iconMap = [
   { name: "Household & Home Furnishings", icon: "🪑" },
   { name: "Clothing & Accessories", icon: "👕" },
   { name: "Books & Comics", icon: "📚" },
@@ -133,21 +117,24 @@ export default function Categories() {
               href={`/categories/${category.id}`}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 flex flex-col items-center justify-center transition-all hover:shadow-md hover:scale-105 cursor-pointer"
             >
-              <Image
-                src={category.imageUrl}
-                alt={category.name}
-                width={100}
-                height={100}
-                className="h-10 w-10 rounded-full mb-3"
-              />
-              <span className="text-4xl mb-3">
-                {iconMap2.find((icon) => icon.name === category.name)?.icon}
-              </span>
+              {category.imageUrl ? (
+                <Image
+                  src={category.imageUrl}
+                  alt={category.name}
+                  width={80}
+                  height={80}
+                  className="rounded-full mb-3 object-cover"
+                />
+              ) : (
+                <span className="text-4xl mb-3">
+                  {iconMap.find((icon) => icon.name === category.name)?.icon}
+                </span>
+              )}
               <span className="text-green-800 dark:text-green-200 font-medium text-center">
                 {category.name}
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {category.count} 152 items
+                {category.count} {category.count === 1 ? "item" : "items"}
               </span>
             </Link>
           ))}
