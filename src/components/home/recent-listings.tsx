@@ -42,7 +42,7 @@ export default function RecentListings() {
   const { data, isLoading, error } = useItems({
     page: 0,
     size: 5,
-    sortBy: SortBy.POST_DATE_DESC,
+    sortBy: SortBy.CREATED_AT,
     direction: "desc",
   });
 

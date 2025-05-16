@@ -4,14 +4,14 @@
 /* eslint-disable */
 import type { CategoryResponse } from './CategoryResponse';
 export type ItemResponse = {
-    id?: number;
+    id?: string;
     title?: string;
     description?: string;
     condition?: ItemResponse.condition;
     address?: string;
-    postedOn?: string;
+    createdAt?: string;
     updatedAt?: string;
-    imageUrl?: string;
+    imageUrls?: Array<string>;
     itemType?: ItemResponse.itemType;
     externalUrl?: string;
     active?: boolean;

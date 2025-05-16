@@ -27,7 +27,7 @@ export class PublicCategoryApiService {
      * @throws ApiError
      */
     public getSubcategories(
-        parentId: number,
+        parentId: string,
     ): CancelablePromise<Array<CategoryResponse>> {
         return this.httpRequest.request({
             method: 'GET',
@@ -48,7 +48,7 @@ export class PublicCategoryApiService {
      * @throws ApiError
      */
     public getCategoryById(
-        id: number,
+        id: string,
     ): CancelablePromise<CategoryResponse> {
         return this.httpRequest.request({
             method: 'GET',

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; // Added useRef
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import {
@@ -45,16 +45,16 @@ enum SortByOptions {
   RELEVANCE,
   TITLE_ASC,
   TITLE_DESC,
-  POSTED_ON_ASC,
-  POSTED_ON_DESC,
+  CREATED_AT_ASC,
+  CREATED_AT_DESC,
 }
 
 const sortByOptions = [
   {
     value: SortByOptions.RELEVANCE,
     label: "Relevance",
-    sortBy: SortBy.POSTED_ON, // Maps to API's SortBy enum
-    direction: QueryDirection.DESC, // Maps to API's QueryDirection enum
+    sortBy: SortBy.CREATED_AT,
+    direction: QueryDirection.DESC,
   },
   {
     value: SortByOptions.TITLE_ASC,
@@ -69,15 +69,15 @@ const sortByOptions = [
     direction: QueryDirection.DESC,
   },
   {
-    value: SortByOptions.POSTED_ON_ASC,
-    label: "Newly Posted", // Changed from "Date Posted" to match UI
-    sortBy: SortBy.POSTED_ON,
+    value: SortByOptions.CREATED_AT_ASC,
+    label: "Newly Posted",
+    sortBy: SortBy.CREATED_AT,
     direction: QueryDirection.DESC,
   },
   {
-    value: SortByOptions.POSTED_ON_DESC,
-    label: "Oldest", // Changed from "Category" to match UI
-    sortBy: SortBy.POSTED_ON, // Assuming sorting by POSTED_ON for "Oldest"
+    value: SortByOptions.CREATED_AT_DESC,
+    label: "Oldest",
+    sortBy: SortBy.CREATED_AT,
     direction: QueryDirection.ASC,
   },
 ];
@@ -134,6 +134,7 @@ function ItemsPageSkeleton() {
 export default function ItemsPage() {
   const [page, setPage] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // For debounced search
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
     null
   );
@@ -159,13 +160,13 @@ export default function ItemsPage() {
     data: items,
     isLoading: isLoadingItems,
     error,
-    refetch,
+    // refetch, // No longer explicitly called in most filter changes
   } = useItems({
     page,
     size: 10,
     sortBy: selectedSortOptionDetails?.sortBy || SortBy.POSTED_ON,
     direction: selectedSortOptionDetails?.direction || QueryDirection.DESC,
-    query: searchTerm || undefined,
+    query: debouncedSearchTerm || undefined, // Use debounced search term
     category: selectedCategoryId || undefined,
     condition:
       selectedConditions.length > 0 ? selectedConditions.join(",") : undefined,
@@ -174,9 +175,26 @@ export default function ItemsPage() {
   const { data: allCategoriesData, isLoading: isLoadingAllCategories } =
     useRootCategories(); // Assuming this fetches ALL categories needed by CategoryFilter
 
-  // Removed useEffect for isLoadingDisplayedCategories
-  // Removed useEffect for setCurrentCategoriesToDisplay based on navPath
-  // Removed useEffect for handleClickOutside for category dropdown (internal to CategoryFilter)
+  // Debounce search term
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // 500ms delay
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [searchTerm]);
+
+  // Reset page when debounced search term changes (after initial mount)
+  const isInitialSearchMountRef = useRef(true);
+  useEffect(() => {
+    if (isInitialSearchMountRef.current) {
+      isInitialSearchMountRef.current = false;
+    } else {
+      setPage(0);
+    }
+  }, [debouncedSearchTerm]);
 
   useEffect(() => {
     const newTags: { id: string; label: string; type: string }[] = [];
@@ -254,7 +272,7 @@ export default function ItemsPage() {
     setSortBy(SortByOptions.RELEVANCE);
     setItemsType("all");
     setPage(0);
-    refetch();
+    // refetch(); // Removed: useItems will react to state changes
   };
 
   const removeFilterTag = (tagId: string, type: string) => {
@@ -268,13 +286,13 @@ export default function ItemsPage() {
       setItemsType("all");
     }
     setPage(0);
-    refetch();
+    // refetch(); // Removed: useItems will react to state changes
   };
 
   const handleOnSortByChanged = (value: string) => {
     setSortBy(Number(value) as SortByOptions);
     setPage(0);
-    refetch();
+    // refetch(); // Removed: useItems will react to state changes
   };
 
   // Renamed from setSelectedCategory and handleCategoryListItemClick
@@ -283,7 +301,7 @@ export default function ItemsPage() {
     setSelectedCategoryId(category ? category.id?.toString() ?? null : null);
     // CategoryFilter now handles its own display, no need to manage nav path here
     setPage(0);
-    refetch();
+    // refetch(); // Removed: useItems will react to state changes
   };
 
   const toggleFavorite = (itemId: string) => {
@@ -317,7 +335,7 @@ export default function ItemsPage() {
               placeholder={t("search_items_placeholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              // Consider adding a debounce here or trigger search on button click/enter
+              // Consider adding a debounce here or trigger search on button click/enter // Debounce is now implemented
               className="pl-10 w-full md:w-[300px]"
             />
           </div>
@@ -347,7 +365,7 @@ export default function ItemsPage() {
             setSelectedConditions={(newConditions) => {
               setSelectedConditions(newConditions);
               setPage(0);
-              refetch(); // Trigger re-fetch
+              // refetch(); // Removed: useItems will react
             }}
             sortByOptions={sortByOptions.map((opt) => ({
               ...opt,
@@ -360,7 +378,7 @@ export default function ItemsPage() {
             setItemsType={(newType) => {
               setItemsType(newType as "all" | "internal" | "external");
               setPage(0);
-              refetch(); // Trigger re-fetch
+              // refetch(); // Removed: useItems will react
             }}
           />
         </div>
@@ -459,7 +477,7 @@ export default function ItemsPage() {
                       : [...prev, condition]
                   );
                   setPage(0);
-                  refetch(); // Trigger re-fetch
+                  // refetch(); // Removed: useItems will react
                 }}
               >
                 {t(condition.toLowerCase().replace(/ /g, "_"))}{" "}
@@ -643,7 +661,7 @@ export default function ItemsPage() {
             onClick={() =>
               setPage((p) => Math.min(items.totalPages - 1, p + 1))
             }
-            disabled={page >= items.totalPages - 1 || isLoading}
+            disabled={page >= items.totalPages - 1 || isLoadingItems} // Changed isLoading to isLoadingItems
             variant="outline"
             className="ml-2"
           >

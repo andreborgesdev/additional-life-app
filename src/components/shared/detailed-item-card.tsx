@@ -13,18 +13,7 @@ import { Button } from "@/src/components/ui/button";
 import { ItemResponse } from "@/src/lib/generated-api";
 import { Clock, MapPin, Tag } from "lucide-react";
 import { Skeleton } from "@/src/components/ui/skeleton";
-
-export const getTimeAgo = (dateString: string) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffTime = Math.abs(now.getTime() - date.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 1) return "1 day ago";
-  if (diffDays < 30) return `${diffDays} days ago`;
-  if (diffDays < 60) return "1 month ago";
-  return `${Math.floor(diffDays / 30)} months ago`;
-};
+import { getTimeAgo } from "@/src/utils/date-utils";
 
 interface DetailedItemCardProps {
   item: ItemResponse;
@@ -49,7 +38,7 @@ export default function DetailedItemCard({ item }: DetailedItemCardProps) {
   return (
     <Card
       key={item.id}
-      className="overflow-hidden group hover:shadow-lg transition-shadow duration-300 relative"
+      className="overflow-hidden group hover:shadow-lg transition-shadow duration-300 relative dark:bg-gray-800"
     >
       {/* Favorite Button */}
       {/* <TooltipProvider>
@@ -136,7 +125,7 @@ export default function DetailedItemCard({ item }: DetailedItemCardProps) {
         <CardFooter className="flex justify-between items-center pt-0">
           <span className="flex items-center text-xs text-gray-500 dark:text-gray-400">
             <Clock className="h-3 w-3 mr-1" />
-            {getTimeAgo(item.postedOn)}
+            {getTimeAgo(item.createdAt)}
           </span>
           <Button size="sm" className="bg-green-600 hover:bg-green-700">
             View Details

@@ -14,9 +14,9 @@ export interface UseItemsProps {
 }
 
 export enum SortBy {
-  // RELEVANCE = "postedOn",
+  // RELEVANCE = "createdAt",
   TITLE = "title",
-  POSTED_ON = "postedOn",
+  CREATED_AT = "createdAt",
 }
 
 export enum QueryDirection {
@@ -47,7 +47,7 @@ export const useItems = ({
     queryFn: async () => {
       const queryPage = page === undefined ? 0 : page;
       const querySize = size === undefined ? 10 : size;
-      const querySortBy = sortBy === undefined ? "postedOn" : sortBy;
+      const querySortBy = sortBy === undefined ? "createdAt" : sortBy;
       const queryDirection =
         direction === undefined ? QueryDirection.DESC : direction;
 

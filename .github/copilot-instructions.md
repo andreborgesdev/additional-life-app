@@ -10,3 +10,5 @@
     Do not add any unnecessary complexity to the code.
     Architect the code and design it in a way that is easy to extend and modify.
     Architect the code and design like a senior engineer.
+    Design clean, modern, and appealing UIs.
+    Design the UI to have an user-friendly and intuitive UX.

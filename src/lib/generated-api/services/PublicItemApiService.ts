@@ -25,7 +25,7 @@ export class PublicItemApiService {
         query?: string,
         category?: string,
         condition?: string,
-        sortBy: string = 'postedOn',
+        sortBy: string = 'createdAt',
         sortDirection?: 'asc' | 'desc',
         page?: number,
         size: number = 20,
@@ -52,7 +52,7 @@ export class PublicItemApiService {
      * @throws ApiError
      */
     public getItemById(
-        id: number,
+        id: string,
     ): CancelablePromise<ItemResponse> {
         return this.httpRequest.request({
             method: 'GET',

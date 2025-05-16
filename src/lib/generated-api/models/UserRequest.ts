@@ -7,6 +7,7 @@ export type UserRequest = {
     name?: string;
     email?: string;
     phoneNumber?: string;
+    address?: string;
     emailVerified?: boolean;
     phoneVerified?: boolean;
 };

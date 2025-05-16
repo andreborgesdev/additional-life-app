@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useItems } from "../../hooks/use-items";
+import { SortBy, useItems } from "../../hooks/use-items";
 import { Button } from "@/src/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import DetailedItemCard, {
@@ -30,7 +30,7 @@ export default function FeaturedItems() {
   const { data, isLoading, error } = useItems({
     page: 0,
     size: 3,
-    sortBy: "postedOn",
+    sortBy: SortBy.CREATED_AT,
     direction: "asc",
   });
 

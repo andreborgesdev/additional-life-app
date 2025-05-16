@@ -3,12 +3,14 @@
 /* tslint:disable */
 /* eslint-disable */
 export type CategoryResponse = {
-    id?: number;
+    id?: string;
     name?: string;
     description?: string;
-    parentId?: number;
+    imageUrl?: string;
+    parentId?: string;
     parentTitle?: string;
     createdAt?: string;
+    updatedAt?: string;
     active?: boolean;
 };
 

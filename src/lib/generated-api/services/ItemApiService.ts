@@ -19,7 +19,7 @@ export class ItemApiService {
      * @throws ApiError
      */
     public updateItem(
-        id: number,
+        id: string,
         requestBody: ItemRequest,
     ): CancelablePromise<ItemResponse> {
         return this.httpRequest.request({
@@ -44,7 +44,7 @@ export class ItemApiService {
      * @throws ApiError
      */
     public deleteItem(
-        id: number,
+        id: string,
     ): CancelablePromise<void> {
         return this.httpRequest.request({
             method: 'DELETE',

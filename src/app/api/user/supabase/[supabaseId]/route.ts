@@ -1,6 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { ApiClient, withPublicApiClient } from "@/src/lib/api-client";
+import {
+  ApiClient,
+  withApiClient,
+  withPublicApiClient,
+} from "@/src/lib/api-client";
 import { UserResponse } from "@/src/lib/generated-api";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -10,6 +14,7 @@ type RouteContext = {
 
 const getUserBySupabaseIdHandler = async (
   client: ApiClient,
+  jwt: string,
   _request: NextRequest,
   context: RouteContext
 ): Promise<NextResponse<UserResponse | { error: string }>> => {
@@ -46,4 +51,4 @@ const getUserBySupabaseIdHandler = async (
   }
 };
 
-export const GET = withPublicApiClient(getUserBySupabaseIdHandler);
+export const GET = withApiClient(getUserBySupabaseIdHandler);

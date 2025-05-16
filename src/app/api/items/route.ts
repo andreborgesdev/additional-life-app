@@ -18,7 +18,7 @@ const getItemsHandler = async (client: ApiClient, _request: NextRequest) => {
   const condition = url.searchParams.get("condition") || undefined;
   const page = parseInt(url.searchParams.get("page") || "0", 10);
   const size = parseInt(url.searchParams.get("size") || "10", 10);
-  const sortBy = url.searchParams.get("sortBy") || "postedOn";
+  const sortBy = url.searchParams.get("sortBy") || "createdAt";
   const direction = url.searchParams.get("direction") || "desc";
 
   console.log(

@@ -1,7 +1,6 @@
 import {
   ApiClient,
   CategoryResponse,
-  withApiClient,
   withPublicApiClient,
 } from "@/src/lib/api-client";
 import { NextRequest, NextResponse } from "next/server";

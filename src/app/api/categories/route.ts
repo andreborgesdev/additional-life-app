@@ -1,8 +1,4 @@
-import {
-  ApiClient,
-  withApiClient,
-  withPublicApiClient,
-} from "@/src/lib/api-client";
+import { ApiClient, withPublicApiClient } from "@/src/lib/api-client";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";

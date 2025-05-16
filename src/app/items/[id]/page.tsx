@@ -52,12 +52,10 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/src/components/ui/avatar";
-import {
-  conditionDetails,
-  getTimeAgo,
-} from "@/src/components/shared/detailed-item-card";
+import { conditionDetails } from "@/src/components/shared/detailed-item-card";
 import { Separator } from "@/src/components/ui/separator";
 import { getUserFullNameByUUID } from "@/src/lib/supabase/auth/supabase-get-user";
+import { getTimeAgo } from "@/src/utils/date-utils";
 
 // This is mock data. In a real application, you'd fetch this from an API or database.
 // const products = [
@@ -368,7 +366,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               </p>
               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <Clock className="mr-1 h-4 w-4" />
-                <span>Posted {getTimeAgo(item.postedOn)}</span>
+                <span>Posted {getTimeAgo(item.createdAt)}</span>
               </div>
             </div>
           </div>
@@ -522,9 +520,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             </div>
           ) : (
             <Button
-              className="w-full"
+              className="w-full bg-green-600 hover:bg-green-700"
               onClick={handleIAmInterested}
-              variant={"link"}
             >
               I am interested in this item!
             </Button>

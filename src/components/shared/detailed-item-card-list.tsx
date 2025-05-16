@@ -80,7 +80,7 @@ export default function DetailedItemCardList({
               </h3>
             </Link>
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              {getTimeAgo(item.postedOn)}
+              {getTimeAgo(item.createdAt)}
             </span>
           </div>
           <p className="text-gray-600 dark:text-gray-400 mb-4 flex-grow">

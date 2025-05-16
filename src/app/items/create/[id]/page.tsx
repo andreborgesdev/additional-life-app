@@ -23,7 +23,7 @@ import { useSession } from "@/src/app/auth-provider";
 import { useRouter, useParams } from "next/navigation";
 import { useCategories } from "@/src/hooks/use-categories";
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Home } from "lucide-react"; // Added Home icon
 import { uploadImage } from "@/src/lib/supabase/storage/client";
 import { useUserBySupabaseId } from "@/src/hooks/use-user-by-supabase-id";
 
@@ -67,8 +67,9 @@ export default function CreateProductPage() {
   const { data: allCategories, isLoading: isLoadingCategories } =
     useCategories();
 
-  const { data: userDataFromHook, isLoading: isLoadingUserData } =
-    useUserBySupabaseId(session?.user?.id ?? null);
+  const { data: userData, isLoading: isLoadingUserData } = useUserBySupabaseId(
+    session?.user?.id ?? null
+  );
 
   const initialCategoryIdForSelector =
     itemDataFromHook?.category?.id?.toString() ?? null;
@@ -105,17 +106,6 @@ export default function CreateProductPage() {
       });
     }
   }, [isEditMode, itemDataFromHook, isLoadingItemData, itemDataError, toast]);
-
-  useEffect(() => {
-    if (
-      !isEditMode &&
-      userDataFromHook?.address &&
-      !address && // Only set if address is currently empty
-      !isLoadingUserData
-    ) {
-      setAddress(userDataFromHook.address);
-    }
-  }, [isEditMode, userDataFromHook, address, isLoadingUserData]);
 
   useEffect(() => {
     let newUrls: string[] = [];
@@ -244,8 +234,6 @@ export default function CreateProductPage() {
       filesToAdd.length > 0 &&
       newFiles.length > filesToProcess.length
     ) {
-      // This means some files were filtered out by initial slice to filesToProcess
-      // and then more by unique checks.
       toast({
         title: "Some images not added",
         description: `Maximum of ${MAX_IMAGES} images allowed or duplicates were found. ${filesToAdd.length} of ${newFiles.length} selected images were processed.`,
@@ -254,7 +242,7 @@ export default function CreateProductPage() {
     }
 
     if (filesToAdd.length > 0) {
-      setImages((prevImages: File[]) => [...prevImages, ...filesToAdd]); // Added File type
+      setImages((prevImages: File[]) => [...prevImages, ...filesToAdd]);
       setUploadedImageLinks([]);
     }
   };
@@ -262,6 +250,17 @@ export default function CreateProductPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    if (!pickupPossible && !shippingPossible) {
+      toast({
+        title: "Error",
+        description:
+          "Please select at least one availability option (Pickup or Shipping).",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     if (
       !title ||
@@ -601,6 +600,20 @@ export default function CreateProductPage() {
                 >
                   Location
                 </Label>
+                {!isEditMode && userData?.address && !isLoadingUserData && (
+                  <div className="mb-1.5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1.5 w-full sm:w-auto justify-center"
+                      onClick={() => setAddress(userData.address!)}
+                    >
+                      <Home className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                      <span>Use saved: {userData.address}</span>
+                    </Button>
+                  </div>
+                )}
                 <Input
                   id="location"
                   placeholder="Where can the item be picked up?"

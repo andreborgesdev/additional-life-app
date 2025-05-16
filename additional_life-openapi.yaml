@@ -112,8 +112,8 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       requestBody:
         content:
           application/json:
@@ -150,8 +150,8 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       responses:
         "204":
           description: Item deleted successfully
@@ -354,8 +354,8 @@ paths:
         required: false
         schema:
           type: string
-          default: postedOn
-        example: postedOn
+          default: createdAt
+        example: createdAt
       - name: sortDirection
         in: query
         description: Sort direction
@@ -403,8 +403,8 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       responses:
         "200":
           description: Item found
@@ -446,8 +446,8 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       responses:
         "200":
           description: Subcategories retrieved successfully
@@ -477,8 +477,8 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       responses:
         "200":
           description: Category found
@@ -637,6 +637,10 @@ components:
           type: string
           maxLength: 15
           minLength: 0
+        address:
+          type: string
+          maxLength: 255
+          minLength: 0
         emailVerified:
           type: boolean
         phoneVerified:
@@ -652,6 +656,10 @@ components:
         name:
           type: string
         email:
+          type: string
+        phone:
+          type: string
+        address:
           type: string
         createdAt:
           type: string
@@ -681,9 +689,10 @@ components:
         address:
           type: string
           minLength: 1
-        imageUrl:
-          type: string
-          minLength: 1
+        imageUrls:
+          type: array
+          items:
+            type: string
         categoryId:
           type: integer
           format: int64
@@ -698,18 +707,23 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
         name:
           type: string
         description:
           type: string
+        imageUrl:
+          type: string
         parentId:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
         parentTitle:
           type: string
         createdAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
         active:
@@ -718,8 +732,8 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
         title:
           type: string
         description:
@@ -733,14 +747,16 @@ components:
           - DEFECTIVE
         address:
           type: string
-        postedOn:
+        createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
-        imageUrl:
-          type: string
+        imageUrls:
+          type: array
+          items:
+            type: string
         itemType:
           type: string
           enum:
@@ -765,12 +781,12 @@ components:
     PageItemResponse:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int32
         totalElements:
           type: integer
           format: int64
+        totalPages:
+          type: integer
+          format: int32
         first:
           type: boolean
         last:
@@ -787,11 +803,11 @@ components:
           format: int32
         sort:
           $ref: "#/components/schemas/SortObject"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         empty:
           type: boolean
     PageableObject:
@@ -802,6 +818,8 @@ components:
           format: int64
         sort:
           $ref: "#/components/schemas/SortObject"
+        unpaged:
+          type: boolean
         paged:
           type: boolean
         pageNumber:
@@ -810,16 +828,14 @@ components:
         pageSize:
           type: integer
           format: int32
-        unpaged:
-          type: boolean
     SortObject:
       type: object
       properties:
         empty:
           type: boolean
-        sorted:
-          type: boolean
         unsorted:
+          type: boolean
+        sorted:
           type: boolean
     Pageable:
       type: object

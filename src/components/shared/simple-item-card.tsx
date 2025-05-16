@@ -3,8 +3,8 @@ import { Card, CardContent } from "@/src/components/ui/card";
 import Image from "next/image";
 import { Clock, MapPin } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
-import { getTimeAgo } from "@/src/components/shared/detailed-item-card";
 import { ItemResponse } from "@/src/lib/generated-api";
+import { getTimeAgo } from "@/src/utils/date-utils";
 
 interface SimpleItemCardProps {
   item: ItemResponse;
@@ -14,7 +14,7 @@ export default function SimpleItemCard({ item }: SimpleItemCardProps) {
   return (
     <Card
       key={item.id}
-      className="overflow-hidden group hover:shadow-lg transition-all duration-300 hover:translate-y-[-5px]"
+      className="overflow-hidden group hover:shadow-lg transition-all duration-300 hover:translate-y-[-5px] dark:bg-gray-800"
     >
       <Link href={`/items/${item.id}`} className="block">
         <div className="relative">
@@ -41,7 +41,7 @@ export default function SimpleItemCard({ item }: SimpleItemCardProps) {
               {item.address}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              {getTimeAgo(item.postedOn)}
+              {getTimeAgo(item.createdAt)}
             </div>
           </div>
         </CardContent>
