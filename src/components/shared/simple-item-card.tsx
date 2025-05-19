@@ -19,7 +19,7 @@ export default function SimpleItemCard({ item }: SimpleItemCardProps) {
       <Link href={`/items/${item.id}`} className="block">
         <div className="relative">
           <Image
-            src={item.imageUrl || "/placeholder.svg"}
+            src={item.imageUrls[0] || "/placeholder.svg"}
             alt={item.title || "Placeholder"}
             width={300}
             height={200}

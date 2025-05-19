@@ -10,12 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-import { QueryDirection, SortBy, useItems } from "@/src/hooks/use-items"; // Assuming UseItemsProps is implicitly defined by useItems params
+import { QueryDirection, SortBy, useItems } from "@/src/hooks/items/use-items"; // Assuming UseItemsProps is implicitly defined by useItems params
 import { useTranslation } from "react-i18next"; // Assuming this is correctly set up
-import {
-  useRootCategories,
-  // useSubcategories, // No longer needed here
-} from "@/src/hooks/use-categories";
+import { useCategories } from "@/src/hooks/use-categories";
 import {
   ChevronDown,
   LayoutGrid,
@@ -24,7 +21,7 @@ import {
   X,
   ListIcon,
 } from "lucide-react";
-import { CategoryResponse } from "@/src/lib/generated-api";
+import { CategoryResponse, ItemResponse } from "@/src/lib/generated-api";
 import DetailedItemCard, {
   DetailedItemCardSkeleton,
 } from "@/src/components/shared/detailed-item-card";
@@ -173,7 +170,7 @@ export default function ItemsPage() {
   });
 
   const { data: allCategoriesData, isLoading: isLoadingAllCategories } =
-    useRootCategories(); // Assuming this fetches ALL categories needed by CategoryFilter
+    useCategories();
 
   // Debounce search term
   useEffect(() => {
@@ -520,7 +517,9 @@ export default function ItemsPage() {
           {isLoadingItems && items ? ( // Show skeleton for count if loading more items but previous data exists
             <Skeleton className="h-5 w-24" />
           ) : (
-            t("items_found_count", { count: items?.totalElements || 0 })
+            <span>
+              {t("items_found_count")}: {items?.totalElements || 0}
+            </span>
           )}
         </span>
       </div>

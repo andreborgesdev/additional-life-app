@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { PageItemResponse } from "../lib/api-client";
+import { PageItemResponse } from "../../lib/api-client";
 
 export interface UseItemsProps {
   page?: number;

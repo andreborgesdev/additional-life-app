@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SortBy, useItems } from "../../hooks/use-items";
+import { SortBy, useItems } from "../../hooks/items/use-items";
 import { Button } from "@/src/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import DetailedItemCard, {

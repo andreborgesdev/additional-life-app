@@ -44,7 +44,7 @@ const postItemHandler = async (
   jwt: string,
   request: NextRequest
 ) => {
-  const body = await request.json();
+  const body: ItemRequest = await request.json();
 
   const item: ItemRequest = {
     title: body.title,
@@ -54,7 +54,7 @@ const postItemHandler = async (
     categoryId: body.categoryId,
     pickupPossible: body.pickupPossible,
     shippingPossible: body.shippingPossible,
-    imageUrl: body.imageUrl,
+    imageUrls: body.imageUrls,
   };
 
   const created = await client.itemApi.createItem(item);

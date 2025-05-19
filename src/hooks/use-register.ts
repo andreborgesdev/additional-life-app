@@ -13,7 +13,7 @@ export interface RegisterPayload {
 export const useRegister = () => {
   return useMutation<RegisterPayload, Error, RegisterPayload, unknown>({
     mutationFn: async (payload: RegisterPayload) => {
-      const response = await fetch("/api/user/user/register", {
+      const response = await fetch("/api/user/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

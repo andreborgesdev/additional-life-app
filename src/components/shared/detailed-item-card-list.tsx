@@ -64,7 +64,7 @@ export default function DetailedItemCardList({
 
           <Link href={`/items/${item.id}`} className="block">
             <Image
-              src={item.imageUrl || "/placeholder.svg"}
+              src={item.imageUrl[0] || "/placeholder.svg"}
               alt={item.title || "Placeholder"}
               width={400}
               height={300}

@@ -25,18 +25,8 @@ const getItemByIdHandler = async (
     return NextResponse.json({ error: "Item ID is required" }, { status: 400 });
   }
 
-  const itemIdNumber = parseInt(id, 10);
-  if (isNaN(itemIdNumber)) {
-    return NextResponse.json(
-      { error: "Invalid Item ID format" },
-      { status: 400 }
-    );
-  }
-
   try {
-    const result: ItemResponse = await client.publicItemApi.getItemById(
-      itemIdNumber
-    );
+    const result: ItemResponse = await client.publicItemApi.getItemById(id);
     return NextResponse.json(result);
   } catch (error: any) {
     console.error("Error fetching item by ID:", error);

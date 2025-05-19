@@ -1,14 +1,16 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ItemResponse } from "../lib/api-client";
+import { ItemResponse } from "../../lib/api-client";
 
 export const useItem = (itemId: string | null) => {
   return useQuery<ItemResponse, Error>({
     queryKey: ["item", itemId],
     queryFn: async () => {
       if (!itemId) {
-        throw new Error("Item ID is required to fetch item details but was null or empty.");
+        throw new Error(
+          "Item ID is required to fetch item details but was null or empty."
+        );
       }
 
       const res = await fetch(`/api/items/${itemId}`);

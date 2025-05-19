@@ -2,7 +2,7 @@
 
 import { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import { PhotoUploader } from "@/src/components/shared/photo-uploader";
-import { useItem } from "@/src/hooks/use-item";
+import { useItem } from "@/src/hooks/items/use-item";
 import { ItemRequest } from "@/src/lib/generated-api";
 import { useToast } from "@/src/hooks/use-toast";
 import { Input } from "@/src/components/ui/input";
@@ -26,6 +26,7 @@ import Link from "next/link";
 import { ArrowLeft, Loader2, Home } from "lucide-react"; // Added Home icon
 import { uploadImage } from "@/src/lib/supabase/storage/client";
 import { useUserBySupabaseId } from "@/src/hooks/use-user-by-supabase-id";
+import { useCreateOrUpdateItem } from "@/src/hooks/items/use-create-or-update-item";
 
 const MAX_IMAGES = 5;
 const conditionOptions = Object.values(ItemRequest.condition);
@@ -88,11 +89,9 @@ export default function CreateProductPage() {
 
       setCondition((itemDataFromHook.condition as ItemRequest.condition) || "");
       setAddress(itemDataFromHook.address || "");
-      if (itemDataFromHook.imageUrl) {
-        setInitialImageUrl(itemDataFromHook.imageUrl);
-        setUploadedImageLinks(
-          itemDataFromHook.imageUrl ? [itemDataFromHook.imageUrl] : []
-        );
+      if (itemDataFromHook.imageUrls) {
+        setInitialImageUrl(itemDataFromHook.imageUrls);
+        setUploadedImageLinks(itemDataFromHook.imageUrls);
       }
       setPickupPossible(itemDataFromHook.pickupPossible || false);
       setShippingPossible(itemDataFromHook.shippingPossible || false);
@@ -278,19 +277,46 @@ export default function CreateProductPage() {
       return;
     }
 
-    const numericCategoryId = parseInt(formSelectedCategoryId, 10); // Use formSelectedCategoryId
-    if (isNaN(numericCategoryId)) {
+    const uploadedImageUrls = await uploadImages();
+
+    const itemPayload: ItemRequest = {
+      title,
+      description,
+      condition: condition as ItemRequest.condition,
+      categoryId: formSelectedCategoryId,
+      address,
+      pickupPossible,
+      shippingPossible,
+      imageUrls: uploadedImageUrls,
+    };
+
+    const { success, error } = await useCreateOrUpdateItem(
+      itemPayload,
+      isEditMode,
+      productId
+    );
+
+    if (success) {
       toast({
-        title: "Error",
-        description: "Selected category ID is invalid.",
+        title: "Success",
+        description: "Your item has been added successfully!",
+      });
+      setUploadedImageLinks([]);
+      router.push("/");
+    } else {
+      toast({
+        title: "Error Submitting Item",
+        description:
+          error || "An unexpected error occurred while saving the item.",
         variant: "destructive",
       });
-      setIsSubmitting(false);
-      return;
     }
 
-    let currentImageUrlsForPayload: string[] = [];
+    setIsSubmitting(false);
+  };
 
+  const uploadImages = async (): Promise<string[]> => {
+    let currentImageUrlsForPayload: string[] = [];
     if (images.length > 0) {
       if (uploadedImageLinks.length > 0) {
         currentImageUrlsForPayload = [...uploadedImageLinks];
@@ -346,8 +372,8 @@ export default function CreateProductPage() {
                 variant: "destructive",
               });
               anUploadFailed = true;
-            } else if (uploadResult.imageUrl) {
-              successfullyUploadedInThisAttempt.push(uploadResult.imageUrl);
+            } else if (uploadResult.imageUrls) {
+              successfullyUploadedInThisAttempt.push(uploadResult.imageUrls);
             }
           } else {
             console.error("An upload promise was rejected:", result.reason);
@@ -396,68 +422,12 @@ export default function CreateProductPage() {
       }
     }
 
-    // Determine the final image URL for the payload
-    let finalImageUrlForPayload: string | undefined = undefined;
-    if (currentImageUrlsForPayload.length > 0) {
-      finalImageUrlForPayload = currentImageUrlsForPayload[0]; // Taking the first image as the primary
-    } else if (images.length === 0 && initialImageUrl) {
-      // If no new images were added/uploaded, and there was an initial image (edit mode)
-      finalImageUrlForPayload = initialImageUrl;
-    }
-
-    const itemPayload: ItemRequest = {
-      title,
-      description,
-      condition: condition as ItemRequest.condition,
-      categoryId: numericCategoryId,
-      address: address,
-      pickupPossible: pickupPossible,
-      shippingPossible: shippingPossible,
-      imageUrl: finalImageUrlForPayload,
-    };
-
-    try {
-      const response = await fetch("/api/items", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(itemPayload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        // Do NOT clear uploadedImageLinks here, so they can be reused on retry
-        throw new Error(errorData.message || "Failed to create item");
-      }
-
-      toast({
-        title: "Success",
-        description: "Your item has been added successfully!",
-      });
-      setUploadedImageLinks([]); // Clear cache on successful submission
-      router.push("/");
-    } catch (error: any) {
-      console.error("Failed to submit product:", error);
-      toast({
-        title: "Error Submitting Item",
-        description:
-          error.message ||
-          "An unexpected error occurred while saving the item.",
-        variant: "destructive",
-      });
-      // uploadedImageLinks remains, so next submit attempt will reuse them if images weren't changed
-    } finally {
-      setIsSubmitting(false);
-    }
+    return currentImageUrlsForPayload;
   };
 
   const effectiveIsLoadingProduct = isEditMode ? isLoadingItemData : false;
   const showSkeleton =
-    isLoadingSession ||
-    isLoadingCategories ||
-    effectiveIsLoadingProduct ||
-    (!isEditMode && isLoadingUserData);
+    isLoadingSession || isLoadingCategories || effectiveIsLoadingProduct;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
@@ -552,7 +522,8 @@ export default function CreateProductPage() {
                   isLoadingAllCategories={isLoadingCategories}
                   initialCategoryId={initialCategoryIdForSelector}
                   onCategorySelected={setFormSelectedCategoryId}
-                  closeOnSelect={true} // This prop is now part of CategorySelector's own props
+                  closeOnSelect={true}
+                  se
                 />
               </div>
 

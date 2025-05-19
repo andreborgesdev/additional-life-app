@@ -86,7 +86,7 @@ export default function DetailedItemCard({ item }: DetailedItemCardProps) {
       <Link href={`/items/${item.id}`} className="block">
         <div className="relative h-48 overflow-hidden">
           <Image
-            src={item.imageUrl || "/placeholder.svg"}
+            src={item.imageUrls[0] || "/placeholder.svg"}
             alt={item.title || "Placeholder"}
             fill
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"

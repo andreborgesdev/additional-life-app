@@ -42,7 +42,7 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { useToast } from "@/src/hooks/use-toast";
-import { useItem } from "@/src/hooks/use-item";
+import { useItem } from "@/src/hooks/items/use-item";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useSession } from "../../auth-provider";
 import { motion } from "framer-motion";
@@ -57,32 +57,6 @@ import { Separator } from "@/src/components/ui/separator";
 import { getUserFullNameByUUID } from "@/src/lib/supabase/auth/supabase-get-user";
 import { getTimeAgo } from "@/src/utils/date-utils";
 
-// This is mock data. In a real application, you'd fetch this from an API or database.
-// const products = [
-//   {
-//     id: "1",
-//     title: "Vintage Bicycle",
-//     description:
-//       "A well-maintained vintage bicycle from the 1980s. Perfect for collectors or those looking for a unique ride.",
-//     images: [
-//       "/placeholder.svg?height=400&width=600&text=Vintage+Bicycle+1",
-//       "/placeholder.svg?height=400&width=600&text=Vintage+Bicycle+2",
-//       "/placeholder.svg?height=400&width=600&text=Vintage+Bicycle+3",
-//       "/placeholder.svg?height=400&width=600&text=Vintage+Bicycle+4",
-//     ],
-//     location: "Brooklyn, NY",
-//     latitude: 40.6782,
-//     longitude: -73.9442,
-//     postedBy: "Jane Doe",
-//     postedDate: "2024-02-23",
-//     category: "Transportation",
-//     email: "jane.doe@example.com",
-//     phoneNumber: "+1234567890",
-//   },
-//   // Add more mock products as needed
-// ];
-
-// Animation variants
 const fadeIn = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.5 } },
@@ -201,7 +175,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     router.push(`/chat/${productId}`);
   };
 
-  const imagesForCarousel = item.imageUrl ? [item.imageUrl] : [];
+  const imagesForCarousel = item.imageUrls;
 
   const productLatitude = (item as any)?.latitude;
   const productLongitude = (item as any)?.longitude;

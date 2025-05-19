@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { SortBy, useItems } from "@/src/hooks/use-items";
+import { SortBy, useItems } from "@/src/hooks/items/use-items";
 import { Button } from "@/src/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import SimpleItemCard from "@/src/components/shared/simple-item-card";
