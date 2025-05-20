@@ -144,7 +144,7 @@ export default function Header() {
   };
 
   const navItems = [
-    { href: "/items", icon: <List size={18} />, label: t("nav.allItems") },
+    { href: "/items", icon: <List size={18} />, label: t("nav.all_items") },
     // { href: "/categories", icon: null, label: t("nav.categories") },
     // { href: "/about", icon: null, label: t("nav.about") },
     // { href: "/contact", icon: null, label: t("nav.contact") },
@@ -154,7 +154,7 @@ export default function Header() {
     {
       href: "/items",
       icon: <List className="h-5 w-5" />,
-      label: t("nav.allItems"),
+      label: t("nav.all_items"),
     },
     // {
     //   href: "/categories",
@@ -177,24 +177,24 @@ export default function Header() {
     {
       href: "/user/settings",
       icon: <Settings className="h-5 w-5" />,
-      label: t("nav.userSettings"),
+      label: t("nav.user_settings"),
     },
     {
       href: "/items/published",
       icon: <Package className="h-5 w-5" />,
-      label: t("nav.itemsPublished"),
+      label: t("nav.items_published"),
     },
     // {
     //   href: "/items-taken",
     //   icon: <Heart className="h-5 w-5" />,
     //   label: t("nav.itemsTaken"),
     // },
-    {
-      href: "/notifications",
-      icon: <Bell className="h-5 w-5" />,
-      label: "Notifications",
-      badge: notificationCount,
-    },
+    // {
+    //   href: "/notifications",
+    //   icon: <Bell className="h-5 w-5" />,
+    //   label: "Notifications",
+    //   badge: notificationCount,
+    // },
   ];
 
   return (
@@ -264,19 +264,19 @@ export default function Header() {
                   )}
                 >
                   <PlusCircle className="h-4 w-4" />
-                  {t("nav.addItem")}
+                  {t("nav.add_item")}
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="bottom">{t("nav.addItem")}</TooltipContent>
+              <TooltipContent side="bottom">{t("nav.add_item")}</TooltipContent>
             </Tooltip>
           </nav>
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-1 sm:space-x-2">
             {/* Desktop Search */}
-            <div className="hidden md:block relative">
+            {/* <div className="hidden md:block relative">
               <SearchDropdown />
-            </div>
+            </div> */}
 
             {/* Mobile Search Toggle */}
             <Button
@@ -365,7 +365,7 @@ export default function Header() {
             </Tooltip>
 
             {/* Notifications */}
-            {session && (
+            {/* {session && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
@@ -395,7 +395,7 @@ export default function Header() {
                 </TooltipTrigger>
                 <TooltipContent side="bottom">Notifications</TooltipContent>
               </Tooltip>
-            )}
+            )} */}
 
             {/* User Menu (Desktop) */}
             {session ? (
@@ -565,7 +565,7 @@ export default function Header() {
                         )}
                       >
                         <PlusCircle className="h-5 w-5" />
-                        <span>{t("nav.addItem")}</span>
+                        <span>{t("nav.add_item")}</span>
                       </Link>
                     </SheetClose>
                   </nav>

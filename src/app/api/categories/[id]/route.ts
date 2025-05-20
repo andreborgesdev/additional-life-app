@@ -23,18 +23,8 @@ const getCategoryByIdHandler = async (
     );
   }
 
-  const categoryIdNumber = parseInt(id, 10);
-  if (isNaN(categoryIdNumber)) {
-    return NextResponse.json(
-      { error: "Invalid Category ID format" },
-      { status: 400 }
-    );
-  }
-
   try {
-    const category = await client.publicCategoryApi.getCategoryById(
-      categoryIdNumber
-    );
+    const category = await client.publicCategoryApi.getCategoryById(id);
     return NextResponse.json(category);
   } catch (error: any) {
     console.error("Error fetching category by ID:", error);

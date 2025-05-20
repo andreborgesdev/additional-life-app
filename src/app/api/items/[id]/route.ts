@@ -60,19 +60,11 @@ const updateItemHandler = async (
     );
   }
 
-  const itemIdNumber = parseInt(idStr, 10);
-  if (isNaN(itemIdNumber)) {
-    return NextResponse.json(
-      { error: "Invalid Item ID format" },
-      { status: 400 }
-    );
-  }
-
   try {
     const body = await request.json();
     const itemData: ItemRequest = body as ItemRequest; // Assuming body is already validated or ItemRequest is flexible
     const updatedItem: ItemResponse = await client.itemApi.updateItem(
-      itemIdNumber,
+      idFromParams,
       itemData
     );
     return NextResponse.json(updatedItem);
@@ -108,16 +100,8 @@ const deleteItemHandler = async (
     );
   }
 
-  const itemIdNumber = parseInt(idStr, 10);
-  if (isNaN(itemIdNumber)) {
-    return NextResponse.json(
-      { error: "Invalid Item ID format" },
-      { status: 400 }
-    );
-  }
-
   try {
-    await client.itemApi.deleteItem(itemIdNumber);
+    await client.itemApi.deleteItem(idFromParams);
     return NextResponse.json({}, { status: 204 });
   } catch (error: any) {
     console.error("Error deleting item:", error);

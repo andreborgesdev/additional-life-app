@@ -55,7 +55,7 @@ export default function CreateProductPage() {
   const [condition, setCondition] = useState<ItemRequest.condition | "">("");
   const [formSelectedCategoryId, setFormSelectedCategoryId] = useState<
     string | null
-  >(null); // New state for category ID from selector
+  >(null);
   const [address, setAddress] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [initialImageUrl, setInitialImageUrl] = useState<string | null>(null);
@@ -523,7 +523,6 @@ export default function CreateProductPage() {
                   initialCategoryId={initialCategoryIdForSelector}
                   onCategorySelected={setFormSelectedCategoryId}
                   closeOnSelect={true}
-                  se
                 />
               </div>
 

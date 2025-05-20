@@ -4,14 +4,26 @@ import Link from "next/link";
 import { ArrowRight, Search } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Hero() {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     setIsLoaded(true);
   }, []);
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/items?q=${encodeURIComponent(searchTerm.trim())}`);
+    } else {
+      router.push("/items");
+    }
+  };
 
   return (
     <section className="relative bg-green-50 dark:bg-green-900 py-10 md:py-32">
@@ -75,7 +87,10 @@ export default function Hero() {
             animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <form className="flex items-center bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="flex items-center bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden"
+            >
               <div className="pl-4 pr-2 py-1 flex-shrink-0">
                 <Search className="h-5 w-5 text-gray-400 dark:text-gray-300" />
               </div>
@@ -84,6 +99,8 @@ export default function Hero() {
                 name="search"
                 id="search"
                 placeholder="What are you looking for?"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-3 text-gray-700 dark:text-gray-200 bg-transparent focus:outline-none placeholder-gray-400 dark:placeholder-gray-500"
               />
               <button

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Tabs,
   TabsContent,
@@ -44,8 +44,19 @@ import {
   LogOut,
 } from "lucide-react";
 import { toast } from "@/src/hooks/use-toast";
+import { useSession } from "../../auth-provider";
+import { useRouter } from "next/navigation";
+import { Skeleton } from "@/src/components/ui/skeleton";
+import { useUserBySupabaseId } from "@/src/hooks/use-user-by-supabase-id";
 
 export default function UserSettingsPage() {
+  const { session, isLoading: isLoadingSession } = useSession();
+  const { data: userData, isLoading: isLoadingUserData } = useUserBySupabaseId(
+    session?.user?.id ?? null
+  );
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
   // User profile state
   const [name, setName] = useState("John Doe");
   const [email, setEmail] = useState("john.doe@example.com");
@@ -71,6 +82,24 @@ export default function UserSettingsPage() {
   // Account security
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [loginAlerts, setLoginAlerts] = useState(true);
+
+  useEffect(() => {
+    if (!isLoadingSession && !session) router.replace("/user/login");
+  }, [router, session, isLoadingSession]);
+
+  useEffect(() => {
+    if (!isLoadingUserData && userData) {
+      setName(userData.name);
+      setEmail(userData.email);
+      setPhone(userData.phone);
+      setLocation(userData.address);
+      setIsLoading(false);
+    }
+  }, [isLoadingUserData, userData]);
+
+  if (isLoading) {
+    return <UserSettingsSkeleton />;
+  }
 
   // Handle form submissions
   const handleProfileSubmit = (e) => {
@@ -111,12 +140,7 @@ export default function UserSettingsPage() {
         <div className="flex flex-col items-center md:items-start gap-4">
           <Avatar className="h-24 w-24">
             <AvatarImage src="/placeholder.svg?height=96&width=96" alt={name} />
-            <AvatarFallback>
-              {name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
-            </AvatarFallback>
+            <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="text-center md:text-left">
             <h1 className="text-2xl font-bold">{name}</h1>
@@ -159,7 +183,7 @@ export default function UserSettingsPage() {
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Profile</span>
           </TabsTrigger>
-          <TabsTrigger
+          {/* <TabsTrigger
             value="notifications"
             className="flex items-center gap-2"
           >
@@ -173,7 +197,7 @@ export default function UserSettingsPage() {
           <TabsTrigger value="security" className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
             <span className="hidden sm:inline">Security</span>
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         {/* Profile Tab */}
@@ -255,10 +279,7 @@ export default function UserSettingsPage() {
                           alt={name}
                         />
                         <AvatarFallback>
-                          {name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
+                          {name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <Button
@@ -298,7 +319,7 @@ export default function UserSettingsPage() {
         </TabsContent>
 
         {/* Notifications Tab */}
-        <TabsContent value="notifications">
+        {/* <TabsContent value="notifications">
           <Card>
             <CardHeader>
               <CardTitle>Notification Preferences</CardTitle>
@@ -403,10 +424,10 @@ export default function UserSettingsPage() {
               </form>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
 
         {/* Privacy Tab */}
-        <TabsContent value="privacy">
+        {/* <TabsContent value="privacy">
           <Card>
             <CardHeader>
               <CardTitle>Privacy Settings</CardTitle>
@@ -507,10 +528,10 @@ export default function UserSettingsPage() {
               </form>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
 
         {/* Security Tab */}
-        <TabsContent value="security">
+        {/* <TabsContent value="security">
           <Card>
             <CardHeader>
               <CardTitle>Account Security</CardTitle>
@@ -679,8 +700,43 @@ export default function UserSettingsPage() {
               </form>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
+    </div>
+  );
+}
+
+function UserSettingsSkeleton() {
+  return (
+    <div className="container max-w-6xl mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row gap-8 mb-8">
+        <div className="flex flex-col items-center md:items-start gap-4">
+          <Skeleton className="h-24 w-24 rounded-full" />
+          <div className="text-center md:text-left">
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-4 w-32" />
+            <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
+              <Skeleton className="h-6 w-24 rounded" />
+              <Skeleton className="h-6 w-24 rounded" />
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+        </div>
+      </div>
+      <Skeleton className="h-10 w-full mb-8" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Skeleton className="h-40 w-full rounded" />
+        <Skeleton className="h-40 w-full rounded" />
+        <Skeleton className="h-40 w-full rounded" />
+        <Skeleton className="h-40 w-full rounded" />
+      </div>
     </div>
   );
 }

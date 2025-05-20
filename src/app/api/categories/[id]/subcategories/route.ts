@@ -35,17 +35,9 @@ const getSubcategoriesHandler = async (
     );
   }
 
-  const parentIdNumber = parseInt(parentIdStr, 10);
-  if (isNaN(parentIdNumber)) {
-    return NextResponse.json(
-      { error: "Invalid Parent Category ID format" },
-      { status: 400 }
-    );
-  }
-
   try {
     const subcategories = await client.publicCategoryApi.getSubcategories(
-      parentIdNumber
+      parentIdFromParams
     );
     return NextResponse.json(subcategories);
   } catch (error: any) {

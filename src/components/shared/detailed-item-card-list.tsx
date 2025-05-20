@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Button } from "@/src/components/ui/button";
 import { ItemResponse } from "@/src/lib/generated-api";
 import { MapPin, Tag } from "lucide-react";
-import { getTimeAgo } from "./detailed-item-card";
+import { getTimeAgo } from "@/src/utils/date-utils";
 
 interface DetailedItemCardListProps {
   item: ItemResponse;
@@ -64,7 +64,7 @@ export default function DetailedItemCardList({
 
           <Link href={`/items/${item.id}`} className="block">
             <Image
-              src={item.imageUrl[0] || "/placeholder.svg"}
+              src={item.imageUrls[0] || "/placeholder.svg"}
               alt={item.title || "Placeholder"}
               width={400}
               height={300}

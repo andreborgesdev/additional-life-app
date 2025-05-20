@@ -4,14 +4,26 @@
     "categories": "Categories",
     "about": "About",
     "contact": "Contact",
-    "addItem": "Add Item",
-    "allItems": "Browse",
-    "itemsPublished": "Items Published",
-    "userSettings": "User Settings",
-    "selectLanguage": "Select Language"
+    "add_item": "Add Item",
+    "all_items": "Browse",
+    "items_published": "Items Published",
+    "user_settings": "User Settings",
+    "select_language": "Select Language"
   },
   "search": {
-    "placeholder": "Search items..."
+    "placeholder": "Search items...",
+    "search_button_text": "Search"
+  },
+  "sort": {
+    "sort_by": "Sort by",
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "most_popular": "Most Popular",
+    "least_popular": "Least Popular"
+  },
+  "filters": {
+    "active_filters_label": "Active Filters",
+    "clear_filters_button": "Clear Filters"
   },
   "auth": {
     "login": "Log In",
@@ -21,24 +33,31 @@
   "hero": {
     "title": "Give a Second Life to Your Belongings",
     "subtitle": "Join our community-driven marketplace where you can give away items you no longer need and find treasures others are sharing.",
-    "browseItems": "Browse Items",
-    "learnMore": "Learn More"
+    "browse_items": "Browse Items",
+    "learn_more": "Learn More"
   },
   "features": {
-    "ecoFriendly": {
+    "eco_friendly": {
       "title": "Eco-Friendly",
       "description": "Reduce waste and help the environment"
     },
-    "circularEconomy": {
+    "circular_economy": {
       "title": "Circular Economy",
       "description": "Promote reuse and sustainable consumption"
     },
-    "communityDriven": {
+    "community_driven": {
       "title": "Community-Driven",
       "description": "Connect with like-minded individuals"
     }
   },
   "items": {
-    "allItems": "Items"
+    "all_items": "Items",
+    "items_found_count": "Items found",
+    "no_items_found_title": "No items found",
+    "no_items_found_description": "Try adjusting your search or filters.",
+    "browse_all_items_button": "Browse All Items",
+    "previous_page_button": "Previous Page",
+    "next_page_button": "Next Page",
+    "page_indicator": "Page {{currentPage}} of {{totalPages}}"
   }
 }
