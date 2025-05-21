@@ -32,10 +32,9 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/src/components/ui/toggle-group";
 import { Badge } from "@/src/components/ui/badge";
 import FiltersSheet from "@/src/components/items/filters-sheet";
-import CategoryFilter from "@/src/components/category-filter";
-import { buildCategoryPath } from "@/src/components/items/category-selector";
 import DetailedItemCardList from "@/src/components/shared/detailed-item-card-list";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import CategoryFilter from "@/src/components/items/category-filter";
 
 enum SortByOptions {
   RELEVANCE,
@@ -129,15 +128,31 @@ export default function ItemsPage() {
 
   useEffect(() => {
     const newTags: { id: string; label: string; type: string }[] = [];
-    if (selectedCategoryId && allCategoriesData) {
+    if (selectedCategoryId && allCategoriesData && allCategoriesData.length > 0) {
+      const categoryMap = new Map<string, CategoryResponse>();
+      allCategoriesData.forEach((cat) => {
+        if (cat.id) {
+          categoryMap.set(cat.id, cat);
+        }
+      });
+
+      const getCategoryById = (id: string | null): CategoryResponse | null => {
+        if (!id) return null;
+        return categoryMap.get(id) || null;
+      };
+
+      const pathArray: CategoryResponse[] = [];
+      let current = getCategoryById(selectedCategoryId);
+      while (current) {
+        pathArray.unshift(current);
+        current = getCategoryById(current.parentId || null);
+      }
+
       let categoryLabel = `ID: ${selectedCategoryId}`;
-      const path = buildCategoryPath(selectedCategoryId, allCategoriesData);
-      if (path.length > 0) {
-        categoryLabel = path.map((c) => c.name).join(" > ");
+      if (pathArray.length > 0) {
+        categoryLabel = pathArray.map((c) => c.name).join(" > ");
       } else {
-        const selectedCat = allCategoriesData.find(
-          (c) => c.id?.toString() === selectedCategoryId
-        );
+        const selectedCat = categoryMap.get(selectedCategoryId);
         if (selectedCat && selectedCat.name) {
           categoryLabel = selectedCat.name;
         } else {
@@ -326,12 +341,10 @@ export default function ItemsPage() {
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
           <div className="flex flex-wrap gap-4 items-center">
             <CategoryFilter
-              allCategories={allCategoriesData}
+              categories={allCategoriesData || []}
               isLoadingAllCategories={isLoadingAllCategories}
               onApplyFilter={handleApplyCategoryFilter}
               selectedCategoryId={selectedCategoryId}
-              isLoadingItems={isLoadingItems}
-              totalElements={items?.totalElements}
             />
             <div>
               <Select

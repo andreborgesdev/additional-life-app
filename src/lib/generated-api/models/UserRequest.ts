@@ -8,7 +8,17 @@ export type UserRequest = {
     email?: string;
     phoneNumber?: string;
     address?: string;
+    bio?: string;
+    avatarUrl?: string;
+    preferredLanguage?: UserRequest.preferredLanguage;
     emailVerified?: boolean;
     phoneVerified?: boolean;
 };
+export namespace UserRequest {
+    export enum preferredLanguage {
+        ENGLISH = 'ENGLISH',
+        FRENCH = 'FRENCH',
+        GERMAN = 'GERMAN',
+    }
+}
 

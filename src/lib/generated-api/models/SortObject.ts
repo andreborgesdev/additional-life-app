@@ -4,7 +4,7 @@
 /* eslint-disable */
 export type SortObject = {
     empty?: boolean;
-    unsorted?: boolean;
     sorted?: boolean;
+    unsorted?: boolean;
 };
 

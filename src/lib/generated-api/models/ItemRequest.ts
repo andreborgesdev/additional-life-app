@@ -7,7 +7,7 @@ export type ItemRequest = {
     description?: string;
     condition: ItemRequest.condition;
     address?: string;
-    imageUrls?: Array<string>;
+    imageUrls: Array<string>;
     categoryId: string;
     pickupPossible?: boolean;
     shippingPossible?: boolean;

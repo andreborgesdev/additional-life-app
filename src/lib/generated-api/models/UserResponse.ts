@@ -8,8 +8,18 @@ export type UserResponse = {
     email?: string;
     phone?: string;
     address?: string;
+    bio?: string;
+    avatarUrl?: string;
+    preferredLanguage?: UserResponse.preferredLanguage;
     createdAt?: string;
     updatedAt?: string;
     active?: boolean;
 };
+export namespace UserResponse {
+    export enum preferredLanguage {
+        ENGLISH = 'ENGLISH',
+        FRENCH = 'FRENCH',
+        GERMAN = 'GERMAN',
+    }
+}
 

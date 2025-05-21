@@ -17,7 +17,6 @@ import {
   Search,
   LogOut,
   ChevronDown,
-  Recycle,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next"; // Corrected import
@@ -57,6 +56,7 @@ import {
   SheetTrigger,
 } from "@/src/components/ui/sheet";
 import React from "react";
+import Image from "next/image";
 
 const languages = [
   { code: "en", name: "English" },
@@ -217,7 +217,14 @@ export default function Header() {
               : "text-white dark:text-green-100"
           )}
         >
-          <Recycle className="h-8 w-8" />
+          <Image
+            src="https://bmxkdcjbtchixtkruzit.supabase.co/storage/v1/object/public/items-images/9255aed5-4f8d-4869-8c76-66c1240e6917/image-XJNZH664JBDcm4rRL4hBqjdNtSr2P4.png"
+            alt="People sharing items"
+            width={40}
+            height={40}
+            className="rounded-lg"
+          />
+          {/* <Recycle className="h-8 w-8" /> */}
           <span className="hidden sm:inline">{t("siteName")}</span>
         </Link>
 
@@ -511,7 +518,14 @@ export default function Header() {
               <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0">
                 <SheetHeader className="p-6 border-b">
                   <SheetTitle className="text-left flex items-center gap-2">
-                    <Recycle className="h-8 w-8" />
+                    <Image
+                      src="https://bmxkdcjbtchixtkruzit.supabase.co/storage/v1/object/public/items-images/9255aed5-4f8d-4869-8c76-66c1240e6917/image-XJNZH664JBDcm4rRL4hBqjdNtSr2P4.png"
+                      alt="People sharing items"
+                      width={40}
+                      height={40}
+                      className="rounded-lg"
+                    />
+                    {/* <Recycle className="h-8 w-8" /> */}
                     {t("siteName")}
                   </SheetTitle>
                 </SheetHeader>

@@ -17,8 +17,8 @@ export type { Pageable } from './models/Pageable';
 export type { PageableObject } from './models/PageableObject';
 export type { PageItemResponse } from './models/PageItemResponse';
 export type { SortObject } from './models/SortObject';
-export type { UserRequest } from './models/UserRequest';
-export type { UserResponse } from './models/UserResponse';
+export { UserRequest } from './models/UserRequest';
+export { UserResponse } from './models/UserResponse';
 
 export { ItemApiService } from './services/ItemApiService';
 export { PingControllerService } from './services/PingControllerService';
