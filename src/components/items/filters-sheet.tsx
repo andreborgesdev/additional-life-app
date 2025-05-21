@@ -20,40 +20,53 @@ import {
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { Separator } from "@/src/components/ui/separator";
 import React from "react";
+import { CategoryResponse } from "@/src/lib/generated-api";
+import CategoryFilter from "./category-filter";
+import { ConditionDetail } from "../shared/detailed-item-card";
+import { SortOption } from "@/src/app/items/page";
 
 interface FiltersSheetProps {
   activeFilterCount: number;
-  categories: string[];
-  conditions: string[];
-  selectedCategory: string | null;
-  setSelectedCategory: (value: string | null) => void;
+  allCategories: CategoryResponse[];
+  selectedCategoryId: string | null;
+  onApplyCategoryFilter: (category: CategoryResponse | null) => void;
+  isLoadingAllCategories: boolean;
+  conditions: ConditionDetail[];
   selectedConditions: string[];
   setSelectedConditions: (value: string[]) => void;
-  selectedLocation: string | null;
-  setSelectedLocation: (value: string | null) => void;
-  sortBy: string;
+  sortByOptions: SortOption[];
+  currentSortByValue: string;
   setSortBy: (value: string) => void;
-  sortOrder: string;
-  setSortOrder: (value: string) => void;
+  itemsType: "all" | "internal" | "external";
+  setItemsType: (value: "all" | "internal" | "external") => void;
   clearFilters: () => void;
 }
 
 export default function FiltersSheet({
   activeFilterCount,
-  categories,
+  allCategories,
+  selectedCategoryId,
+  onApplyCategoryFilter,
+  isLoadingAllCategories,
   conditions,
-  selectedCategory,
-  setSelectedCategory,
   selectedConditions,
   setSelectedConditions,
-  selectedLocation,
-  setSelectedLocation,
-  sortBy,
+  sortByOptions,
+  currentSortByValue,
   setSortBy,
-  sortOrder,
-  setSortOrder,
+  itemsType,
+  setItemsType,
   clearFilters,
 }: FiltersSheetProps) {
+  const itemTypeOptions: {
+    value: "all" | "internal" | "external";
+    label: string;
+  }[] = [
+    { value: "all", label: "All Types" },
+    { value: "internal", label: "Internal" },
+    { value: "external", label: "External" },
+  ];
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -72,49 +85,43 @@ export default function FiltersSheet({
           <SheetDescription>Refine your search results</SheetDescription>
         </SheetHeader>
         <div className="space-y-6 py-4">
-          <div>
+          <div className="flex-col gap-2">
             <Label htmlFor="mobile-category">Category</Label>
-            <Select
-              onValueChange={(value) =>
-                setSelectedCategory(value === "all" ? null : value)
-              }
-              value={selectedCategory || "all"}
-            >
-              <SelectTrigger id="mobile-category">
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {(categories || []).map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="mt-2">
+              <CategoryFilter
+                categories={allCategories}
+                isLoadingAllCategories={isLoadingAllCategories}
+                onApplyFilter={onApplyCategoryFilter}
+                selectedCategoryId={selectedCategoryId}
+                buttonClassName="w-full justify-start"
+                popoverAlign="start"
+              />
+            </div>
           </div>
 
           <div>
             <Label>Condition</Label>
             <div className="grid grid-cols-2 gap-2 mt-2">
               {conditions.map((condition) => (
-                <div key={condition} className="flex items-center">
+                <div key={condition.key} className="flex items-center">
                   <Checkbox
-                    id={`mobile-${condition}`}
-                    checked={selectedConditions.includes(condition)}
+                    id={`mobile-${condition.key}`}
+                    checked={selectedConditions.includes(condition.key)}
                     onCheckedChange={(checked) => {
                       setSelectedConditions(
                         checked
-                          ? [...selectedConditions, condition]
-                          : selectedConditions.filter((c) => c !== condition)
+                          ? [...selectedConditions, condition.key]
+                          : selectedConditions.filter(
+                              (c) => c !== condition.key
+                            )
                       );
                     }}
                   />
                   <label
-                    htmlFor={`mobile-${condition}`}
+                    htmlFor={`mobile-${condition.key}`}
                     className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    {condition}
+                    {condition.placeholder}
                   </label>
                 </div>
               ))}
@@ -123,32 +130,44 @@ export default function FiltersSheet({
 
           <Separator />
 
+          {/* <div>
+            <Label htmlFor="mobile-itemType">Item Type</Label>
+            <Select
+              onValueChange={(value) =>
+                setItemsType(value as "all" | "internal" | "external")
+              }
+              value={itemsType}
+            >
+              <SelectTrigger id="mobile-itemType">
+                <SelectValue placeholder="Select item type" />
+              </SelectTrigger>
+              <SelectContent>
+                {itemTypeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div> */}
+
+          {/* <Separator /> */}
+
           <div>
             <Label htmlFor="mobile-sortBy">Sort By</Label>
-            <Select onValueChange={(value) => setSortBy(value)} value={sortBy}>
+            <Select
+              onValueChange={(value) => setSortBy(value)}
+              value={currentSortByValue}
+            >
               <SelectTrigger id="mobile-sortBy">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="newest">Date Posted</SelectItem>
-                <SelectItem value="title">Title</SelectItem>
-                <SelectItem value="category">Category</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="mobile-sortOrder">Order</Label>
-            <Select
-              onValueChange={(value) => setSortOrder(value)}
-              value={sortOrder}
-            >
-              <SelectTrigger id="mobile-sortOrder">
-                <SelectValue placeholder="Order" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="desc">Newest First</SelectItem>
-                <SelectItem value="asc">Oldest First</SelectItem>
+                {sortByOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

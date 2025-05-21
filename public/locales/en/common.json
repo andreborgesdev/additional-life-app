@@ -1,5 +1,5 @@
 {
-  "siteName": "Additional Life",
+  "siteName": "Add Life",
   "nav": {
     "categories": "Categories",
     "about": "About",
@@ -16,8 +16,12 @@
   },
   "sort": {
     "sort_by": "Sort by",
+    "relevance": "Relevance",
     "newest": "Newest",
     "oldest": "Oldest",
+    "title_a-z": "Title A-Z",
+    "title_z-a": "Title Z-A",
+    "newly_posted": "Newly Posted",
     "most_popular": "Most Popular",
     "least_popular": "Least Popular"
   },

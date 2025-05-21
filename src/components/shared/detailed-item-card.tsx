@@ -19,6 +19,12 @@ interface DetailedItemCardProps {
   item: ItemResponse;
 }
 
+export interface ConditionDetail {
+  key: string;
+  placeholder: string;
+  color: string;
+}
+
 export const conditionDetails = [
   { key: ItemResponse.condition.NEW, placeholder: "New", color: "green" },
   {

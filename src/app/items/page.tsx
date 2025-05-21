@@ -44,6 +44,13 @@ enum SortByOptions {
   CREATED_AT_DESC,
 }
 
+export interface SortOption {
+  value: SortByOptions;
+  label: string;
+  sortBy: SortBy;
+  direction: QueryDirection;
+}
+
 const sortByOptions = [
   {
     value: SortByOptions.RELEVANCE,
@@ -128,7 +135,11 @@ export default function ItemsPage() {
 
   useEffect(() => {
     const newTags: { id: string; label: string; type: string }[] = [];
-    if (selectedCategoryId && allCategoriesData && allCategoriesData.length > 0) {
+    if (
+      selectedCategoryId &&
+      allCategoriesData &&
+      allCategoriesData.length > 0
+    ) {
       const categoryMap = new Map<string, CategoryResponse>();
       allCategoriesData.forEach((cat) => {
         if (cat.id) {
@@ -290,7 +301,7 @@ export default function ItemsPage() {
               className="pl-10 w-full md:w-[250px]"
             />
           </div>
-          <Button onClick={handleSearch} className="ml-2">
+          <Button onClick={handleSearch} className="mx-2 bg-green-600">
             <Search size={18} className="mr-2 md:hidden" />
             {t("search.search_button_text")}
           </Button>
@@ -298,20 +309,9 @@ export default function ItemsPage() {
             activeFilterCount={activeFilterCount}
             clearFilters={clearFilters}
             allCategories={allCategoriesData || []}
-            selectedCategory={selectedCategoryId}
-            setSelectedCategory={(value) => {
-              const newCatId = value === "all" ? null : value;
-              const categoryObject =
-                newCatId && allCategoriesData
-                  ? allCategoriesData.find(
-                      (cat) => cat.id?.toString() === newCatId
-                    )
-                  : null;
-              handleApplyCategoryFilter(
-                categoryObject ||
-                  (newCatId ? ({ id: newCatId } as CategoryResponse) : null)
-              );
-            }}
+            selectedCategoryId={selectedCategoryId}
+            onApplyCategoryFilter={handleApplyCategoryFilter}
+            isLoadingAllCategories={isLoadingAllCategories}
             conditions={conditionDetails}
             selectedConditions={selectedConditions}
             setSelectedConditions={(newConditions) => {
@@ -320,12 +320,11 @@ export default function ItemsPage() {
               // refetch(); // Removed: useItems will react
             }}
             sortByOptions={sortByOptions.map((opt) => ({
-              ...opt,
               value: opt.value.toString(),
-            }))} // Ensure value is string for Select
+              label: t(`sort.${opt.label.toLowerCase().replace(/ /g, "_")}`),
+            }))}
             currentSortByValue={sortBy.toString()}
             setSortBy={handleOnSortByChanged}
-            // Props for itemsType if FiltersSheet handles it
             itemsType={itemsType}
             setItemsType={(newType) => {
               setItemsType(newType as "all" | "internal" | "external");
@@ -361,7 +360,9 @@ export default function ItemsPage() {
                       key={option.value}
                       value={option.value.toString()}
                     >
-                      {t(option.label.toLowerCase().replace(/ /g, "_"))}{" "}
+                      {t(
+                        `sort.${option.label.toLowerCase().replace(/ /g, "_")}`
+                      )}{" "}
                     </SelectItem>
                   ))}
                 </SelectContent>
