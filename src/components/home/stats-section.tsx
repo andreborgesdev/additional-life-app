@@ -1,3 +1,5 @@
+import { NumberTicker } from "../magicui/number-ticker";
+
 export default function StatsSection() {
   return (
     <section className="py-2">
@@ -5,7 +7,11 @@ export default function StatsSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <div>
             <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
-              10,000+
+              <NumberTicker
+                value={10000}
+                className="text-green-600 dark:text-green-400"
+              />
+              +
             </div>
             <div className="text-lg text-gray-700 dark:text-gray-300">
               Items Shared
@@ -13,7 +19,10 @@ export default function StatsSection() {
           </div>
           <div>
             <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
-              5,000+
+              <NumberTicker
+                value={5000}
+                className="text-green-600 dark:text-green-400"
+              />
             </div>
             <div className="text-lg text-gray-700 dark:text-gray-300">
               Active Users
@@ -21,7 +30,10 @@ export default function StatsSection() {
           </div>
           <div>
             <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
-              4,000+
+              <NumberTicker
+                value={4000}
+                className="text-green-600 dark:text-green-400"
+              />
             </div>
             <div className="text-lg text-gray-700 dark:text-gray-300">
               Saved from Landfill

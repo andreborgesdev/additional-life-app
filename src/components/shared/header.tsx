@@ -146,7 +146,7 @@ export default function Header() {
 
   const navItems = [
     { href: "/items", icon: <List size={18} />, label: t("nav.all_items") },
-    // { href: "/categories", icon: null, label: t("nav.categories") },
+    { href: "/categories", icon: null, label: t("nav.categories") },
     // { href: "/about", icon: null, label: t("nav.about") },
     // { href: "/contact", icon: null, label: t("nav.contact") },
   ];

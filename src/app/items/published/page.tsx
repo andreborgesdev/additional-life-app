@@ -35,28 +35,42 @@ import {
 import { toast } from "@/src/hooks/use-toast";
 import { useUserItems } from "@/src/hooks/items/use-user-items";
 import { useUpdateItemStatus } from "@/src/hooks/items/use-update-item-as-taken";
+import { useDeleteItem } from "@/src/hooks/items/use-delete-item";
 import { ItemResponse, ItemStatusRequest } from "@/src/lib/generated-api";
 import { conditionDetails } from "@/src/components/shared/detailed-item-card";
 import { formatDate } from "@/src/utils/date-utils";
 
 export default function ItemsPublishedPage() {
-  const { data: items = [], isLoading, error, refetch } = useUserItems();
+  const { data: items, isLoading, error, refetch } = useUserItems();
   const [itemToDelete, setItemToDelete] = useState<ItemResponse | null>(null);
   const [itemToChangeStatus, setItemToChangeStatus] =
     useState<ItemResponse | null>(null);
 
-  const { mutate: changeItemStatusMutation, isLoading: isChangingStatus } =
+  const orderedItems = items
+    ?.filter((item) => item.status !== ItemResponse.status.DELETED)
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+  const { mutate: changeItemStatusMutation, isPending: isChangingStatus } =
     useUpdateItemStatus();
+  const { mutate: deleteItemMutation, isPending: isDeletingItem } =
+    useDeleteItem();
 
   const handleDeleteItem = async (id: string | undefined) => {
     if (!id) return;
 
-    toast({
-      title: "Item deleted",
-      description: "Your item has been successfully removed.",
+    deleteItemMutation(id, {
+      onSuccess: () => {
+        refetch();
+        setItemToDelete(null);
+      },
+      onError: () => {
+        setItemToDelete(null);
+      },
     });
-    refetch();
-    setItemToDelete(null);
   };
 
   const handleConfirmItemTaken = () => {
@@ -117,30 +131,17 @@ export default function ItemsPublishedPage() {
             Manage the items you've listed for others to claim
           </p>
         </div>
-        <Button asChild className="bg-green-600 hover:bg-green-700">
+        <Button
+          asChild
+          className="bg-green-600 hover:bg-green-700"
+          disabled={isChangingStatus || isDeletingItem}
+        >
           <Link href="/items/create/new">List a New Item</Link>
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="pb-2">
-                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 rounded-md mb-4"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
-              </CardContent>
-              <CardFooter>
-                <div className="h-9 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+        <ItemsPublishedSkeleton />
       ) : items.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -154,7 +155,7 @@ export default function ItemsPublishedPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map((item) => (
+          {orderedItems.map((item) => (
             <Card key={item.id} className="overflow-hidden">
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
@@ -213,7 +214,12 @@ export default function ItemsPublishedPage() {
               </CardContent>
               <CardFooter className="flex justify-between">
                 <div className="flex gap-2 flex-wrap">
-                  <Button asChild variant="outline" size="sm">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    disabled={isChangingStatus || isDeletingItem}
+                  >
                     <Link href={`/items/${item.id}`}>
                       <Eye className="h-4 w-4 mr-2" />
                       View
@@ -221,7 +227,12 @@ export default function ItemsPublishedPage() {
                   </Button>
                   {item.status === ItemResponse.status.AVAILABLE && (
                     <>
-                      <Button asChild variant="outline" size="sm">
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        disabled={isChangingStatus || isDeletingItem}
+                      >
                         <Link href={`/items/create/${item.id}`}>
                           <Pencil className="h-4 w-4 mr-2" />
                           Edit
@@ -230,7 +241,8 @@ export default function ItemsPublishedPage() {
                       <AlertDialog
                         open={itemToChangeStatus?.id === item.id}
                         onOpenChange={(open) => {
-                          if (!open) setItemToChangeStatus(null);
+                          if (!open && !isChangingStatus)
+                            setItemToChangeStatus(null);
                         }}
                       >
                         <AlertDialogTrigger asChild>
@@ -238,10 +250,7 @@ export default function ItemsPublishedPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => setItemToChangeStatus(item)}
-                            disabled={
-                              isChangingStatus &&
-                              itemToChangeStatus?.id === item.id
-                            }
+                            disabled={isChangingStatus || isDeletingItem}
                           >
                             <Archive className="h-4 w-4 mr-2" />
                             {isChangingStatus &&
@@ -262,6 +271,7 @@ export default function ItemsPublishedPage() {
                           <AlertDialogFooter>
                             <AlertDialogCancel
                               onClick={() => setItemToChangeStatus(null)}
+                              disabled={isChangingStatus}
                             >
                               Cancel
                             </AlertDialogCancel>
@@ -281,7 +291,8 @@ export default function ItemsPublishedPage() {
                     <AlertDialog
                       open={itemToChangeStatus?.id === item.id}
                       onOpenChange={(open) => {
-                        if (!open) setItemToChangeStatus(null);
+                        if (!open && !isChangingStatus)
+                          setItemToChangeStatus(null);
                       }}
                     >
                       <AlertDialogTrigger asChild>
@@ -289,10 +300,7 @@ export default function ItemsPublishedPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => setItemToChangeStatus(item)}
-                          disabled={
-                            isChangingStatus &&
-                            itemToChangeStatus?.id === item.id
-                          }
+                          disabled={isChangingStatus || isDeletingItem}
                         >
                           <Check className="h-4 w-4 mr-2" />
                           {isChangingStatus &&
@@ -313,6 +321,7 @@ export default function ItemsPublishedPage() {
                         <AlertDialogFooter>
                           <AlertDialogCancel
                             onClick={() => setItemToChangeStatus(null)}
+                            disabled={isChangingStatus}
                           >
                             Cancel
                           </AlertDialogCancel>
@@ -330,7 +339,7 @@ export default function ItemsPublishedPage() {
                   <AlertDialog
                     open={itemToDelete?.id === item.id}
                     onOpenChange={(open) => {
-                      if (!open) setItemToDelete(null);
+                      if (!open && !isDeletingItem) setItemToDelete(null);
                     }}
                   >
                     <AlertDialogTrigger asChild>
@@ -338,9 +347,12 @@ export default function ItemsPublishedPage() {
                         variant="destructive"
                         size="sm"
                         onClick={() => setItemToDelete(item)}
+                        disabled={isDeletingItem || isChangingStatus}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
+                        {isDeletingItem && itemToDelete?.id === item.id
+                          ? "Deleting..."
+                          : "Delete"}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -354,14 +366,18 @@ export default function ItemsPublishedPage() {
                       <AlertDialogFooter>
                         <AlertDialogCancel
                           onClick={() => setItemToDelete(null)}
+                          disabled={isDeletingItem}
                         >
                           Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleDeleteItem(itemToDelete?.id)}
                           className="bg-red-600 hover:bg-red-700"
+                          disabled={isDeletingItem}
                         >
-                          Delete
+                          {isDeletingItem && itemToDelete?.id === item.id
+                            ? "Deleting..."
+                            : "Delete"}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -372,6 +388,29 @@ export default function ItemsPublishedPage() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function ItemsPublishedSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[1, 2, 3].map((i) => (
+        <Card key={i} className="animate-pulse">
+          <CardHeader className="pb-2">
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+          </CardHeader>
+          <CardContent>
+            <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 rounded-md mb-4"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+          </CardContent>
+          <CardFooter>
+            <div className="h-9 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+          </CardFooter>
+        </Card>
+      ))}
     </div>
   );
 }

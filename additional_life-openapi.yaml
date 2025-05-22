@@ -834,7 +834,7 @@ components:
         active:
           type: boolean
         owner:
-          type: string
+          $ref: "#/components/schemas/MinimalUserResponse"
         category:
           $ref: "#/components/schemas/CategoryResponse"
         sourceExternalPlatform:
@@ -845,6 +845,17 @@ components:
           type: boolean
         shippingPossible:
           type: boolean
+    MinimalUserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        supabaseId:
+          type: string
+        name:
+          type: string
+        avatarUrl:
+          type: string
     ItemStatusRequest:
       type: object
       properties:
@@ -858,12 +869,12 @@ components:
     PageItemResponse:
       type: object
       properties:
-        totalElements:
-          type: integer
-          format: int64
         totalPages:
           type: integer
           format: int32
+        totalElements:
+          type: integer
+          format: int64
         first:
           type: boolean
         last:
@@ -880,11 +891,11 @@ components:
           format: int32
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: boolean
     PageableObject:
@@ -895,8 +906,6 @@ components:
           format: int64
         sort:
           $ref: "#/components/schemas/SortObject"
-        unpaged:
-          type: boolean
         paged:
           type: boolean
         pageNumber:
@@ -905,14 +914,16 @@ components:
         pageSize:
           type: integer
           format: int32
+        unpaged:
+          type: boolean
     SortObject:
       type: object
       properties:
         empty:
           type: boolean
-        unsorted:
-          type: boolean
         sorted:
+          type: boolean
+        unsorted:
           type: boolean
     Pageable:
       type: object

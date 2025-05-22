@@ -20,6 +20,7 @@ import {
   Package,
   MapPinHouse,
   Truck,
+  Edit,
 } from "lucide-react";
 import ImageCarousel from "@/src/components/shared/image-carousel";
 import { Button } from "@/src/components/ui/button";
@@ -56,6 +57,7 @@ import { conditionDetails } from "@/src/components/shared/detailed-item-card";
 import { Separator } from "@/src/components/ui/separator";
 import { getUserFullNameByUUID } from "@/src/lib/supabase/auth/supabase-get-user";
 import { getTimeAgo } from "@/src/utils/date-utils";
+import { useUserBySupabaseId } from "@/src/hooks/users/use-user-by-supabase-id";
 
 const fadeIn = {
   hidden: { opacity: 0 },
@@ -75,9 +77,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const { session } = useSession();
   const router = useRouter();
 
-  const { data: item, isLoading, error } = useItem(params.id);
+  const {
+    data: item,
+    isLoading: isLoadingItemData,
+    error,
+  } = useItem(params.id);
 
-  if (isLoading) {
+  if (isLoadingItemData) {
     return <ProductSkeleton />;
   }
 
@@ -88,6 +94,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   if (!item) {
     notFound();
   }
+
+  const isOwner = session?.user?.id === item.owner?.supabaseId;
 
   const handleReportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,6 +183,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     router.push(`/chat/${productId}`);
   };
 
+  const handleEditClick = () => {
+    router.push(`/items/create/${item.id}`);
+  };
+
   const imagesForCarousel = item.imageUrls;
 
   const productLatitude = (item as any)?.latitude;
@@ -226,6 +238,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               </div>
             </div>
             <div className="flex space-x-2">
+              {isOwner && (
+                <Button variant="outline" size="sm" onClick={handleEditClick}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </Button>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -325,18 +343,14 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           </div>
           <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <Avatar className="h-12 w-12">
-              <AvatarImage
-                src={`/placeholder.svg?height=100&width=100&text=${(
-                  item.owner || "U"
-                ).charAt(0)}`}
-              />
+              <AvatarImage src={item.owner?.avatarUrl} />
               <AvatarFallback>
-                {(item.owner || item.owner || "U").charAt(0)}
+                {(item.owner?.name || "U").charAt(0)}
               </AvatarFallback>
             </Avatar>
             <div>
               <p className="font-medium text-gray-900 dark:text-gray-100">
-                {item.owner}
+                {item.owner?.name}
               </p>
               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <Clock className="mr-1 h-4 w-4" />
@@ -529,6 +543,8 @@ function ProductSkeleton() {
           <div className="flex justify-between items-start mb-4">
             <Skeleton className="h-10 w-3/4" /> {/* Title */}
             <div className="flex space-x-2">
+              <Skeleton className="h-8 w-20 rounded" />{" "}
+              {/* Edit button skeleton */}
               <Skeleton className="h-8 w-20 rounded" /> {/* Share button */}
               <Skeleton className="h-8 w-20 rounded" /> {/* Report button */}
             </div>

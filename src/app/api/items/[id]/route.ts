@@ -84,25 +84,17 @@ const deleteItemHandler = async (
   _request: NextRequest,
   context: RouteContext
 ): Promise<NextResponse<{ message?: string; error?: string }>> => {
-  const idFromParams = context.params?.id;
-  if (!idFromParams) {
+  const idToBeDeleted = context.params?.id as string;
+  if (!idToBeDeleted) {
     return NextResponse.json(
       { error: "Item ID is required in path" },
       { status: 400 }
     );
   }
-  const idStr = Array.isArray(idFromParams) ? idFromParams[0] : idFromParams;
-
-  if (!idStr) {
-    return NextResponse.json(
-      { error: "Item ID is missing or invalid" },
-      { status: 400 }
-    );
-  }
 
   try {
-    await client.itemApi.deleteItem(idFromParams);
-    return NextResponse.json({}, { status: 204 });
+    await client.itemApi.deleteItem(idToBeDeleted);
+    return new NextResponse(null, { status: 204 });
   } catch (error: any) {
     console.error("Error deleting item:", error);
     const status = typeof error.status === "number" ? error.status : 500;

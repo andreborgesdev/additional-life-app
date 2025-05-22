@@ -5,19 +5,35 @@ import { useRootCategories } from "@/src/hooks/use-categories";
 import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
 import Image from "next/image";
 import { iconMap } from "@/src/components/home/categories";
+import { Skeleton } from "@/src/components/ui/skeleton";
+
+function CategoryCardSkeleton() {
+  return (
+    <div className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex flex-col items-center justify-center">
+      <Skeleton className="h-20 w-20 rounded-full mb-3" />
+      <Skeleton className="h-4 w-24" />
+    </div>
+  );
+}
+
+function CategoriesPageSkeleton() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <Skeleton className="h-9 w-1/3 mb-8" />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <CategoryCardSkeleton key={index} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function CategoriesPage() {
   const { data: categories, isLoading, error } = useRootCategories();
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <LoadingSpinner className="h-8 w-8 text-green-600" />
-        <p className="mt-2 text-green-800 dark:text-green-200">
-          Loading categories...
-        </p>
-      </div>
-    );
+  if (isLoading && !categories) {
+    return <CategoriesPageSkeleton />;
   }
 
   if (error) {
@@ -30,19 +46,23 @@ export default function CategoriesPage() {
     );
   }
 
+  const sortedCategories = categories
+    ? [...categories].sort((a, b) => a.name.localeCompare(b.name))
+    : [];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-green-800 dark:text-green-200 mb-8">
         Browse Categories
       </h1>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {categories?.map((category) => {
+        {sortedCategories?.map((category) => {
           return (
             <Link
               key={category.id}
               href={{
-                pathname: `/categories/${category.id}`,
-                query: { name: category.name },
+                pathname: `/items`,
+                query: { categoryId: category.id },
               }}
               className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex flex-col items-center justify-center transition-transform hover:scale-105 cursor-pointer"
             >

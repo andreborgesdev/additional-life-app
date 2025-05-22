@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, ChangeEvent, FormEvent } from "react";
+import { useEffect, useState, ChangeEvent, FormEvent, useMemo } from "react";
 import { PhotoUploader } from "@/src/components/shared/photo-uploader";
 import { useItem } from "@/src/hooks/items/use-item";
 import { ItemRequest } from "@/src/lib/generated-api";
@@ -23,13 +23,22 @@ import { useSession } from "@/src/app/auth-provider";
 import { useRouter, useParams } from "next/navigation";
 import { useCategories } from "@/src/hooks/use-categories";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Home } from "lucide-react"; // Added Home icon
-import { uploadImage } from "@/src/lib/supabase/storage/client";
+import { ArrowLeft, Loader2, Home } from "lucide-react";
+import { uploadImage, deleteImage } from "@/src/lib/supabase/storage/client";
 import { useCreateOrUpdateItem } from "@/src/hooks/items/use-create-or-update-item";
 import { useUserBySupabaseId } from "@/src/hooks/users/use-user-by-supabase-id";
+import { v4 as uuidv4 } from "uuid";
 
 const MAX_IMAGES = 5;
 const conditionOptions = Object.values(ItemRequest.condition);
+
+interface ImageSource {
+  id: string;
+  type: "persisted" | "new";
+  url?: string; // Blob URL for new, Supabase URL for persisted/uploaded
+  file?: File;
+  uploadError?: string;
+}
 
 export default function CreateProductPage() {
   const router = useRouter();
@@ -52,19 +61,22 @@ export default function CreateProductPage() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [condition, setCondition] = useState<ItemRequest.condition | "">("");
+  const [condition, setCondition] = useState<ItemRequest.condition | undefined>(
+    undefined
+  );
   const [formSelectedCategoryId, setFormSelectedCategoryId] = useState<
     string | null
   >(null);
   const [address, setAddress] = useState("");
-  const [images, setImages] = useState<File[]>([]);
-  const [initialImageUrl, setInitialImageUrl] = useState<string | null>(null);
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [imageSources, setImageSources] = useState<ImageSource[]>([]);
   const [pickupPossible, setPickupPossible] = useState(false);
   const [shippingPossible, setShippingPossible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [removedPersistedImageUrls, setRemovedPersistedImageUrls] = useState<
+    string[]
+  >([]);
   const { session, isLoading: isLoadingSession } = useSession();
-  const [uploadedImageLinks, setUploadedImageLinks] = useState<string[]>([]);
+
   const { data: allCategories, isLoading: isLoadingCategories } =
     useCategories();
 
@@ -80,23 +92,72 @@ export default function CreateProductPage() {
   }, [router, session, isLoadingSession]);
 
   useEffect(() => {
-    if (isEditMode && itemDataFromHook && !isLoadingItemData) {
-      setTitle(itemDataFromHook.title || "");
-      setDescription(itemDataFromHook.description || "");
-      if (itemDataFromHook.category?.id) {
-        setFormSelectedCategoryId(itemDataFromHook.category.id.toString());
-      }
+    if (isEditMode) {
+      if (
+        itemDataFromHook &&
+        !isLoadingItemData &&
+        session &&
+        !isLoadingSession
+      ) {
+        if (itemDataFromHook.owner?.supabaseId !== session.user.id) {
+          toast({
+            title: "Unauthorized",
+            description: "You are not authorized to edit this item.",
+            variant: "destructive",
+          });
+          router.replace("/items");
+          return;
+        }
 
-      setCondition((itemDataFromHook.condition as ItemRequest.condition) || "");
-      setAddress(itemDataFromHook.address || "");
-      if (itemDataFromHook.imageUrls) {
-        setInitialImageUrl(itemDataFromHook.imageUrls);
-        setUploadedImageLinks(itemDataFromHook.imageUrls);
+        setTitle(itemDataFromHook.title || "");
+        setDescription(itemDataFromHook.description || "");
+        setFormSelectedCategoryId(
+          itemDataFromHook.category?.id?.toString() ?? null
+        );
+        setCondition(itemDataFromHook.condition ?? undefined);
+        setAddress(itemDataFromHook.address || "");
+
+        const persistedSources: ImageSource[] = (
+          itemDataFromHook.imageUrls || []
+        ).map((url: string) => ({
+          id: url,
+          type: "persisted",
+          url: url,
+        }));
+        setImageSources(persistedSources);
+        setRemovedPersistedImageUrls([]);
+        setPickupPossible(itemDataFromHook.pickupPossible || false);
+        setShippingPossible(itemDataFromHook.shippingPossible || false);
+      } else if (!isLoadingItemData && !itemDataFromHook && productId) {
+        // If in edit mode, but no data (e.g., item not found or after ID change before new data load)
+        // Reset form to prevent showing stale data from a previous item.
+        setTitle("");
+        setDescription("");
+        setCondition(undefined);
+        setFormSelectedCategoryId(null);
+        setAddress("");
+        setImageSources([]);
+        setPickupPossible(false);
+        setShippingPossible(false);
+        setRemovedPersistedImageUrls([]);
       }
-      setPickupPossible(itemDataFromHook.pickupPossible || false);
-      setShippingPossible(itemDataFromHook.shippingPossible || false);
+      // If isLoadingItemData is true, we wait for data to load.
+      // itemDataError handling is separate.
+    } else {
+      // Not in edit mode (creating a new item)
+      // Reset all fields to default for a new item form
+      setTitle("");
+      setDescription("");
+      setCondition(undefined);
+      setFormSelectedCategoryId(null);
+      // setAddress(""); // Keep address if pre-filled from user data, or clear if desired
+      setImageSources([]);
+      setPickupPossible(false);
+      setShippingPossible(false);
+      setRemovedPersistedImageUrls([]);
     }
-    if (isEditMode && itemDataError) {
+
+    if (isEditMode && itemDataError && !isLoadingItemData) {
       console.error("Error loading product:", itemDataError);
       toast({
         title: "Error",
@@ -104,67 +165,70 @@ export default function CreateProductPage() {
         variant: "destructive",
       });
     }
-  }, [isEditMode, itemDataFromHook, isLoadingItemData, itemDataError, toast]);
+  }, [
+    isEditMode,
+    itemDataFromHook,
+    isLoadingItemData,
+    itemDataError,
+    session,
+    isLoadingSession,
+    productId,
+    router,
+    toast,
+  ]);
+
+  const imagePreviewsForUploader = useMemo(() => {
+    return imageSources.map((source) => ({
+      id: source.id,
+      url: source.url || "",
+    }));
+  }, [imageSources]);
 
   useEffect(() => {
-    let newUrls: string[] = [];
-    if (images.length > 0) {
-      newUrls = images.map((file: File) => URL.createObjectURL(file)); // Added File type
-      setImagePreviewUrls(newUrls);
-    } else if (initialImageUrl) {
-      newUrls = [initialImageUrl];
-      setImagePreviewUrls(newUrls);
-    } else {
-      setImagePreviewUrls([]);
-    }
-
     return () => {
-      if (images.length > 0) {
-        // Check if it was images that created the URLs
-        newUrls.forEach((url: string) => {
-          // Added string type
-          if (url.startsWith("blob:")) {
-            URL.revokeObjectURL(url);
-          }
-        });
-      }
+      imageSources.forEach((source) => {
+        if (source.type === "new" && source.url?.startsWith("blob:")) {
+          URL.revokeObjectURL(source.url);
+        }
+      });
     };
-  }, [images, initialImageUrl]);
+  }, [imageSources]);
 
-  const handleRemoveImage = (indexToRemove: number) => {
-    if (images.length > 0 && indexToRemove < images.length) {
-      setImages((prevImages) =>
-        prevImages.filter((_, index) => index !== indexToRemove)
-      );
-      setUploadedImageLinks([]); // Clear cache when images change
-    } else if (images.length === 0 && initialImageUrl && indexToRemove === 0) {
-      setInitialImageUrl(null);
-      setUploadedImageLinks([]); // Clear cache if the initial image is removed
+  const handleRemoveImageById = (idToRemove: string) => {
+    const sourceToRemove = imageSources.find((s) => s.id === idToRemove);
+
+    if (sourceToRemove) {
+      if (
+        sourceToRemove.type === "new" &&
+        sourceToRemove.url?.startsWith("blob:")
+      ) {
+        URL.revokeObjectURL(sourceToRemove.url);
+      } else if (sourceToRemove.type === "persisted" && sourceToRemove.url) {
+        setRemovedPersistedImageUrls((prev) => [...prev, sourceToRemove.url!]);
+      }
     }
+
+    setImageSources((prev) =>
+      prev.filter((source) => source.id !== idToRemove)
+    );
   };
 
-  const handleAddFiles = (newFiles: File[]) => {
-    const currentImageCount =
-      images.length +
-      (initialImageUrl &&
-      !images.find((img: File) => img.name === initialImageUrl) // Added File type
-        ? 1
-        : 0);
-    const availableSlots = MAX_IMAGES - currentImageCount;
-
-    if (availableSlots <= 0 && newFiles.length > 0) {
+  const handleAddFiles = (incomingFiles: File[]) => {
+    const currentTotalImages = imageSources.length;
+    if (currentTotalImages >= MAX_IMAGES) {
       toast({
         title: "Maximum images reached",
-        description: `You can upload a maximum of ${MAX_IMAGES} images. Please remove some images if you want to add new ones.`,
+        description: `You cannot add more than ${MAX_IMAGES} images.`,
         variant: "destructive",
       });
       return;
     }
 
-    const filesToProcess = newFiles.slice(0, availableSlots);
-    const uniqueNewFiles: File[] = [];
+    const slotsAvailableForNew = MAX_IMAGES - currentTotalImages;
+    const filesToConsider = incomingFiles.slice(0, slotsAvailableForNew);
+    const newSources: ImageSource[] = [];
 
-    for (const file of filesToProcess) {
+    for (const file of filesToConsider) {
       if (!file.type.startsWith("image/")) {
         toast({
           title: "Invalid file type",
@@ -183,67 +247,163 @@ export default function CreateProductPage() {
         continue;
       }
 
-      const isDuplicateInState = images.some(
-        (
-          existingFile: File // Added File type
-        ) =>
-          existingFile.name === file.name &&
-          existingFile.size === file.size &&
-          existingFile.lastModified === file.lastModified
+      const isDuplicate = imageSources.some(
+        (existing) =>
+          existing.file?.name === file.name && existing.file?.size === file.size
       );
-
-      if (isDuplicateInState) {
+      if (isDuplicate) {
         toast({
           title: "Duplicate Image",
           description: `${file.name} has already been added.`,
-          variant: "default", // Changed from destructive
+          variant: "default",
         });
         continue;
       }
-      uniqueNewFiles.push(file);
-    }
-
-    const filesToAdd = uniqueNewFiles;
-
-    if (
-      filesToAdd.length > 0 &&
-      images.length + filesToAdd.length > MAX_IMAGES
-    ) {
-      // This case should ideally be caught by availableSlots earlier,
-      // but as a safeguard if uniqueNewFiles processing changes counts.
-      toast({
-        title: "Some images not added",
-        description: `Maximum of ${MAX_IMAGES} images allowed. ${
-          images.length + filesToAdd.length - MAX_IMAGES
-        } images could not be added.`,
-        variant: "default",
-      });
-      // Take only what fits
-      const numThatFit = MAX_IMAGES - images.length;
-      setImages((prevImages: File[]) => [
-        ...prevImages,
-        ...filesToAdd.slice(0, numThatFit),
-      ]);
-      setUploadedImageLinks([]);
-      return;
-    }
-
-    if (
-      filesToAdd.length < newFiles.length &&
-      filesToAdd.length > 0 &&
-      newFiles.length > filesToProcess.length
-    ) {
-      toast({
-        title: "Some images not added",
-        description: `Maximum of ${MAX_IMAGES} images allowed or duplicates were found. ${filesToAdd.length} of ${newFiles.length} selected images were processed.`,
-        variant: "default",
+      newSources.push({
+        id: uuidv4(),
+        type: "new",
+        file: file,
+        url: URL.createObjectURL(file),
       });
     }
 
-    if (filesToAdd.length > 0) {
-      setImages((prevImages: File[]) => [...prevImages, ...filesToAdd]);
-      setUploadedImageLinks([]);
+    if (newSources.length > 0) {
+      setImageSources((prev) => [...prev, ...newSources]);
     }
+
+    if (filesToConsider.length < incomingFiles.length) {
+      toast({
+        title: "Some images not added",
+        description: `Maximum of ${MAX_IMAGES} images allowed. Some files were not added.`,
+        variant: "default",
+      });
+    } else if (
+      newSources.length < filesToConsider.length &&
+      newSources.length > 0
+    ) {
+      toast({
+        title: "Some images not added",
+        description: "Some files were invalid, too large, or duplicates.",
+        variant: "default",
+      });
+    }
+  };
+
+  const handleReorderImagesByIds = (draggedId: string, targetId: string) => {
+    setImageSources((prevSources) => {
+      const newSources = [...prevSources];
+      const draggedItemIndex = newSources.findIndex((s) => s.id === draggedId);
+      const targetItemIndex = newSources.findIndex((s) => s.id === targetId);
+
+      if (draggedItemIndex === -1 || targetItemIndex === -1) return prevSources;
+
+      const [draggedItem] = newSources.splice(draggedItemIndex, 1);
+      newSources.splice(targetItemIndex, 0, draggedItem);
+      return newSources;
+    });
+  };
+
+  const handleSetMainImageById = (idToMakeMain: string) => {
+    setImageSources((prevSources) => {
+      const newSources = [...prevSources];
+      const itemIndex = newSources.findIndex((s) => s.id === idToMakeMain);
+
+      if (itemIndex === -1 || itemIndex === 0) return prevSources; // Already main or not found
+
+      const [item] = newSources.splice(itemIndex, 1);
+      newSources.unshift(item); // Move to the front
+      return newSources;
+    });
+  };
+
+  const uploadAndGetFinalUrls = async (): Promise<string[]> => {
+    if (!session) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to upload images.",
+        variant: "destructive",
+      });
+      throw new Error("User not authenticated for image upload.");
+    }
+
+    const sourcesToUpload = imageSources.filter(
+      (s) => s.type === "new" && s.file && !s.url?.startsWith("https://")
+    );
+    if (sourcesToUpload.length > 0) {
+      toast({
+        title: `Uploading ${sourcesToUpload.length} new image(s)`,
+        description: "Please wait...",
+      });
+    }
+
+    const updatedSources = [...imageSources];
+    let anUploadFailed = false;
+
+    for (let i = 0; i < updatedSources.length; i++) {
+      const source = updatedSources[i];
+
+      if (source.type === "persisted") {
+        continue;
+      }
+
+      if (
+        source.type === "new" &&
+        source.file &&
+        (!source.url || source.url.startsWith("blob:"))
+      ) {
+        try {
+          const result = await uploadImage({
+            file: source.file,
+            userId: session.user.id,
+            bucket: "items-images",
+          });
+          if (result.error) {
+            throw new Error(result.error.message || "Unknown upload error");
+          }
+          if (!result.imageUrl) {
+            throw new Error("Image URL not returned from upload");
+          }
+          updatedSources[i] = {
+            ...source,
+            url: result.imageUrl,
+            file: undefined,
+          }; // Clear file after upload
+        } catch (error: any) {
+          console.error(`Failed to upload image ${source.file.name}:`, error);
+          toast({
+            title: "Image Upload Error",
+            description: `Could not upload ${source.file.name}. ${error.message}`,
+            variant: "destructive",
+          });
+          updatedSources[i] = { ...source, uploadError: error.message };
+          anUploadFailed = true;
+        }
+      }
+    }
+
+    setImageSources(updatedSources); // Update state with new URLs or errors
+
+    if (anUploadFailed) {
+      toast({
+        title: "Image Upload Failed",
+        description:
+          "Some new images failed to upload. Please review and try again.",
+        variant: "destructive",
+      });
+      throw new Error("Image upload failed for some images.");
+    }
+
+    const finalUrls = updatedSources
+      .map((s) => s.url)
+      .filter((url) => !!url && !url.startsWith("blob:")) as string[];
+
+    if (sourcesToUpload.length > 0 && !anUploadFailed) {
+      toast({
+        title: "New Images Uploaded",
+        description: `${sourcesToUpload.length} new image(s) processed successfully.`,
+      });
+    }
+    return finalUrls;
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -264,7 +424,7 @@ export default function CreateProductPage() {
     if (
       !title ||
       !description ||
-      !formSelectedCategoryId || // Use formSelectedCategoryId
+      !formSelectedCategoryId ||
       !address ||
       !condition
     ) {
@@ -277,20 +437,43 @@ export default function CreateProductPage() {
       return;
     }
 
-    const uploadedImageUrls = await uploadImages();
+    let finalImageUrls: string[] = [];
+    try {
+      finalImageUrls = await uploadAndGetFinalUrls();
+      if (
+        imageSources.length > 0 &&
+        finalImageUrls.length === 0 &&
+        !imageSources.every((s) => s.type === "persisted" && s.url)
+      ) {
+        // This case means uploads were attempted but all failed or no valid URLs remained.
+        // The uploadAndGetFinalUrls function would have thrown if critical uploads failed.
+        // If all images were 'new' and all failed, finalImageUrls would be empty.
+        // If there were persisted images, they should be in finalImageUrls.
+        // This check is a safeguard.
+        if (imageSources.some((s) => s.type === "new" && !s.uploadError)) {
+          // If some new images didn't even attempt upload or didn't error but no URL
+          console.error(
+            "Image processing resulted in no valid URLs for new images without explicit errors."
+          );
+        }
+      }
+    } catch (error) {
+      setIsSubmitting(false);
+      return;
+    }
 
     const itemPayload: ItemRequest = {
       title,
       description,
       condition: condition as ItemRequest.condition,
-      categoryId: formSelectedCategoryId,
+      categoryId: formSelectedCategoryId!,
       address,
       pickupPossible,
       shippingPossible,
-      imageUrls: uploadedImageUrls,
+      imageUrls: finalImageUrls.length > 0 ? finalImageUrls : undefined,
     };
 
-    const { success, error } = await useCreateOrUpdateItem(
+    const { success, error: submissionError } = await useCreateOrUpdateItem(
       itemPayload,
       isEditMode,
       productId
@@ -299,130 +482,59 @@ export default function CreateProductPage() {
     if (success) {
       toast({
         title: "Success",
-        description: "Your item has been added successfully!",
+        description: `Your item has been ${
+          isEditMode ? "updated" : "added"
+        } successfully!`,
       });
-      setUploadedImageLinks([]);
-      router.push("/");
+
+      if (removedPersistedImageUrls.length > 0) {
+        let deletionErrors = 0;
+        for (const imageUrl of removedPersistedImageUrls) {
+          try {
+            const { error: deleteError } = await deleteImage(imageUrl);
+            if (deleteError) {
+              console.error(
+                `Failed to delete image ${imageUrl}:`,
+                deleteError.message
+              );
+              deletionErrors++;
+            }
+          } catch (e: any) {
+            console.error(
+              `Exception while deleting image ${imageUrl}:`,
+              e.message
+            );
+            deletionErrors++;
+          }
+        }
+
+        if (deletionErrors > 0) {
+          toast({
+            title: "Image Cleanup Issue",
+            description: `${deletionErrors} image(s) could not be removed from storage. You may need to remove them manually.`,
+            variant: "warning",
+          });
+        }
+        setRemovedPersistedImageUrls([]);
+      }
+
+      if (!isEditMode) {
+        setImageSources([]);
+      }
+      if (isEditMode && productId) {
+        router.refresh();
+      }
+      router.push(isEditMode && productId ? `/items/${productId}` : "/");
     } else {
       toast({
         title: "Error Submitting Item",
         description:
-          error || "An unexpected error occurred while saving the item.",
+          submissionError ||
+          "An unexpected error occurred while saving the item.",
         variant: "destructive",
       });
     }
-
     setIsSubmitting(false);
-  };
-
-  const uploadImages = async (): Promise<string[]> => {
-    let currentImageUrlsForPayload: string[] = [];
-    if (images.length > 0) {
-      if (uploadedImageLinks.length > 0) {
-        currentImageUrlsForPayload = [...uploadedImageLinks];
-        toast({
-          title: "Using Cached Images",
-          description: "Using previously uploaded image links.",
-          variant: "default",
-        });
-      } else {
-        // No cached links, proceed to upload
-        if (!session) {
-          toast({
-            title: "Authentication Error",
-            description: "You must be logged in to upload an image.",
-            variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-        toast({
-          title: `Uploading ${images.length} Image(s)`,
-          description: "Please wait...",
-        });
-
-        const uploadPromises = images.map((file) =>
-          uploadImage({
-            file: file,
-            userId: session.user.id,
-            bucket: "items-images",
-            folder: undefined,
-          }).then((result: any) => ({ ...result, fileName: file.name }))
-        );
-
-        const results = await Promise.allSettled(uploadPromises);
-        let anUploadFailed = false;
-        const successfullyUploadedInThisAttempt: string[] = [];
-
-        results.forEach((result) => {
-          if (result.status === "fulfilled") {
-            const uploadResult = result.value as any & {
-              fileName: string;
-              imageUrl?: string;
-              error?: any;
-            };
-            if (uploadResult.error) {
-              console.error(
-                `Failed to upload image ${uploadResult.fileName}:`,
-                uploadResult.error
-              );
-              toast({
-                title: "Image Upload Error",
-                description: `Could not upload ${uploadResult.fileName}. ${uploadResult.error}`,
-                variant: "destructive",
-              });
-              anUploadFailed = true;
-            } else if (uploadResult.imageUrls) {
-              successfullyUploadedInThisAttempt.push(uploadResult.imageUrls);
-            }
-          } else {
-            console.error("An upload promise was rejected:", result.reason);
-            toast({
-              title: "Image Upload Error",
-              description: `An unexpected error occurred during upload.`,
-              variant: "destructive",
-            });
-            anUploadFailed = true;
-          }
-        });
-
-        if (anUploadFailed) {
-          setIsSubmitting(false);
-          setUploadedImageLinks([]);
-          toast({
-            title: "Image Upload Failed",
-            description:
-              "Some or all images failed to upload. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        if (successfullyUploadedInThisAttempt.length > 0) {
-          setUploadedImageLinks([...successfullyUploadedInThisAttempt]);
-          currentImageUrlsForPayload = [...successfullyUploadedInThisAttempt];
-          toast({
-            title: "Images Uploaded",
-            description: `${successfullyUploadedInThisAttempt.length} image(s) uploaded successfully.`,
-          });
-        }
-        // Placeholder for when image upload is not available:
-        console.warn(
-          "Image upload functionality is currently disabled/commented out."
-        );
-        toast({
-          title: "Image Upload Skipped",
-          description:
-            "Image upload is temporarily disabled. Proceeding without image upload.",
-          variant: "default",
-        });
-        // Simulate successful upload for dev purposes if needed, or handle as error:
-        // currentImageUrlsForPayload = images.map(f => `mock_url_for_${f.name}`);
-        // setUploadedImageLinks(currentImageUrlsForPayload);
-      }
-    }
-
-    return currentImageUrlsForPayload;
   };
 
   const effectiveIsLoadingProduct = isEditMode ? isLoadingItemData : false;
@@ -460,13 +572,15 @@ export default function CreateProductPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <PhotoUploader
-                imagePreviewUrls={imagePreviewUrls}
+                imagePreviews={imagePreviewsForUploader}
                 onFilesAdded={handleAddFiles}
-                onRemoveImage={handleRemoveImage}
+                onRemoveImage={handleRemoveImageById}
+                onReorderImages={handleReorderImagesByIds}
+                onSetMainImage={handleSetMainImageById}
                 maxImages={MAX_IMAGES}
                 isSubmitting={isSubmitting}
                 inputDisabled={
-                  isSubmitting || imagePreviewUrls.length >= MAX_IMAGES
+                  isSubmitting || imagePreviewsForUploader.length >= MAX_IMAGES
                 }
               />
 
@@ -523,6 +637,7 @@ export default function CreateProductPage() {
                   initialCategoryId={initialCategoryIdForSelector}
                   onCategorySelected={setFormSelectedCategoryId}
                   closeOnSelect={true}
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -534,6 +649,7 @@ export default function CreateProductPage() {
                   Condition
                 </Label>
                 <Select
+                  key={productId}
                   value={condition}
                   onValueChange={
                     (value: string) =>
@@ -549,16 +665,12 @@ export default function CreateProductPage() {
                     <SelectValue placeholder="Select condition" />
                   </SelectTrigger>
                   <SelectContent>
-                    {conditionOptions.map(
-                      (
-                        cond: ItemRequest.condition // Typed cond
-                      ) => (
-                        <SelectItem key={cond} value={cond}>
-                          {cond.charAt(0).toUpperCase() +
-                            cond.slice(1).toLowerCase().replace(/_/g, " ")}
-                        </SelectItem>
-                      )
-                    )}
+                    {conditionOptions.map((cond: ItemRequest.condition) => (
+                      <SelectItem key={cond} value={cond}>
+                        {cond.charAt(0).toUpperCase() +
+                          cond.slice(1).toLowerCase().replace(/_/g, " ")}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -599,7 +711,7 @@ export default function CreateProductPage() {
 
               <div className="space-y-4">
                 <Label className="text-gray-700 dark:text-gray-300">
-                  Availability
+                  Delivery Options
                 </Label>
                 <div className="flex items-center space-x-2">
                   <Checkbox

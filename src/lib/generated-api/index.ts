@@ -14,6 +14,7 @@ export type { CategoryResponse } from './models/CategoryResponse';
 export { ItemRequest } from './models/ItemRequest';
 export { ItemResponse } from './models/ItemResponse';
 export { ItemStatusRequest } from './models/ItemStatusRequest';
+export type { MinimalUserResponse } from './models/MinimalUserResponse';
 export type { Pageable } from './models/Pageable';
 export type { PageableObject } from './models/PageableObject';
 export type { PageItemResponse } from './models/PageItemResponse';

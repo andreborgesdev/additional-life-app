@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CategoryResponse } from './CategoryResponse';
+import type { MinimalUserResponse } from './MinimalUserResponse';
 export type ItemResponse = {
     id?: string;
     title?: string;
@@ -16,7 +17,7 @@ export type ItemResponse = {
     externalUrl?: string;
     status?: ItemResponse.status;
     active?: boolean;
-    owner?: string;
+    owner?: MinimalUserResponse;
     category?: CategoryResponse;
     sourceExternalPlatform?: ItemResponse.sourceExternalPlatform;
     pickupPossible?: boolean;

@@ -6,6 +6,8 @@ import { Button } from "@/src/components/ui/button";
 import { motion } from "framer-motion";
 import { useEffect, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { AuroraText } from "../magicui/aurora-text";
+import { SparklesText } from "../magicui/sparkles-text";
 
 export default function Hero() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -70,11 +72,10 @@ export default function Hero() {
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-800 dark:text-white mb-6">
-            Give a{" "}
-            <span className="text-green-800 dark:text-green-400">
-              Second Life
-            </span>{" "}
-            to Your Belongings
+            Give Your Belongings an{" "}
+            <SparklesText className="text-green-800 dark:text-green-400">
+              Additional Life
+            </SparklesText>
           </h1>
           <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-10">
             Join our community-driven marketplace where you can share items you

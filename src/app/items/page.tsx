@@ -89,12 +89,13 @@ export default function ItemsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const initialQuery = searchParams.get("q") || "";
+  const initialCategoryId = searchParams.get("categoryId") || null;
 
   const [page, setPage] = useState(0);
   const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    null
+    initialCategoryId
   );
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortByOptions>(SortByOptions.RELEVANCE);
@@ -225,19 +226,25 @@ export default function ItemsPage() {
 
     const newSearchParams = new URLSearchParams(searchParams.toString());
     newSearchParams.delete("q");
+    newSearchParams.delete("categoryId");
     router.push(pathname + "?" + newSearchParams.toString());
   };
 
   const removeFilterTag = (tagId: string, type: string) => {
+    const newSearchParams = new URLSearchParams(searchParams.toString());
     if (type === "category") {
       setSelectedCategoryId(null);
+      newSearchParams.delete("categoryId");
     } else if (type === "condition") {
       const condition = tagId.replace("condition-", "");
       setSelectedConditions((prev) => prev.filter((c) => c !== condition));
+      // If conditions were URL params, update newSearchParams here
     } else if (type === "itemsType") {
       setItemsType("all");
+      // If itemsType was URL param, update newSearchParams here
     }
     setPage(0);
+    router.push(pathname + "?" + newSearchParams.toString());
   };
 
   const handleOnSortByChanged = (value: string) => {
@@ -246,8 +253,17 @@ export default function ItemsPage() {
   };
 
   const handleApplyCategoryFilter = (category: CategoryResponse | null) => {
-    setSelectedCategoryId(category ? category.id?.toString() ?? null : null);
+    const newCategoryId = category ? category.id ?? null : null;
+    setSelectedCategoryId(newCategoryId);
     setPage(0);
+
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    if (newCategoryId) {
+      newSearchParams.set("categoryId", newCategoryId);
+    } else {
+      newSearchParams.delete("categoryId");
+    }
+    router.push(pathname + "?" + newSearchParams.toString());
   };
 
   const handleSearch = () => {

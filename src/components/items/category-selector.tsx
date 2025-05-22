@@ -17,6 +17,7 @@ interface CategorySelectorProps {
   initialCategoryId?: string | null;
   onCategorySelected: (categoryId: string) => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export function CategorySelector({
@@ -25,6 +26,7 @@ export function CategorySelector({
   initialCategoryId,
   onCategorySelected,
   className,
+  disabled,
 }: CategorySelectorProps) {
   const [currentParentCategory, setCurrentParentCategory] =
     useState<CategoryResponse | null>(null);
@@ -52,43 +54,49 @@ export function CategorySelector({
 
   const renderCategories = (categories: CategoryResponse[]) => (
     <ul className="space-y-2 max-h-80 overflow-y-auto">
-      {categories.map((category) => {
-        const hasChildren = allCategories.some(
-          (cat) => cat.parentId === category.id
-        );
-        return (
-          <li
-            key={category.id}
-            className={cn(
-              "flex justify-between items-center p-2 rounded-lg cursor-pointer",
-              hasChildren
-                ? "hover:bg-gray-50 dark:hover:bg-gray-700" // More subtle hover for navigational items
-                : "hover:bg-gray-100 dark:hover:bg-gray-800" // Standard hover for selectable items
-            )}
-            onClick={() => handleCategoryClick(category)}
-          >
-            <span
+      {[...categories]
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((category) => {
+          const hasChildren = allCategories.some(
+            (cat) => cat.parentId === category.id
+          );
+          return (
+            <li
+              key={category.id}
               className={cn(
-                "mr-12",
+                "flex justify-between items-center p-2 rounded-lg cursor-pointer",
                 hasChildren
-                  ? "text-gray-600 dark:text-gray-400" // Dimmed text for navigational items
-                  : "text-gray-900 dark:text-gray-100" // Standard text for selectable items
+                  ? "hover:bg-gray-50 dark:hover:bg-gray-700" // More subtle hover for navigational items
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800" // Standard hover for selectable items
               )}
+              onClick={() => handleCategoryClick(category)}
             >
-              {category.name}
-            </span>
-            {hasChildren && (
-              <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-            )}
-          </li>
-        );
-      })}
+              <span
+                className={cn(
+                  "mr-12",
+                  hasChildren
+                    ? "text-gray-600 dark:text-gray-400" // Dimmed text for navigational items
+                    : "text-gray-900 dark:text-gray-100" // Standard text for selectable items
+                )}
+              >
+                {category.name}
+              </span>
+              {hasChildren && (
+                <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              )}
+            </li>
+          );
+        })}
     </ul>
   );
 
-  const parentCategories = allCategories.filter((cat) => cat.parentId === null);
+  const parentCategories = allCategories
+    .filter((cat) => cat.parentId === null)
+    .sort((a, b) => a.name.localeCompare(b.name));
   const childCategories = currentParentCategory
-    ? allCategories.filter((cat) => cat.parentId === currentParentCategory.id)
+    ? allCategories
+        .filter((cat) => cat.parentId === currentParentCategory.id)
+        .sort((a, b) => a.name.localeCompare(b.name))
     : [];
 
   return (
@@ -96,6 +104,7 @@ export function CategorySelector({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
+          disabled={disabled}
           className={cn(
             "w-full justify-between text-left",
             className,

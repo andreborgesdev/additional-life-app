@@ -2,9 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type SortObject = {
-    empty?: boolean;
-    sorted?: boolean;
-    unsorted?: boolean;
+export type MinimalUserResponse = {
+    id?: string;
+    supabaseId?: string;
+    name?: string;
+    avatarUrl?: string;
 };
 
