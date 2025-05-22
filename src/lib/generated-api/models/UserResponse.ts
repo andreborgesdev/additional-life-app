@@ -4,15 +4,18 @@
 /* eslint-disable */
 export type UserResponse = {
     id?: string;
+    supabaseId?: string;
     name?: string;
     email?: string;
-    phone?: string;
+    phoneNumber?: string;
     address?: string;
     bio?: string;
     avatarUrl?: string;
     preferredLanguage?: UserResponse.preferredLanguage;
     createdAt?: string;
     updatedAt?: string;
+    emailVerified?: boolean;
+    phoneVerified?: boolean;
     active?: boolean;
 };
 export namespace UserResponse {

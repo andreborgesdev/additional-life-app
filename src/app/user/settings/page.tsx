@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Tabs,
   TabsContent,
@@ -47,7 +47,12 @@ import { toast } from "@/src/hooks/use-toast";
 import { useSession } from "../../auth-provider";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { useUserBySupabaseId } from "@/src/hooks/use-user-by-supabase-id";
+import { useUpdateUser } from "@/src/hooks/users/use-update-user";
+import { useUserBySupabaseId } from "@/src/hooks/users/use-user-by-supabase-id";
+import { formatDate } from "@/src/utils/date-utils";
+import { UserRequest } from "@/src/lib/generated-api";
+import { PhoneInput } from "@/src/components/shared/phone-input";
+import { uploadImage } from "@/src/lib/supabase/storage/client";
 
 export default function UserSettingsPage() {
   const { session, isLoading: isLoadingSession } = useSession();
@@ -58,14 +63,19 @@ export default function UserSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   // User profile state
-  const [name, setName] = useState("John Doe");
-  const [email, setEmail] = useState("john.doe@example.com");
-  const [bio, setBio] = useState(
-    "I love sharing and reusing items to help the environment!"
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [bio, setBio] = useState("");
+  const [phone, setPhone] = useState("");
+  const [location, setLocation] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [language, setLanguage] = useState<UserRequest.preferredLanguage>(
+    UserRequest.preferredLanguage.ENGLISH
   );
-  const [phone, setPhone] = useState("+1 (555) 123-4567");
-  const [location, setLocation] = useState("San Francisco, CA");
-  const [language, setLanguage] = useState("English");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // Notification preferences
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -83,34 +93,154 @@ export default function UserSettingsPage() {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [loginAlerts, setLoginAlerts] = useState(true);
 
+  const { mutate: updateUser, isPending: isUpdatingUser } = useUpdateUser();
+
   useEffect(() => {
     if (!isLoadingSession && !session) router.replace("/user/login");
   }, [router, session, isLoadingSession]);
 
   useEffect(() => {
     if (!isLoadingUserData && userData) {
-      setName(userData.name);
-      setEmail(userData.email);
-      setPhone(userData.phone);
-      setLocation(userData.address);
+      setName(userData.name || "");
+      setEmail(userData.email || "");
+      setPhone(userData.phoneNumber || "");
+      setLocation(userData.address || "");
+      setBio(userData.bio || "");
+      setAvatarUrl(userData.avatarUrl || null);
+      setLanguage(
+        userData.preferredLanguage || UserRequest.preferredLanguage.ENGLISH
+      );
+      setIsLoading(false);
+    } else if (!isLoadingUserData && !userData) {
       setIsLoading(false);
     }
   }, [isLoadingUserData, userData]);
+
+  useEffect(() => {
+    if (avatarFile) {
+      const objectUrl = URL.createObjectURL(avatarFile);
+      setAvatarPreviewUrl(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+    setAvatarPreviewUrl(null);
+  }, [avatarFile]);
 
   if (isLoading) {
     return <UserSettingsSkeleton />;
   }
 
   // Handle form submissions
-  const handleProfileSubmit = (e) => {
+  const handleProfileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast({
-      title: "Profile updated",
-      description: "Your profile information has been saved successfully.",
-    });
+    if (!userData || !userData.id) {
+      toast({
+        title: "Error",
+        description: "User data not available. Cannot update profile.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!name.trim()) {
+      toast({
+        title: "Name required",
+        description: "Please enter your full name.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!email.trim()) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (bio.length > 250) {
+      toast({
+        title: "Bio too long",
+        description: "Your bio must be 250 characters or less.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let avatarUrlForPayload = avatarUrl;
+
+    if (avatarFile) {
+      setIsUploadingAvatar(true);
+      try {
+        if (!session?.user?.id) {
+          toast({
+            title: "Authentication Error",
+            description: "User session not found. Cannot upload avatar.",
+            variant: "destructive",
+          });
+          setIsUploadingAvatar(false);
+          return;
+        }
+        const uploadResult = await uploadImage({
+          file: avatarFile,
+          userId: session.user.id,
+          bucket: "avatars",
+        });
+
+        if (uploadResult.error) {
+          throw new Error(uploadResult.error || "Failed to upload avatar.");
+        }
+        avatarUrlForPayload = uploadResult.imageUrl;
+        setAvatarUrl(avatarUrlForPayload);
+        setAvatarFile(null);
+      } catch (error: any) {
+        toast({
+          title: "Avatar Upload Failed",
+          description: error.message || "Could not upload new avatar.",
+          variant: "destructive",
+        });
+        setIsUploadingAvatar(false);
+        return;
+      } finally {
+        setIsUploadingAvatar(false);
+      }
+    }
+
+    const profileData: UserRequest = {
+      supabaseId: session?.user?.id || "",
+      name: name.trim(),
+      email: email.trim(),
+      phoneNumber: phone.trim() || undefined,
+      address: location.trim() || undefined,
+      bio: bio.trim() || undefined,
+      avatarUrl: avatarUrlForPayload || undefined,
+      preferredLanguage: language,
+      emailVerified: session?.user.user_metadata.email_verified || false,
+      phoneVerified: session?.user.user_metadata.phone_verified || false,
+    };
+
+    updateUser(
+      { userId: userData.id, userData: profileData },
+      {
+        onSuccess: async (updatedUserData) => {
+          toast({
+            title: "Profile updated",
+            description:
+              "Your profile information has been saved successfully.",
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: "Update failed",
+            description: error.message || "Could not update profile.",
+            variant: "destructive",
+          });
+        },
+      }
+    );
   };
 
-  const handleNotificationSubmit = (e) => {
+  const handleNotificationSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     toast({
       title: "Notification preferences updated",
@@ -118,7 +248,7 @@ export default function UserSettingsPage() {
     });
   };
 
-  const handlePrivacySubmit = (e) => {
+  const handlePrivacySubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     toast({
       title: "Privacy settings updated",
@@ -126,7 +256,7 @@ export default function UserSettingsPage() {
     });
   };
 
-  const handleSecuritySubmit = (e) => {
+  const handleSecuritySubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     toast({
       title: "Security settings updated",
@@ -134,25 +264,57 @@ export default function UserSettingsPage() {
     });
   };
 
+  const handleAvatarButtonClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        // 2MB limit
+        toast({
+          title: "File too large",
+          description: "Avatar image must be less than 2MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setAvatarFile(file);
+    }
+  };
+
   return (
     <div className="container max-w-6xl mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row gap-8 mb-8">
         <div className="flex flex-col items-center md:items-start gap-4">
           <Avatar className="h-24 w-24">
-            <AvatarImage src="/placeholder.svg?height=96&width=96" alt={name} />
+            <AvatarImage src={avatarPreviewUrl || avatarUrl} alt={name} />
             <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="text-center md:text-left">
             <h1 className="text-2xl font-bold">{name}</h1>
-            <p className="text-muted-foreground">Member since January 2023</p>
-            <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
+            <p className="text-muted-foreground">
+              Member since {formatDate(userData?.createdAt)}
+            </p>
+            {/* <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
               <Badge variant="outline" className="bg-green-50">
                 5 Items Shared
               </Badge>
               <Badge variant="outline" className="bg-blue-50">
                 3 Items Received
               </Badge>
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="flex-1 flex flex-col justify-center">
@@ -167,10 +329,16 @@ export default function UserSettingsPage() {
             </div>
             <div className="flex items-center gap-2">
               <Globe className="h-4 w-4 text-muted-foreground" />
-              <span>{language}</span>
+              <span>
+                {language.charAt(0) + language.slice(1).toLowerCase()}
+              </span>
             </div>
             <div className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-green-500" />
+              {userData?.emailVerified ? (
+                <Check className="h-4 w-4 text-green-500" />
+              ) : (
+                <X className="h-4 w-4 text-red-500" />
+              )}
               <span>Email Verified</span>
             </div>
           </div>
@@ -238,11 +406,12 @@ export default function UserSettingsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input
+                      <PhoneInput
                         id="phone"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={setPhone}
                         placeholder="Your phone number"
+                        defaultCountry="CH"
                       />
                     </div>
                     <div className="space-y-2">
@@ -275,20 +444,36 @@ export default function UserSettingsPage() {
                     <div className="flex items-center gap-4">
                       <Avatar className="h-16 w-16">
                         <AvatarImage
-                          src="/placeholder.svg?height=64&width=64"
+                          src={
+                            avatarPreviewUrl ||
+                            avatarUrl ||
+                            "/placeholder.svg?height=64&width=64"
+                          }
                           alt={name}
                         />
                         <AvatarFallback>
                           {name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
+                      <input
+                        type="file"
+                        ref={avatarInputRef}
+                        onChange={handleAvatarFileChange}
+                        accept="image/*"
+                        className="hidden"
+                      />
                       <Button
                         variant="outline"
                         size="sm"
                         className="flex items-center gap-2"
+                        onClick={handleAvatarButtonClick}
+                        type="button"
+                        disabled={isUploadingAvatar}
                       >
                         <Upload className="h-4 w-4" />
-                        Upload New Picture
+                        {isUploadingAvatar
+                          ? "Uploading..."
+                          : "Upload New Picture"}
                       </Button>
                     </div>
                   </div>
@@ -298,20 +483,33 @@ export default function UserSettingsPage() {
                     <select
                       id="language"
                       value={language}
-                      onChange={(e) => setLanguage(e.target.value)}
+                      onChange={(e) =>
+                        setLanguage(
+                          e.target.value as UserRequest.preferredLanguage
+                        )
+                      }
                       className="w-full px-3 py-2 border rounded-md"
                     >
-                      <option value="English">English</option>
-                      <option value="Spanish">Spanish</option>
-                      <option value="French">French</option>
-                      <option value="German">German</option>
-                      <option value="Italian">Italian</option>
+                      {Object.values(UserRequest.preferredLanguage).map(
+                        (lang) => (
+                          <option key={lang} value={lang}>
+                            {lang.charAt(0) + lang.slice(1).toLowerCase()}
+                          </option>
+                        )
+                      )}
                     </select>
                   </div>
                 </div>
 
                 <div className="flex justify-end">
-                  <Button type="submit">Save Profile Changes</Button>
+                  <Button
+                    type="submit"
+                    disabled={isUpdatingUser || isUploadingAvatar}
+                  >
+                    {isUpdatingUser || isUploadingAvatar
+                      ? "Saving..."
+                      : "Save Profile Changes"}
+                  </Button>
                 </div>
               </form>
             </CardContent>

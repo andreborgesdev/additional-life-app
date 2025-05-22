@@ -12,7 +12,15 @@ import {
 } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
-import { Pencil, Trash2, Eye, AlertCircle, MapPinIcon } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Eye,
+  AlertCircle,
+  MapPinIcon,
+  Archive,
+  Check,
+} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,46 +34,63 @@ import {
 } from "@/src/components/ui/alert-dialog";
 import { toast } from "@/src/hooks/use-toast";
 import { useUserItems } from "@/src/hooks/items/use-user-items";
-import { ItemResponse } from "@/src/lib/generated-api";
+import { useUpdateItemStatus } from "@/src/hooks/items/use-update-item-as-taken";
+import { ItemResponse, ItemStatusRequest } from "@/src/lib/generated-api";
+import { conditionDetails } from "@/src/components/shared/detailed-item-card";
+import { formatDate } from "@/src/utils/date-utils";
 
 export default function ItemsPublishedPage() {
   const { data: items = [], isLoading, error, refetch } = useUserItems();
   const [itemToDelete, setItemToDelete] = useState<ItemResponse | null>(null);
+  const [itemToChangeStatus, setItemToChangeStatus] =
+    useState<ItemResponse | null>(null);
+
+  const { mutate: changeItemStatusMutation, isLoading: isChangingStatus } =
+    useUpdateItemStatus();
 
   const handleDeleteItem = async (id: string | undefined) => {
     if (!id) return;
-
-    // In a real application, you would call an API to delete the item
-    // For now, we'll simulate and then refetch
-    // Example: await apiClient.deleteItem(id);
 
     toast({
       title: "Item deleted",
       description: "Your item has been successfully removed.",
     });
-    refetch(); // Refetch the items list
+    refetch();
     setItemToDelete(null);
   };
 
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+  const handleConfirmItemTaken = () => {
+    return handleConfirmChangeStatus(ItemResponse.status.TAKEN);
+  };
+
+  const handleConfirmItemAvailable = () => {
+    return handleConfirmChangeStatus(ItemResponse.status.AVAILABLE);
+  };
+
+  const handleConfirmChangeStatus = (status: ItemResponse.status) => {
+    if (!itemToChangeStatus?.id) return;
+
+    const requestBody: ItemStatusRequest = {
+      status: status,
+    };
+
+    changeItemStatusMutation(
+      { itemId: itemToChangeStatus.id, requestBody },
+      {
+        onSuccess: () => {
+          refetch();
+          setItemToChangeStatus(null);
+        },
+        onError: () => {
+          setItemToChangeStatus(null);
+        },
+      }
+    );
   };
 
   const getItemStatusLabel = (status: ItemResponse.status | undefined) => {
-    if (!status) return "Unknown";
-    switch (status) {
-      case "AVAILABLE":
-        return "Available";
-      case "TAKEN":
-        return "Claimed";
-      default:
-        return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-    }
+    if (status === ItemResponse.status.TAKEN) return "Taken";
+    return "Available";
   };
 
   if (error) {
@@ -141,12 +166,16 @@ export default function ItemsPublishedPage() {
                   </div>
                   <Badge
                     variant={
-                      item.status === "AVAILABLE" ? "default" : "secondary"
+                      item.status === ItemResponse.status.AVAILABLE
+                        ? "default"
+                        : "secondary"
                     }
                     className={
-                      item.status === "AVAILABLE"
+                      item.status === ItemResponse.status.AVAILABLE
                         ? "bg-green-500"
-                        : "bg-gray-500"
+                        : item.status === ItemResponse.status.TAKEN
+                        ? "bg-gray-500"
+                        : "bg-yellow-500"
                     }
                   >
                     {getItemStatusLabel(item.status)}
@@ -165,28 +194,139 @@ export default function ItemsPublishedPage() {
                   <Badge variant="outline">
                     {item.category?.name || "Uncategorized"}
                   </Badge>
-                  <Badge variant="outline">{item.condition || "N/A"}</Badge>
+                  <Badge variant="outline">
+                    {
+                      conditionDetails.find((c) => c.key === item.condition)
+                        ?.placeholder
+                    }
+                  </Badge>
                 </div>
                 <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
                   <MapPinIcon className="h-4 w-4 mr-1" />
-                  {item.address?.city || item.address?.country || "Remote"}
+                  {item.address}
                 </div>
-                {/* Views are not available in ItemResponse, so removed */}
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  {item.description && item.description.length > 250
+                    ? `${item.description.substring(0, 250)}...`
+                    : item.description}
+                </p>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button asChild variant="outline" size="sm">
-                  <Link href={`/items/${item.id}`}>
-                    <Eye className="h-4 w-4 mr-2" />
-                    View
-                  </Link>
-                </Button>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button asChild variant="outline" size="sm">
-                    <Link href={`/items/create/${item.id}`}>
-                      <Pencil className="h-4 w-4 mr-2" />
-                      Edit
+                    <Link href={`/items/${item.id}`}>
+                      <Eye className="h-4 w-4 mr-2" />
+                      View
                     </Link>
                   </Button>
+                  {item.status === ItemResponse.status.AVAILABLE && (
+                    <>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/items/create/${item.id}`}>
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Edit
+                        </Link>
+                      </Button>
+                      <AlertDialog
+                        open={itemToChangeStatus?.id === item.id}
+                        onOpenChange={(open) => {
+                          if (!open) setItemToChangeStatus(null);
+                        }}
+                      >
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setItemToChangeStatus(item)}
+                            disabled={
+                              isChangingStatus &&
+                              itemToChangeStatus?.id === item.id
+                            }
+                          >
+                            <Archive className="h-4 w-4 mr-2" />
+                            {isChangingStatus &&
+                            itemToChangeStatus?.id === item.id
+                              ? "Marking..."
+                              : "Mark as Taken"}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirm Action</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to mark "
+                              {itemToChangeStatus?.title}" as taken? This item
+                              will no longer be available for others.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel
+                              onClick={() => setItemToChangeStatus(null)}
+                            >
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={handleConfirmItemTaken}
+                              className="bg-blue-600 hover:bg-blue-700"
+                              disabled={isChangingStatus}
+                            >
+                              {isChangingStatus ? "Confirming..." : "Confirm"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </>
+                  )}
+                  {item.status === ItemResponse.status.TAKEN && (
+                    <AlertDialog
+                      open={itemToChangeStatus?.id === item.id}
+                      onOpenChange={(open) => {
+                        if (!open) setItemToChangeStatus(null);
+                      }}
+                    >
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setItemToChangeStatus(item)}
+                          disabled={
+                            isChangingStatus &&
+                            itemToChangeStatus?.id === item.id
+                          }
+                        >
+                          <Check className="h-4 w-4 mr-2" />
+                          {isChangingStatus &&
+                          itemToChangeStatus?.id === item.id
+                            ? "Making available..."
+                            : "Mark as Available"}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirm Action</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to mark "
+                            {itemToChangeStatus?.title}" as available? This item
+                            will be available for others.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel
+                            onClick={() => setItemToChangeStatus(null)}
+                          >
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleConfirmItemAvailable}
+                            className="bg-blue-600 hover:bg-blue-700"
+                            disabled={isChangingStatus}
+                          >
+                            {isChangingStatus ? "Confirming..." : "Confirm"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                   <AlertDialog
                     open={itemToDelete?.id === item.id}
                     onOpenChange={(open) => {

@@ -25,8 +25,8 @@ import { useCategories } from "@/src/hooks/use-categories";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Home } from "lucide-react"; // Added Home icon
 import { uploadImage } from "@/src/lib/supabase/storage/client";
-import { useUserBySupabaseId } from "@/src/hooks/use-user-by-supabase-id";
 import { useCreateOrUpdateItem } from "@/src/hooks/items/use-create-or-update-item";
+import { useUserBySupabaseId } from "@/src/hooks/users/use-user-by-supabase-id";
 
 const MAX_IMAGES = 5;
 const conditionOptions = Object.values(ItemRequest.condition);

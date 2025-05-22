@@ -27,3 +27,12 @@ export const getTimeAgo = (dateString: string) => {
   const diffYears = Math.floor(diffMonths / 12);
   return diffYears === 1 ? "1 year ago" : `${diffYears} years ago`;
 };
+
+export const formatDate = (dateString: string | undefined) => {
+  if (!dateString) return "N/A";
+  return new Date(dateString).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};

@@ -1,7 +1,7 @@
 "use client";
 
+import { UserResponse } from "@/src/lib/api-client";
 import { useQuery } from "@tanstack/react-query";
-import { UserResponse } from "../lib/generated-api";
 
 export const useUserBySupabaseId = (supabaseId: string | null) => {
   return useQuery<UserResponse, Error>({

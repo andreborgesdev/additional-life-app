@@ -14,6 +14,7 @@ export type ItemResponse = {
     imageUrls?: Array<string>;
     itemType?: ItemResponse.itemType;
     externalUrl?: string;
+    status?: ItemResponse.status;
     active?: boolean;
     owner?: string;
     category?: CategoryResponse;
@@ -31,6 +32,10 @@ export namespace ItemResponse {
     export enum itemType {
         INTERNAL = 'INTERNAL',
         EXTERNAL = 'EXTERNAL',
+    }
+    export enum status {
+        AVAILABLE = 'AVAILABLE',
+        TAKEN = 'TAKEN',
     }
     export enum sourceExternalPlatform {
         ANIBIS = 'ANIBIS',

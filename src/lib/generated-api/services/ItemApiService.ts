@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { ItemRequest } from '../models/ItemRequest';
 import type { ItemResponse } from '../models/ItemResponse';
+import type { ItemStatusRequest } from '../models/ItemStatusRequest';
 import type { Pageable } from '../models/Pageable';
 import type { PageItemResponse } from '../models/PageItemResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -75,6 +76,31 @@ export class ItemApiService {
             errors: {
                 400: `Invalid input data`,
                 422: `Item could not be processed`,
+            },
+        });
+    }
+    /**
+     * Change item status
+     * Change the status of an item
+     * @param id
+     * @param requestBody
+     * @returns ItemResponse Item marked as taken successfully
+     * @throws ApiError
+     */
+    public changeItemStatus(
+        id: string,
+        requestBody: ItemStatusRequest,
+    ): CancelablePromise<ItemResponse> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/api/v1/items/{id}/status',
+            path: {
+                'id': id,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                404: `Item not found`,
             },
         });
     }
