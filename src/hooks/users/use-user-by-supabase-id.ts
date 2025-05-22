@@ -13,7 +13,7 @@ export const useUserBySupabaseId = (supabaseId: string | null) => {
         );
       }
 
-      const res = await fetch(`/api/user/supabase/${supabaseId}`);
+      const res = await fetch(`/api/users/supabase/${supabaseId}`);
       if (!res.ok) {
         const errorData = await res
           .json()

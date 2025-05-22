@@ -76,7 +76,7 @@ export default function CreateProductPage() {
     itemDataFromHook?.category?.id?.toString() ?? null;
 
   useEffect(() => {
-    if (!isLoadingSession && !session) router.replace("/user/login");
+    if (!isLoadingSession && !session) router.replace("/users/login");
   }, [router, session, isLoadingSession]);
 
   useEffect(() => {

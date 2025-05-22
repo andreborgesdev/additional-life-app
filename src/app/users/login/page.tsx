@@ -8,6 +8,7 @@ import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
 import { useLogin } from "@/src/hooks/use-login";
 import { ArrowLeft, Eye, EyeOff, Facebook, LogIn, Mail } from "lucide-react";
+import { toast } from "@/src/hooks/use-toast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -25,10 +26,14 @@ export default function LoginPage() {
         onSuccess: () => {
           router.push("/");
         },
-        // onError: (err) => {
-        //   // Handle error, e.g., show a notification
-        //   console.error("Login failed:", err);
-        // }
+        onError: (err) => {
+          // Handle error, e.g., show a notification
+          toast({
+            title: "Login failed",
+            description: "Please check your credentials and try again.",
+            variant: "destructive",
+          });
+        },
       }
     );
   };
@@ -213,7 +218,7 @@ export default function LoginPage() {
         <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
           Don't have an account?{" "}
           <Link
-            href="/user/register"
+            href="/users/register"
             className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
           >
             Sign up for free

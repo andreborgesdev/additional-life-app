@@ -176,7 +176,7 @@ export default function Header() {
 
   const accountNavItems = [
     {
-      href: "/user/settings",
+      href: "/users/settings",
       icon: <Settings className="h-5 w-5" />,
       label: t("nav.user_settings"),
     },
@@ -472,10 +472,10 @@ export default function Header() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
-                    href="/user/login"
+                    href="/users/login"
                     className={cn(
                       "flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-colors",
-                      isActive("/user/login")
+                      isActive("/users/login")
                         ? isScrolled
                           ? "bg-gray-100 text-green-600 dark:bg-gray-800 dark:text-green-400"
                           : "bg-white/10 text-white dark:bg-green-700/50 dark:text-white"
@@ -616,10 +616,10 @@ export default function Header() {
                     <div className="mt-6 pt-6 border-t flex flex-col gap-2">
                       <SheetClose asChild>
                         <Link
-                          href="/user/login"
+                          href="/users/login"
                           className={cn(
                             "flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-colors",
-                            isActive("/user/login")
+                            isActive("/users/login")
                               ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
                               : "bg-green-600 text-white hover:bg-green-700"
                           )}
@@ -630,10 +630,10 @@ export default function Header() {
                       </SheetClose>
                       <SheetClose asChild>
                         <Link
-                          href="/user/register"
+                          href="/users/register"
                           className={cn(
                             "flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border transition-colors",
-                            isActive("/user/register")
+                            isActive("/users/register")
                               ? "bg-gray-100 border-gray-200 text-green-700 dark:bg-gray-800 dark:border-gray-700 dark:text-green-400"
                               : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                           )}

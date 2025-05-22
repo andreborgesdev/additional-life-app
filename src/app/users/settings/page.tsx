@@ -53,6 +53,16 @@ import { formatDate } from "@/src/utils/date-utils";
 import { UserRequest } from "@/src/lib/generated-api";
 import { PhoneInput } from "@/src/components/shared/phone-input";
 import { uploadImage } from "@/src/lib/supabase/storage/client";
+import { useLogout } from "@/src/hooks/use-logout";
+import { useUpdatePassword } from "@/src/hooks/users/use-update-password";
+import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
+
+interface PasswordRequirementStatus {
+  length: boolean;
+  uppercase: boolean;
+  number: boolean;
+  specialChar: boolean;
+}
 
 export default function UserSettingsPage() {
   const { session, isLoading: isLoadingSession } = useSession();
@@ -61,6 +71,8 @@ export default function UserSettingsPage() {
   );
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const logout = useLogout();
+  const supabase = useSupabaseBrowser();
 
   // User profile state
   const [name, setName] = useState("");
@@ -90,13 +102,28 @@ export default function UserSettingsPage() {
   const [locationPrecision, setLocationPrecision] = useState("neighborhood");
 
   // Account security
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [loginAlerts, setLoginAlerts] = useState(true);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isVerifyingCurrentPassword, setIsVerifyingCurrentPassword] =
+    useState(false);
+  const [passwordRequirements, setPasswordRequirements] =
+    useState<PasswordRequirementStatus>({
+      length: false,
+      uppercase: false,
+      number: false,
+      specialChar: false,
+    });
 
   const { mutate: updateUser, isPending: isUpdatingUser } = useUpdateUser();
+  const { mutate: updatePassword, isPending: isUpdatingPassword } =
+    useUpdatePassword();
 
   useEffect(() => {
-    if (!isLoadingSession && !session) router.replace("/user/login");
+    if (!isLoadingSession && !session) router.replace("/users/login");
   }, [router, session, isLoadingSession]);
 
   useEffect(() => {
@@ -124,6 +151,15 @@ export default function UserSettingsPage() {
     }
     setAvatarPreviewUrl(null);
   }, [avatarFile]);
+
+  useEffect(() => {
+    setPasswordRequirements({
+      length: newPassword.length >= 8,
+      uppercase: /[A-Z]/.test(newPassword),
+      number: /\d/.test(newPassword),
+      specialChar: /[^A-Za-z0-9]/.test(newPassword),
+    });
+  }, [newPassword]);
 
   if (isLoading) {
     return <UserSettingsSkeleton />;
@@ -256,12 +292,121 @@ export default function UserSettingsPage() {
     });
   };
 
-  const handleSecuritySubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    toast({
-      title: "Security settings updated",
-      description: "Your security settings have been saved successfully.",
-    });
+  const handleChangePasswordSubmit = async (
+    e?: React.FormEvent<HTMLFormElement> // Optional if called from button click
+  ) => {
+    if (e) e.preventDefault();
+
+    if (!session?.user?.email) {
+      toast({
+        title: "Error",
+        description: "User session not found. Cannot update password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!currentPassword) {
+      toast({
+        title: "Current password required",
+        description: "Please enter your current password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!newPassword) {
+      toast({
+        title: "New password required",
+        description: "Please enter a new password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Passwords do not match",
+        description: "New password and confirm password must be the same.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { length, uppercase, number, specialChar } = passwordRequirements;
+    if (!length || !uppercase || !number || !specialChar) {
+      toast({
+        title: "Password not strong enough",
+        description: "Please ensure your new password meets all requirements.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsVerifyingCurrentPassword(true);
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: session.user.email,
+        password: currentPassword,
+      });
+
+      if (signInError) {
+        // Check if the error is specifically about invalid credentials
+        if (
+          signInError.message
+            .toLowerCase()
+            .includes("invalid login credentials")
+        ) {
+          toast({
+            title: "Incorrect Current Password",
+            description: "The current password you entered is incorrect.",
+            variant: "destructive",
+          });
+        } else {
+          throw signInError; // Re-throw other sign-in errors
+        }
+        setIsVerifyingCurrentPassword(false);
+        return;
+      }
+
+      // Current password verified, proceed to update
+      updatePassword(
+        { newPassword },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Password updated",
+              description: "Your password has been changed successfully.",
+            });
+            setCurrentPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+            setShowCurrentPassword(false);
+            setShowNewPassword(false);
+            setShowConfirmPassword(false);
+          },
+          onError: (error) => {
+            toast({
+              title: "Password update failed",
+              description: error.message || "Could not update your password.",
+              variant: "destructive",
+            });
+          },
+          onSettled: () => {
+            setIsVerifyingCurrentPassword(false);
+          },
+        }
+      );
+    } catch (error: any) {
+      toast({
+        title: "Verification Failed",
+        description:
+          error.message ||
+          "An error occurred while verifying your current password.",
+        variant: "destructive",
+      });
+      setIsVerifyingCurrentPassword(false);
+    }
   };
 
   const handleAvatarButtonClick = () => {
@@ -292,6 +437,10 @@ export default function UserSettingsPage() {
       }
       setAvatarFile(file);
     }
+  };
+
+  const handleLogout = () => {
+    logout.mutate();
   };
 
   return (
@@ -361,11 +510,11 @@ export default function UserSettingsPage() {
           <TabsTrigger value="privacy" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
             <span className="hidden sm:inline">Privacy</span>
-          </TabsTrigger>
+          </TabsTrigger> */}
           <TabsTrigger value="security" className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
             <span className="hidden sm:inline">Security</span>
-          </TabsTrigger> */}
+          </TabsTrigger>
         </TabsList>
 
         {/* Profile Tab */}
@@ -729,7 +878,7 @@ export default function UserSettingsPage() {
         </TabsContent> */}
 
         {/* Security Tab */}
-        {/* <TabsContent value="security">
+        <TabsContent value="security">
           <Card>
             <CardHeader>
               <CardTitle>Account Security</CardTitle>
@@ -738,7 +887,7 @@ export default function UserSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSecuritySubmit} className="space-y-6">
+              <form onSubmit={handleChangePasswordSubmit} className="space-y-6">
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium">Password</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -747,14 +896,23 @@ export default function UserSettingsPage() {
                       <div className="relative">
                         <Input
                           id="current-password"
-                          type="password"
+                          type={showCurrentPassword ? "text" : "password"}
                           placeholder="••••••••"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
                         />
                         <button
                           type="button"
+                          onClick={() =>
+                            setShowCurrentPassword(!showCurrentPassword)
+                          }
                           className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
                         >
-                          <Eye className="h-4 w-4" />
+                          {showCurrentPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
                         </button>
                       </div>
                     </div>
@@ -766,14 +924,21 @@ export default function UserSettingsPage() {
                       <div className="relative">
                         <Input
                           id="new-password"
-                          type="password"
+                          type={showNewPassword ? "text" : "password"}
                           placeholder="••••••••"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
                         />
                         <button
                           type="button"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
                           className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
                         >
-                          <EyeOff className="h-4 w-4" />
+                          {showNewPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
                         </button>
                       </div>
                     </div>
@@ -784,14 +949,23 @@ export default function UserSettingsPage() {
                       <div className="relative">
                         <Input
                           id="confirm-password"
-                          type="password"
+                          type={showConfirmPassword ? "text" : "password"}
                           placeholder="••••••••"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
                         />
                         <button
                           type="button"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
                           className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
                         >
-                          <EyeOff className="h-4 w-4" />
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
                         </button>
                       </div>
                     </div>
@@ -803,30 +977,55 @@ export default function UserSettingsPage() {
                     </p>
                     <ul className="text-sm text-muted-foreground space-y-1">
                       <li className="flex items-center gap-2">
-                        <Check className="h-3 w-3 text-green-500" />
+                        {passwordRequirements.length ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <X className="h-3 w-3 text-red-500" />
+                        )}
                         <span>At least 8 characters long</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check className="h-3 w-3 text-green-500" />
+                        {passwordRequirements.uppercase ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <X className="h-3 w-3 text-red-500" />
+                        )}
                         <span>Contains uppercase letters</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <X className="h-3 w-3 text-red-500" />
+                        {passwordRequirements.number ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <X className="h-3 w-3 text-red-500" />
+                        )}
                         <span>Contains numbers</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <X className="h-3 w-3 text-red-500" />
+                        {passwordRequirements.specialChar ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <X className="h-3 w-3 text-red-500" />
+                        )}
                         <span>Contains special characters</span>
                       </li>
                     </ul>
                   </div>
 
-                  <Button variant="outline" size="sm" className="mt-2">
-                    Change Password
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    type="button"
+                    onClick={() => handleChangePasswordSubmit()}
+                    disabled={isUpdatingPassword || isVerifyingCurrentPassword}
+                  >
+                    {isUpdatingPassword || isVerifyingCurrentPassword
+                      ? "Changing..."
+                      : "Change Password"}
                   </Button>
 
                   <Separator />
-
+                  {/* 
                   <h3 className="text-lg font-medium">
                     Two-Factor Authentication
                   </h3>
@@ -871,11 +1070,20 @@ export default function UserSettingsPage() {
                     />
                   </div>
 
-                  <Separator />
+                  <Separator /> */}
 
                   <h3 className="text-lg font-medium">Account Actions</h3>
                   <div className="space-y-2">
                     <Button
+                      variant="outline"
+                      className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={handleLogout}
+                      type="button"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Log out
+                    </Button>
+                    {/* <Button
                       variant="outline"
                       className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
                     >
@@ -888,17 +1096,25 @@ export default function UserSettingsPage() {
                     >
                       <X className="h-4 w-4 mr-2" />
                       Deactivate Account
-                    </Button>
+                    </Button> */}
                   </div>
                 </div>
 
-                <div className="flex justify-end">
-                  <Button type="submit">Save Security Settings</Button>
-                </div>
+                {/* The form-level submit button is removed as Change Password button handles it now */}
+                {/* <div className="flex justify-end">
+                  <Button
+                    type="submit"
+                    disabled={isUpdatingPassword || isVerifyingCurrentPassword}
+                  >
+                    {isUpdatingPassword || isVerifyingCurrentPassword
+                      ? "Saving..."
+                      : "Save Security Settings"}
+                  </Button>
+                </div> */}
               </form>
             </CardContent>
           </Card>
-        </TabsContent> */}
+        </TabsContent>
       </Tabs>
     </div>
   );

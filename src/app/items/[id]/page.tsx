@@ -105,7 +105,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   };
 
   const handleIAmInterested = () => {
-    router.push(`/user/login`);
+    router.push(`/users/login`);
   };
 
   const handleShare = (platform: string) => {

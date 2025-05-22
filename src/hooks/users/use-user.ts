@@ -13,7 +13,7 @@ export const useUser = (userId: string | null) => {
         );
       }
 
-      const res = await fetch(`/api/user/${userId}`);
+      const res = await fetch(`/api/users/${userId}`);
       if (!res.ok) {
         const errorData = await res
           .json()
