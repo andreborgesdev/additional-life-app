@@ -21,16 +21,6 @@ import { Button } from "@/src/components/ui/button";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import Image from "next/image";
 
-export const iconMap = [
-  { name: "Household & Home Furnishings", icon: "🪑" },
-  { name: "Clothing & Accessories", icon: "👕" },
-  { name: "Books & Comics", icon: "📚" },
-  { name: "Computers & Networks", icon: "💻" },
-  { name: "Toys & Crafts", icon: "🧸" },
-  { name: "Home & Garden", icon: "🌿" },
-  { name: "Sports", icon: "🚲" },
-];
-
 function CategoryCardSkeleton() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 flex flex-col items-center justify-center">
@@ -114,10 +104,13 @@ export default function Categories() {
           {categories.map((category) => (
             <Link
               key={category.id}
-              href={`/categories/${category.id}`}
+              href={{
+                pathname: "/items",
+                query: { categoryId: category.id },
+              }}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 flex flex-col items-center justify-center transition-all hover:shadow-md hover:scale-105 cursor-pointer"
             >
-              {category.imageUrl ? (
+              {category.imageUrl && (
                 <Image
                   src={category.imageUrl}
                   alt={category.name}
@@ -125,17 +118,13 @@ export default function Categories() {
                   height={80}
                   className="rounded-full mb-3 object-cover"
                 />
-              ) : (
-                <span className="text-4xl mb-3">
-                  {iconMap.find((icon) => icon.name === category.name)?.icon}
-                </span>
               )}
               <span className="text-green-800 dark:text-green-200 font-medium text-center">
                 {category.name}
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {category.count} {category.count === 1 ? "item" : "items"}
-              </span>
+              {/* <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {category.count}25 {category.count === 1 ? "item" : "items"}
+              </span> */}
             </Link>
           ))}
         </div>

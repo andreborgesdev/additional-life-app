@@ -6,7 +6,6 @@ import { Button } from "@/src/components/ui/button";
 import { motion } from "framer-motion";
 import { useEffect, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { AuroraText } from "../magicui/aurora-text";
 import { SparklesText } from "../magicui/sparkles-text";
 
 export default function Hero() {

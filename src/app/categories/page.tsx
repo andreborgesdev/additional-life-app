@@ -4,12 +4,11 @@ import Link from "next/link";
 import { useRootCategories } from "@/src/hooks/use-categories";
 import { LoadingSpinner } from "@/src/components/ui/loading-spinner";
 import Image from "next/image";
-import { iconMap } from "@/src/components/home/categories";
 import { Skeleton } from "@/src/components/ui/skeleton";
 
 function CategoryCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex flex-col items-center justify-center">
+    <div className="dark:bg-green-800 rounded-lg shadow-md p-6 flex flex-col items-center justify-center">
       <Skeleton className="h-20 w-20 rounded-full mb-3" />
       <Skeleton className="h-4 w-24" />
     </div>

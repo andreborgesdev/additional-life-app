@@ -33,7 +33,7 @@ export default function RootLayout({
             <AuthProvider>
               <Toaster />
               <Header />
-              <div className="pt-16">
+              <div className="pt-14">
                 {" "}
                 {/* Add padding to account for fixed header */}
                 {children}

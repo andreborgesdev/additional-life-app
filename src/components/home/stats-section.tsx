@@ -8,7 +8,7 @@ export default function StatsSection() {
           <div>
             <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
               <NumberTicker
-                value={10000}
+                value={500}
                 className="text-green-600 dark:text-green-400"
               />
               +
@@ -20,7 +20,7 @@ export default function StatsSection() {
           <div>
             <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
               <NumberTicker
-                value={5000}
+                value={100}
                 className="text-green-600 dark:text-green-400"
               />
             </div>
@@ -31,9 +31,10 @@ export default function StatsSection() {
           <div>
             <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
               <NumberTicker
-                value={4000}
+                value={500}
                 className="text-green-600 dark:text-green-400"
               />
+              KGs
             </div>
             <div className="text-lg text-gray-700 dark:text-gray-300">
               Saved from Landfill

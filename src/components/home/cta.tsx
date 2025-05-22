@@ -15,7 +15,7 @@ export default function Cta() {
           sharing.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto mb-8">
-          <div className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
             <Leaf className="h-12 w-12 text-green-500 mb-4" />
             <h3 className="text-xl font-semibold text-green-700 dark:text-green-200 mb-2">
               Eco-Friendly
@@ -24,7 +24,7 @@ export default function Cta() {
               Reducing waste and promoting reuse of items
             </p>
           </div>
-          <div className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
             <Recycle className="h-12 w-12 text-green-500 mb-4" />
             <h3 className="text-xl font-semibold text-green-700 dark:text-green-200 mb-2">
               Circular Economy
@@ -33,7 +33,7 @@ export default function Cta() {
               Fostering a sustainable cycle of giving and receiving
             </p>
           </div>
-          <div className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
             <Users className="h-12 w-12 text-green-500 mb-4" />
             <h3 className="text-xl font-semibold text-green-700 dark:text-green-200 mb-2">
               Community-Driven
@@ -42,7 +42,7 @@ export default function Cta() {
               Building stronger, more connected neighborhoods
             </p>
           </div>
-          <div className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
             <Heart className="h-12 w-12 text-green-500 mb-4" />
             <h3 className="text-xl font-semibold text-green-700 dark:text-green-200 mb-2">
               Generosity

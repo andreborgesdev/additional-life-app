@@ -180,7 +180,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   };
 
   const handleChatClick = () => {
-    router.push(`/chat/${productId}`);
+    router.push(`/chat/${session?.user.id}/${item.owner?.id}/${item.id}`);
   };
 
   const handleEditClick = () => {

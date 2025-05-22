@@ -157,11 +157,11 @@ export default function Header() {
       icon: <List className="h-5 w-5" />,
       label: t("nav.all_items"),
     },
-    // {
-    //   href: "/categories",
-    //   icon: <Package className="h-5 w-5" />,
-    //   label: t("nav.categories"),
-    // },
+    {
+      href: "/categories",
+      icon: <Package className="h-5 w-5" />,
+      label: t("nav.categories"),
+    },
     // {
     //   href: "/about",
     //   icon: <User className="h-5 w-5" />,
