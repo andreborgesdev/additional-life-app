@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import {
@@ -85,6 +85,14 @@ const sortByOptions = [
 ];
 
 export default function ItemsPage() {
+  return (
+    <Suspense fallback={<ItemsPageSkeleton />}>
+      <ItemsPageContent />
+    </Suspense>
+  );
+}
+
+function ItemsPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
