@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import useSupabaseBrowser from "../lib/supabase/supabase-browser";
+import useSupabaseBrowser from "../../lib/supabase/supabase-browser";
 import { useRouter } from "next/navigation";
 
 export const useLogout = () => {

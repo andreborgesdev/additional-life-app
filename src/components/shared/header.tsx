@@ -33,7 +33,7 @@ import {
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import { useSession } from "@/src/app/auth-provider";
-import { useLogout } from "@/src/hooks/use-logout";
+import { useLogout } from "@/src/hooks/auth/use-logout";
 import {
   Tooltip,
   TooltipContent,
@@ -413,7 +413,7 @@ export default function Header() {
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage
-                        src="/placeholder.svg?height=32&width=32"
+                        src={session.user.user_metadata.avatar_url}
                         alt="User"
                       />
                       <AvatarFallback className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-lg">
@@ -521,7 +521,7 @@ export default function Header() {
                     <div className="mb-6 pb-6 border-b flex items-center gap-4">
                       <Avatar className="h-12 w-12">
                         <AvatarImage
-                          src="/placeholder.svg?height=48&width=48"
+                          src={session.user.user_metadata.avatar_url}
                           alt="User"
                         />
                         <AvatarFallback className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-lg">
@@ -529,9 +529,11 @@ export default function Header() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">John Doe</p>
+                        <p className="font-medium">
+                          {session.user.user_metadata.name}
+                        </p>
                         <p className="text-sm text-muted-foreground">
-                          john.doe@example.com
+                          {session.user.email}
                         </p>
                       </div>
                     </div>

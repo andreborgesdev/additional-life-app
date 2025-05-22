@@ -24,6 +24,8 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, alt }) => {
     adaptiveHeight: true,
     accessibility: true,
     arrows: false,
+    autoplay: true,
+    autoplaySpeed: 3000,
     beforeChange: (current: number, next: number) => setCurrentSlide(next),
   };
 
@@ -87,7 +89,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, alt }) => {
             aria-label={`Go to image ${index + 1}`}
           >
             <Image
-              src={image || "/placeholder.svg"}
+              src={image}
               alt={`${alt} - Thumbnail ${index + 1}`}
               width={64}
               height={64}

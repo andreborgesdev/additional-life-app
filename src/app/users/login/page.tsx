@@ -6,9 +6,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
-import { useLogin } from "@/src/hooks/use-login";
+import { useLogin } from "@/src/hooks/auth/use-login";
 import { ArrowLeft, Eye, EyeOff, Facebook, LogIn, Mail } from "lucide-react";
 import { toast } from "@/src/hooks/use-toast";
+import { useGoogleLogin } from "@/src/hooks/auth/use-login-google";
+import { useFacebookLogin } from "@/src/hooks/auth/use-login-facebook";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -17,6 +19,8 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
   const { mutate: login, isPending: isLoading, error } = useLogin();
+  const { mutate: googleLogin } = useGoogleLogin();
+  const { mutate: facebookLogin } = useFacebookLogin();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,12 +43,12 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = () => {
-    router.push("/");
+    googleLogin();
   };
 
-  const handleFacebookLogin = () => {
-    router.push("/");
-  };
+  // const handleFacebookLogin = () => {
+  //   facebookLogin();
+  // };
 
   return (
     <div className="bg-green-50 dark:bg-green-800 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -67,24 +71,24 @@ export default function LoginPage() {
         </div>
 
         <div className="flex flex-col space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex justify-center">
             <button
               onClick={handleGoogleLogin}
               disabled={isLoading}
-              className="flex items-center justify-center px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+              className="flex items-center justify-center px-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 transition-colors duration-200"
             >
               <FcGoogle className="h-5 w-5 mr-2" />
               <span>Google</span>
             </button>
 
-            <button
+            {/* <button
               onClick={handleFacebookLogin}
               disabled={isLoading}
               className="flex items-center justify-center px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 transition-colors duration-200"
             >
               <Facebook className="h-5 w-5 mr-2 text-blue-600" />
               <span>Facebook</span>
-            </button>
+            </button> */}
           </div>
 
           <div className="relative flex justify-center text-sm">
@@ -143,7 +147,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  className="block w-full pl-4 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder="••••••••"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">

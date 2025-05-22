@@ -53,7 +53,7 @@ import { formatDate } from "@/src/utils/date-utils";
 import { UserRequest } from "@/src/lib/generated-api";
 import { PhoneInput } from "@/src/components/shared/phone-input";
 import { uploadImage } from "@/src/lib/supabase/storage/client";
-import { useLogout } from "@/src/hooks/use-logout";
+import { useLogout } from "@/src/hooks/auth/use-logout";
 import { useUpdatePassword } from "@/src/hooks/users/use-update-password";
 import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
 
@@ -593,11 +593,7 @@ export default function UserSettingsPage() {
                     <div className="flex items-center gap-4">
                       <Avatar className="h-16 w-16">
                         <AvatarImage
-                          src={
-                            avatarPreviewUrl ||
-                            avatarUrl ||
-                            "/placeholder.svg?height=64&width=64"
-                          }
+                          src={avatarPreviewUrl || avatarUrl}
                           alt={name}
                         />
                         <AvatarFallback>

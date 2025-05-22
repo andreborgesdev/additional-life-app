@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { UserResponse } from "../lib/api-client";
+import { UserResponse } from "../../lib/api-client";
 
 export interface RegisterPayload {
   email: string;

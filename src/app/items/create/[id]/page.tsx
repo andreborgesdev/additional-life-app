@@ -88,8 +88,27 @@ export default function CreateProductPage() {
     itemDataFromHook?.category?.id?.toString() ?? null;
 
   useEffect(() => {
-    if (!isLoadingSession && !session) router.replace("/users/login");
-  }, [router, session, isLoadingSession]);
+    if (!isLoadingSession && !session) {
+      router.replace("/users/login");
+      return;
+    }
+
+    // TODO add this back when email verification is implemented
+    // if (
+    //   !isLoadingSession &&
+    //   session &&
+    //   !session.user.user_metadata.email_verified
+    // ) {
+    //   toast({
+    //     title: "Email Verification Required",
+    //     description:
+    //       "Please verify your email address before creating an item. You are being redirected to your settings.",
+    //     variant: "destructive",
+    //   });
+    //   router.replace("/users/settings");
+    //   return;
+    // }
+  }, [router, session, isLoadingSession, isEditMode, toast]);
 
   useEffect(() => {
     if (isEditMode) {

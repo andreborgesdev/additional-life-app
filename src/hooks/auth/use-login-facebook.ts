@@ -1,26 +1,17 @@
-"use client";
-
+import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import useSupabaseBrowser from "../lib/supabase/supabase-browser";
 
-export const useLogin = () => {
+export const useFacebookLogin = () => {
   const queryClient = useQueryClient();
   const supabase = useSupabaseBrowser();
 
   return useMutation({
-    mutationFn: async ({
-      email,
-      password,
-    }: {
-      email: string;
-      password: string;
-    }) => {
+    mutationFn: async () => {
       if (!supabase) {
         throw new Error("Supabase client is not initialized.");
       }
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "facebook",
       });
       if (error) throw error;
     },

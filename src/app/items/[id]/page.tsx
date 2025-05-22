@@ -1,23 +1,18 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { notFound, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
   MapPin,
-  User,
-  Calendar,
   Flag,
   Share2,
   Copy,
   Facebook,
   MessageCircle,
-  Mail,
-  Eye,
   Clock,
-  Package,
   MapPinHouse,
   Truck,
   Edit,
@@ -55,9 +50,7 @@ import {
 } from "@/src/components/ui/avatar";
 import { conditionDetails } from "@/src/components/shared/detailed-item-card";
 import { Separator } from "@/src/components/ui/separator";
-import { getUserFullNameByUUID } from "@/src/lib/supabase/auth/supabase-get-user";
 import { getTimeAgo } from "@/src/utils/date-utils";
-import { useUserBySupabaseId } from "@/src/hooks/users/use-user-by-supabase-id";
 
 const fadeIn = {
   hidden: { opacity: 0 },

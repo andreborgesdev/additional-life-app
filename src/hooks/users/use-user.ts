@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { UserResponse } from "../lib/generated-api";
+import { UserResponse } from "@/src/lib/generated-api";
 
 export const useUser = (userId: string | null) => {
   return useQuery<UserResponse, Error>({

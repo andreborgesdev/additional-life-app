@@ -186,7 +186,7 @@ export default function ItemsPublishedPage() {
               <CardContent>
                 <div className="relative h-48 mb-4">
                   <img
-                    src={item.imageUrls?.[0] || "/placeholder.svg"}
+                    src={item.imageUrls?.[0]}
                     alt={item.title || "Item image"}
                     className="w-full h-full object-cover rounded-md"
                   />

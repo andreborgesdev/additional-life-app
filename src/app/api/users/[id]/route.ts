@@ -47,7 +47,6 @@ const getUserByIdHandler = async (
 
 export const GET = withPublicApiClient(getUserByIdHandler);
 
-// PUT handler for updating user
 const updateUserHandler = async (
   client: ApiClient,
   jwt: string,
@@ -88,19 +87,16 @@ const updateUserHandler = async (
     console.log("Updated user in DB successfully:", updatedUserInDb);
 
     if (updatedUserInDb) {
-      const { error: authError } = await supabase.auth.admin.updateUserById(
-        updatedUserInDb.supabaseId,
-        {
-          user_metadata: {
-            name: userData.name,
-            avatar_url: userData.avatarUrl,
-            phone_number: userData.phoneNumber,
-            address: userData.address,
-            bio: userData.bio,
-            preferred_language: userData.preferredLanguage,
-          },
-        }
-      );
+      const { error: authError } = await supabase.auth.updateUser({
+        data: {
+          user_id: updatedUserInDb.id,
+          name: userData.name,
+          avatar_url: userData.avatarUrl,
+          address: userData.address,
+          bio: userData.bio,
+          preferred_language: userData.preferredLanguage,
+        },
+      });
 
       if (authError) {
         console.error("Error updating Supabase auth user metadata:", authError);
@@ -121,9 +117,4 @@ const updateUserHandler = async (
   }
 };
 
-// Assuming you have a way to handle authenticated API client for PUT requests
-// This might be withAuthenticatedApiClient or similar, depending on your setup.
-// If your ApiClient itself handles auth based on the request, you might use withPublicApiClient
-// and rely on the underlying API to enforce permissions.
-// For simplicity, I'll use withAuthenticatedApiClient as a placeholder.
 export const PUT = withApiClient(updateUserHandler);
