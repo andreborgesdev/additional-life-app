@@ -221,6 +221,12 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/UserResponse"
+        "409":
+          description: User already exists
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
         "400":
           description: Invalid input data
           content:
@@ -310,38 +316,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ItemResponse"
-  /api/v1/users:
-    get:
-      tags:
-      - User API
-      summary: Get all users (Admin only)
-      description: Retrieves a list of all users. Currently restricted.
-      operationId: getAllUsers
-      responses:
-        "200":
-          description: Users retrieved successfully (if admin)
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/UserResponse"
-        "401":
-          description: Unauthorized
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/UserResponse"
-        "403":
-          description: Forbidden (if not admin)
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/UserResponse"
   /api/v1/users/supabase/{supabaseId}:
     get:
       tags:
@@ -722,6 +696,15 @@ components:
           type: string
         email:
           type: string
+        contactOptions:
+          type: array
+          items:
+            type: string
+            enum:
+            - CHAT
+            - EMAIL
+            - PHONE
+            - WHATSAPP
         phoneNumber:
           type: string
         address:
@@ -748,6 +731,13 @@ components:
           type: boolean
         active:
           type: boolean
+      required:
+      - contactOptions
+      - createdAt
+      - email
+      - id
+      - name
+      - supabaseId
     ItemRequest:
       type: object
       properties:
@@ -810,6 +800,13 @@ components:
           format: date-time
         active:
           type: boolean
+      required:
+      - active
+      - createdAt
+      - description
+      - id
+      - imageUrl
+      - name
     ItemResponse:
       type: object
       properties:
@@ -865,6 +862,21 @@ components:
           type: string
           enum:
           - ANIBIS
+      required:
+      - active
+      - address
+      - category
+      - condition
+      - createdAt
+      - description
+      - id
+      - imageUrls
+      - isPickupPossible
+      - isShippingPossible
+      - itemType
+      - owner
+      - status
+      - title
     MinimalUserResponse:
       type: object
       properties:
@@ -876,6 +888,10 @@ components:
           type: string
         avatarUrl:
           type: string
+      required:
+      - id
+      - name
+      - supabaseId
     CreateUserRequest:
       type: object
       properties:
@@ -954,8 +970,6 @@ components:
           format: int64
         sort:
           $ref: "#/components/schemas/SortObject"
-        unpaged:
-          type: boolean
         paged:
           type: boolean
         pageNumber:
@@ -964,12 +978,14 @@ components:
         pageSize:
           type: integer
           format: int32
+        unpaged:
+          type: boolean
     SortObject:
       type: object
       properties:
         empty:
           type: boolean
-        unsorted:
-          type: boolean
         sorted:
+          type: boolean
+        unsorted:
           type: boolean

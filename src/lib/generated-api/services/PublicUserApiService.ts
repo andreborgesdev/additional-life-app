@@ -25,6 +25,7 @@ export class PublicUserApiService {
             mediaType: 'application/json',
             errors: {
                 400: `Invalid input data`,
+                409: `User already exists`,
             },
         });
     }

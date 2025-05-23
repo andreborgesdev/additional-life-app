@@ -58,15 +58,6 @@ export default function DetailedItemCardList({
                   </span>
                 </div>
               </div>
-
-              <div className="absolute top-1 right-1 z-10">
-                <div className="flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs font-semibold bg-black/80 text-white backdrop-blur-sm border border-white/20 shadow-lg">
-                  <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
-                  <span className="text-[10px] sm:text-xs">
-                    {getTimeAgo(item.createdAt)}
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -95,7 +86,7 @@ export default function DetailedItemCardList({
                 </span>
               </div>
 
-              <div className="flex items-center gap-1 sm:gap-1.5 sm:col-span-2 md:col-span-2">
+              <div className="flex items-center gap-1 sm:gap-1.5 col-span-2">
                 {item.isPickupPossible && (
                   <div className="flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium">
                     <MapPinHouse className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
@@ -108,6 +99,12 @@ export default function DetailedItemCardList({
                     <span className="text-[10px] sm:text-xs">Shipping</span>
                   </div>
                 )}
+                <div className="flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400 font-medium ml-auto">
+                  <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
+                  <span className="text-[10px] sm:text-xs">
+                    {getTimeAgo(item.createdAt)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 export type MinimalUserResponse = {
-    id?: string;
-    supabaseId?: string;
-    name?: string;
+    id: string;
+    supabaseId: string;
+    name: string;
     avatarUrl?: string;
 };
 

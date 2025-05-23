@@ -5,22 +5,22 @@
 import type { CategoryResponse } from './CategoryResponse';
 import type { MinimalUserResponse } from './MinimalUserResponse';
 export type ItemResponse = {
-    id?: string;
-    title?: string;
-    description?: string;
-    condition?: ItemResponse.condition;
-    address?: string;
-    isPickupPossible?: boolean;
-    isShippingPossible?: boolean;
-    createdAt?: string;
+    id: string;
+    title: string;
+    description: string;
+    condition: ItemResponse.condition;
+    address: string;
+    isPickupPossible: boolean;
+    isShippingPossible: boolean;
+    createdAt: string;
     updatedAt?: string;
-    imageUrls?: Array<string>;
-    itemType?: ItemResponse.itemType;
+    imageUrls: Array<string>;
+    itemType: ItemResponse.itemType;
     externalUrl?: string;
-    status?: ItemResponse.status;
-    active?: boolean;
-    owner?: MinimalUserResponse;
-    category?: CategoryResponse;
+    status: ItemResponse.status;
+    active: boolean;
+    owner: MinimalUserResponse;
+    category: CategoryResponse;
     sourceExternalPlatform?: ItemResponse.sourceExternalPlatform;
 };
 export namespace ItemResponse {

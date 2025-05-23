@@ -12,3 +12,7 @@
     Architect the code and design like a senior engineer.
     Design clean, modern, and appealing UIs.
     Design the UI to have an user-friendly and intuitive UX.
+    Use already existing code and libraries in the project.
+    Use already existing components in the project.
+    Use the latest version of the libraries and frameworks.
+    Use the latest version of the programming language.

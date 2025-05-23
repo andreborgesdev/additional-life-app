@@ -16,6 +16,7 @@ type RouteContext = {
 
 const getUserByIdHandler = async (
   client: ApiClient,
+  jwt: string,
   _request: NextRequest,
   context: RouteContext
 ): Promise<NextResponse<UserResponse | { error: string }>> => {
@@ -45,7 +46,7 @@ const getUserByIdHandler = async (
   }
 };
 
-export const GET = withPublicApiClient(getUserByIdHandler);
+export const GET = withApiClient(getUserByIdHandler);
 
 const updateUserHandler = async (
   client: ApiClient,

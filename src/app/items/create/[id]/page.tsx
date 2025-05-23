@@ -28,9 +28,9 @@ import { uploadImage, deleteImage } from "@/src/lib/supabase/storage/client";
 import { useCreateOrUpdateItem } from "@/src/hooks/items/use-create-or-update-item";
 import { v4 as uuidv4 } from "uuid";
 import { useUserByEmail } from "@/src/hooks/users/use-user-by-email";
+import { conditionDetails } from "@/src/components/shared/detailed-item-card";
 
 const MAX_IMAGES = 5;
-const conditionOptions = Object.values(ItemRequest.condition);
 
 interface ImageSource {
   id: string;
@@ -75,6 +75,8 @@ export default function CreateProductPage() {
   const [removedPersistedImageUrls, setRemovedPersistedImageUrls] = useState<
     string[]
   >([]);
+  const [isFormInitialized, setIsFormInitialized] = useState(false);
+
   const { session, isLoading: isLoadingSession } = useSession();
 
   const { data: allCategories, isLoading: isLoadingCategories } =
@@ -85,14 +87,45 @@ export default function CreateProductPage() {
   );
 
   const initialCategoryIdForSelector =
-    itemDataFromHook?.category?.id?.toString() ?? null;
+    isEditMode && itemDataFromHook
+      ? itemDataFromHook.category?.id?.toString() ?? null
+      : null;
+
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setCondition(undefined);
+    setFormSelectedCategoryId(null);
+    setAddress("");
+    setImageSources([]);
+    setPickupPossible(false);
+    setShippingPossible(false);
+    setRemovedPersistedImageUrls([]);
+    setIsFormInitialized(true);
+  };
+
+  const populateFormWithItemData = (itemData: any) => {
+    setTitle(itemData.title);
+    setDescription(itemData.description);
+    setFormSelectedCategoryId(itemData.category.id);
+    setCondition(itemData.condition);
+    setAddress(itemData.address);
+
+    const persistedSources: ImageSource[] = (itemData.imageUrls || []).map(
+      (url: string) => ({
+        id: url,
+        type: "persisted",
+        url: url,
+      })
+    );
+    setImageSources(persistedSources);
+    setRemovedPersistedImageUrls([]);
+    setPickupPossible(itemData.isPickupPossible);
+    setShippingPossible(itemData.isShippingPossible);
+    setIsFormInitialized(true);
+  };
 
   useEffect(() => {
-    if (!isLoadingSession && !session) {
-      router.replace("/auth/login");
-      return;
-    }
-
     // TODO add this back when email verification is implemented
     // if (
     //   !isLoadingSession &&
@@ -108,7 +141,11 @@ export default function CreateProductPage() {
     //   router.replace("/users/settings");
     //   return;
     // }
-  }, [router, session, isLoadingSession, isEditMode, toast]);
+    if (!isLoadingSession && !session) {
+      router.replace("/auth/login");
+      return;
+    }
+  }, [router, session, isLoadingSession]);
 
   useEffect(() => {
     if (isEditMode) {
@@ -127,53 +164,10 @@ export default function CreateProductPage() {
           router.replace("/items");
           return;
         }
-
-        setTitle(itemDataFromHook.title || "");
-        setDescription(itemDataFromHook.description || "");
-        setFormSelectedCategoryId(
-          itemDataFromHook.category?.id?.toString() ?? null
-        );
-        setCondition(itemDataFromHook.condition ?? undefined);
-        setAddress(itemDataFromHook.address || "");
-
-        const persistedSources: ImageSource[] = (
-          itemDataFromHook.imageUrls || []
-        ).map((url: string) => ({
-          id: url,
-          type: "persisted",
-          url: url,
-        }));
-        setImageSources(persistedSources);
-        setRemovedPersistedImageUrls([]);
-        setPickupPossible(itemDataFromHook.isPickupPossible || false);
-        setShippingPossible(itemDataFromHook.isShippingPossible || false);
-      } else if (!isLoadingItemData && !itemDataFromHook && productId) {
-        // If in edit mode, but no data (e.g., item not found or after ID change before new data load)
-        // Reset form to prevent showing stale data from a previous item.
-        setTitle("");
-        setDescription("");
-        setCondition(undefined);
-        setFormSelectedCategoryId(null);
-        setAddress("");
-        setImageSources([]);
-        setPickupPossible(false);
-        setShippingPossible(false);
-        setRemovedPersistedImageUrls([]);
+        populateFormWithItemData(itemDataFromHook);
       }
-      // If isLoadingItemData is true, we wait for data to load.
-      // itemDataError handling is separate.
     } else {
-      // Not in edit mode (creating a new item)
-      // Reset all fields to default for a new item form
-      setTitle("");
-      setDescription("");
-      setCondition(undefined);
-      setFormSelectedCategoryId(null);
-      // setAddress(""); // Keep address if pre-filled from user data, or clear if desired
-      setImageSources([]);
-      setPickupPossible(false);
-      setShippingPossible(false);
-      setRemovedPersistedImageUrls([]);
+      resetForm();
     }
 
     if (isEditMode && itemDataError && !isLoadingItemData) {
@@ -559,7 +553,10 @@ export default function CreateProductPage() {
 
   const effectiveIsLoadingProduct = isEditMode ? isLoadingItemData : false;
   const showSkeleton =
-    isLoadingSession || isLoadingCategories || effectiveIsLoadingProduct;
+    isLoadingSession ||
+    isLoadingCategories ||
+    effectiveIsLoadingProduct ||
+    !isFormInitialized;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
@@ -669,11 +666,10 @@ export default function CreateProductPage() {
                   Condition
                 </Label>
                 <Select
-                  key={productId}
-                  value={condition}
-                  onValueChange={
-                    (value: string) =>
-                      setCondition(value as ItemRequest.condition) // Typed value
+                  key={`condition-${condition || "empty"}`}
+                  value={condition || ""}
+                  onValueChange={(value: string) =>
+                    setCondition(value as ItemRequest.condition)
                   }
                   required
                   disabled={isSubmitting}
@@ -685,10 +681,12 @@ export default function CreateProductPage() {
                     <SelectValue placeholder="Select condition" />
                   </SelectTrigger>
                   <SelectContent>
-                    {conditionOptions.map((cond: ItemRequest.condition) => (
-                      <SelectItem key={cond} value={cond}>
-                        {cond.charAt(0).toUpperCase() +
-                          cond.slice(1).toLowerCase().replace(/_/g, " ")}
+                    {conditionDetails.map((conditionDetail) => (
+                      <SelectItem
+                        key={conditionDetail.key}
+                        value={conditionDetail.key}
+                      >
+                        {conditionDetail.placeholder}
                       </SelectItem>
                     ))}
                   </SelectContent>

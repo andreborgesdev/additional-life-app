@@ -56,6 +56,7 @@ import { useLogout } from "@/src/hooks/auth/use-logout";
 import { useUpdatePassword } from "@/src/hooks/users/use-update-password";
 import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
 import { useUserByEmail } from "@/src/hooks/users/use-user-by-email";
+import { Checkbox } from "@/src/components/ui/checkbox";
 
 interface PasswordRequirementStatus {
   length: boolean;
@@ -88,6 +89,11 @@ export default function UserSettingsPage() {
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  // Contact preferences
+  const [contactOptions, setContactOptions] = useState<
+    Array<"EMAIL" | "PHONE" | "WHATSAPP">
+  >([]);
 
   // Notification preferences
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -138,6 +144,7 @@ export default function UserSettingsPage() {
         userData.preferredLanguage ||
           UpdateUserRequest.preferredLanguage.ENGLISH
       );
+      setContactOptions(userData.contactOptions || []);
       setIsLoading(false);
     } else if (!isLoadingUserData && !userData) {
       setIsLoading(false);
@@ -162,9 +169,15 @@ export default function UserSettingsPage() {
     });
   }, [newPassword]);
 
-  if (isLoading) {
-    return <UserSettingsSkeleton />;
-  }
+  const handleContactOptionToggle = (
+    option: "EMAIL" | "PHONE" | "WHATSAPP"
+  ) => {
+    setContactOptions((prev) =>
+      prev.includes(option)
+        ? prev.filter((o) => o !== option)
+        : [...prev, option]
+    );
+  };
 
   // Handle form submissions
   const handleProfileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -253,6 +266,7 @@ export default function UserSettingsPage() {
       preferredLanguage: language,
       isEmailVerified: session?.user.user_metadata.email_verified || false,
       isPhoneVerified: session?.user.user_metadata.phone_verified || false,
+      contactOptions: contactOptions,
     };
 
     updateUser(
@@ -442,6 +456,10 @@ export default function UserSettingsPage() {
   const handleLogout = () => {
     logout.mutate();
   };
+
+  if (isLoadingSession || isLoadingUserData || isLoading) {
+    return <UserSettingsSkeleton />;
+  }
 
   return (
     <div className="container max-w-6xl mx-auto px-4 py-8">
@@ -643,6 +661,61 @@ export default function UserSettingsPage() {
                         )
                       )}
                     </select>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-base font-medium">
+                        Contact Preferences
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Select how others can contact you about items
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="contact-email"
+                          checked={contactOptions.includes("EMAIL")}
+                          onClick={() => handleContactOptionToggle("EMAIL")}
+                        />
+                        <Label
+                          htmlFor="contact-email"
+                          className="flex items-center gap-2 font-normal"
+                        >
+                          <Mail className="h-4 w-4" />
+                          Email
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="contact-phone"
+                          checked={contactOptions.includes("PHONE")}
+                          onClick={() => handleContactOptionToggle("PHONE")}
+                        />
+                        <Label
+                          htmlFor="contact-phone"
+                          className="flex items-center gap-2 font-normal"
+                        >
+                          <Phone className="h-4 w-4" />
+                          Phone Call/Message
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="contact-whatsapp"
+                          checked={contactOptions.includes("WHATSAPP")}
+                          onClick={() => handleContactOptionToggle("WHATSAPP")}
+                        />
+                        <Label
+                          htmlFor="contact-whatsapp"
+                          className="flex items-center gap-2 font-normal"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          WhatsApp
+                        </Label>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

@@ -83,22 +83,6 @@ export class UserApiService {
         });
     }
     /**
-     * Get all users (Admin only)
-     * Retrieves a list of all users. Currently restricted.
-     * @returns UserResponse Users retrieved successfully (if admin)
-     * @throws ApiError
-     */
-    public getAllUsers(): CancelablePromise<Array<UserResponse>> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/users',
-            errors: {
-                401: `Unauthorized`,
-                403: `Forbidden (if not admin)`,
-            },
-        });
-    }
-    /**
      * Get user by Supabase ID
      * Retrieves a user by their Supabase ID
      * @param supabaseId
