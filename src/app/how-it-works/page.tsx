@@ -60,7 +60,7 @@ export default function HowItWorksPage() {
               Ready to Get Started?
             </h2>
             <a
-              href="/users/register"
+              href="/auth/register"
               className="inline-block px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors duration-300"
             >
               Join Additional Life Today

@@ -38,6 +38,18 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
         "404":
           description: User not found
           content:
@@ -61,7 +73,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserRequest"
+              $ref: "#/components/schemas/UpdateUserRequest"
         required: true
       responses:
         "200":
@@ -72,6 +84,18 @@ paths:
                 $ref: "#/components/schemas/UserResponse"
         "400":
           description: Invalid input data
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "403":
+          description: Forbidden
           content:
             '*/*':
               schema:
@@ -98,6 +122,10 @@ paths:
       responses:
         "204":
           description: User deleted successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
         "404":
           description: User not found
   /api/v1/items/{id}:
@@ -133,6 +161,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ItemResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemResponse"
         "404":
           description: Item not found
           content:
@@ -155,6 +195,10 @@ paths:
       responses:
         "204":
           description: Item deleted successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
         "404":
           description: Item not found
   /api/v1/public/users:
@@ -164,17 +208,11 @@ paths:
       summary: Create a new user
       description: Creates a new user with the provided data
       operationId: createUser
-      parameters:
-      - name: captchaToken
-        in: query
-        required: true
-        schema:
-          type: string
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserRequest"
+              $ref: "#/components/schemas/CreateUserRequest"
         required: true
       responses:
         "201":
@@ -215,6 +253,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ItemResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemResponse"
         "422":
           description: Item could not be processed
           content:
@@ -248,54 +292,50 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ItemResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemResponse"
         "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ItemResponse"
-  /api/v1/items/batch:
-    post:
-      tags:
-      - Item API
-      summary: Batch create items
-      description: Creates multiple items in a single request for better performance
-      operationId: batchCreateItems
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: "#/components/schemas/ItemRequest"
-        required: true
-      responses:
-        "201":
-          description: Items created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-        "400":
-          description: Invalid input data
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
   /api/v1/users:
     get:
       tags:
       - User API
-      summary: Get all users
-      description: Retrieves a list of all users
+      summary: Get all users (Admin only)
+      description: Retrieves a list of all users. Currently restricted.
       operationId: getAllUsers
       responses:
         "200":
-          description: Users retrieved successfully
+          description: Users retrieved successfully (if admin)
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserResponse"
+        "403":
+          description: Forbidden (if not admin)
           content:
             '*/*':
               schema:
@@ -323,6 +363,18 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
         "404":
           description: User not found
           content:
@@ -345,6 +397,18 @@ paths:
       responses:
         "200":
           description: User found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "403":
+          description: Forbidden
           content:
             '*/*':
               schema:
@@ -570,29 +634,6 @@ paths:
             application/json:
               schema:
                 type: string
-  /api/v1/items/{id}/available:
-    get:
-      tags:
-      - Item API
-      summary: Check if an item is available
-      description: "Checks if an item exists, is active, and not taken"
-      operationId: isItemAvailable
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      responses:
-        "200":
-          description: Availability check completed
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
   /api/v1/items/user/{userId}:
     get:
       tags:
@@ -609,6 +650,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ItemResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ItemResponse"
         "404":
           description: User not found
           content:
@@ -617,49 +666,11 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ItemResponse"
-  /api/v1/items/type/{itemType}:
-    get:
-      tags:
-      - Item API
-      summary: Get items by type
-      description: Retrieves a paginated list of items of the specified type (INTERNAL
-        or EXTERNAL)
-      operationId: getItemsByType
-      parameters:
-      - name: itemType
-        in: path
-        required: true
-        schema:
-          type: string
-          enum:
-          - INTERNAL
-          - EXTERNAL
-      - name: pageable
-        in: query
-        required: true
-        schema:
-          $ref: "#/components/schemas/Pageable"
-      responses:
-        "200":
-          description: Items retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PageItemResponse"
-        "400":
-          description: Invalid item type
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PageItemResponse"
 components:
   schemas:
-    UserRequest:
+    UpdateUserRequest:
       type: object
       properties:
-        supabaseId:
-          type: string
-          format: uuid
         name:
           type: string
           maxLength: 100
@@ -685,12 +696,19 @@ components:
           - ENGLISH
           - FRENCH
           - GERMAN
-        emailVerified:
+        isEmailVerified:
           type: boolean
-        phoneVerified:
+        isPhoneVerified:
           type: boolean
-      required:
-      - supabaseId
+        contactOptions:
+          type: array
+          items:
+            type: string
+            enum:
+            - CHAT
+            - EMAIL
+            - PHONE
+            - WHATSAPP
     UserResponse:
       type: object
       properties:
@@ -724,9 +742,9 @@ components:
         updatedAt:
           type: string
           format: date-time
-        emailVerified:
+        isEmailVerified:
           type: boolean
-        phoneVerified:
+        isPhoneVerified:
           type: boolean
         active:
           type: boolean
@@ -750,6 +768,10 @@ components:
         address:
           type: string
           minLength: 1
+        isPickupPossible:
+          type: boolean
+        isShippingPossible:
+          type: boolean
         imageUrls:
           type: array
           items:
@@ -757,14 +779,12 @@ components:
         categoryId:
           type: string
           format: uuid
-        pickupPossible:
-          type: boolean
-        shippingPossible:
-          type: boolean
       required:
       - categoryId
       - condition
       - imageUrls
+      - isPickupPossible
+      - isShippingPossible
     CategoryResponse:
       type: object
       properties:
@@ -809,6 +829,10 @@ components:
           - DEFECTIVE
         address:
           type: string
+        isPickupPossible:
+          type: boolean
+        isShippingPossible:
+          type: boolean
         createdAt:
           type: string
           format: date-time
@@ -841,10 +865,6 @@ components:
           type: string
           enum:
           - ANIBIS
-        pickupPossible:
-          type: boolean
-        shippingPossible:
-          type: boolean
     MinimalUserResponse:
       type: object
       properties:
@@ -856,6 +876,34 @@ components:
           type: string
         avatarUrl:
           type: string
+    CreateUserRequest:
+      type: object
+      properties:
+        supabaseId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 100
+          minLength: 0
+        email:
+          type: string
+          minLength: 1
+        authProvider:
+          type: string
+          enum:
+          - SUPBASE
+          - GOOGLE
+          - FACEBOOK
+        avatarUrl:
+          type: string
+        isEmailVerified:
+          type: boolean
+        isPhoneVerified:
+          type: boolean
+      required:
+      - authProvider
+      - supabaseId
     ItemStatusRequest:
       type: object
       properties:
@@ -869,12 +917,12 @@ components:
     PageItemResponse:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int32
         totalElements:
           type: integer
           format: int64
+        totalPages:
+          type: integer
+          format: int32
         first:
           type: boolean
         last:
@@ -891,11 +939,11 @@ components:
           format: int32
         sort:
           $ref: "#/components/schemas/SortObject"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         empty:
           type: boolean
     PageableObject:
@@ -906,6 +954,8 @@ components:
           format: int64
         sort:
           $ref: "#/components/schemas/SortObject"
+        unpaged:
+          type: boolean
         paged:
           type: boolean
         pageNumber:
@@ -914,29 +964,12 @@ components:
         pageSize:
           type: integer
           format: int32
-        unpaged:
-          type: boolean
     SortObject:
       type: object
       properties:
         empty:
           type: boolean
-        sorted:
-          type: boolean
         unsorted:
           type: boolean
-    Pageable:
-      type: object
-      properties:
-        page:
-          type: integer
-          format: int32
-          minimum: 0
-        size:
-          type: integer
-          format: int32
-          minimum: 1
-        sort:
-          type: array
-          items:
-            type: string
+        sorted:
+          type: boolean

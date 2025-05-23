@@ -2,19 +2,19 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type UserRequest = {
-    supabaseId: string;
+export type UpdateUserRequest = {
     name?: string;
     email?: string;
     phoneNumber?: string;
     address?: string;
     bio?: string;
     avatarUrl?: string;
-    preferredLanguage?: UserRequest.preferredLanguage;
-    emailVerified?: boolean;
-    phoneVerified?: boolean;
+    preferredLanguage?: UpdateUserRequest.preferredLanguage;
+    isEmailVerified?: boolean;
+    isPhoneVerified?: boolean;
+    contactOptions?: Array<'CHAT' | 'EMAIL' | 'PHONE' | 'WHATSAPP'>;
 };
-export namespace UserRequest {
+export namespace UpdateUserRequest {
     export enum preferredLanguage {
         ENGLISH = 'ENGLISH',
         FRENCH = 'FRENCH',

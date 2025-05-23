@@ -1,6 +1,6 @@
 import {
   ApiClient,
-  UserRequest,
+  UpdateUserRequest,
   UserResponse,
   withApiClient,
   withPublicApiClient,
@@ -68,7 +68,7 @@ const updateUserHandler = async (
     );
   }
 
-  let userData: UserRequest;
+  let userData: UpdateUserRequest;
   try {
     userData = await request.json();
   } catch (error) {

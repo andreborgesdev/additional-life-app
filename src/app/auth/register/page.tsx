@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
-import { useRegister } from "@/src/hooks/auth/use-register";
+import { useRegister, RegistrationError } from "@/src/hooks/auth/use-register";
 import {
   ArrowLeft,
   Eye,
@@ -19,6 +19,7 @@ import {
 import { RecaptchaWrapper } from "@/src/lib/recaptcha-wrapper";
 import { useGoogleLogin } from "@/src/hooks/auth/use-login-google";
 import { useFacebookLogin } from "@/src/hooks/auth/use-login-facebook";
+import { toast } from "@/src/hooks/use-toast";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -27,7 +28,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const router = useRouter();
-  const { mutate: signUp, isPending: isLoading, error } = useRegister();
+  const { mutate: signUp, isPending: isLoading } = useRegister();
   const { mutate: googleLogin } = useGoogleLogin();
   const { mutate: facebookLogin } = useFacebookLogin();
 
@@ -41,8 +42,33 @@ export default function RegisterPage() {
     signUp(
       { email, password, name, recaptchaToken },
       {
-        onSuccess: () => {
-          router.push("/users/login");
+        onSuccess: (data) => {
+          toast({
+            title: "Registration Successful!",
+            description:
+              data.message + " You are now being redirected to the login page.",
+            variant: "success",
+          });
+          router.push("/auth/login");
+        },
+        onError: (err: RegistrationError) => {
+          let toastTitle = "Registration Failed";
+          let toastDescription =
+            "An unexpected error occurred. Please try again later.";
+
+          console.log(err.status);
+
+          if (err.status === 409) {
+            toastTitle = "Email Already Registered";
+            toastDescription =
+              "This email is already in use. Please try logging in or use a different email address.";
+          }
+
+          toast({
+            title: toastTitle,
+            description: toastDescription,
+            variant: "destructive",
+          });
         },
       }
     );
@@ -364,7 +390,7 @@ export default function RegisterPage() {
         <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
           Already have an account?{" "}
           <Link
-            href="/users/login"
+            href="/auth/login"
             className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
           >
             Sign in

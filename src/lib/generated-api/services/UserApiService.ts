@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { UserRequest } from '../models/UserRequest';
+import type { UpdateUserRequest } from '../models/UpdateUserRequest';
 import type { UserResponse } from '../models/UserResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -25,6 +25,8 @@ export class UserApiService {
                 'id': id,
             },
             errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
                 404: `User not found`,
             },
         });
@@ -39,7 +41,7 @@ export class UserApiService {
      */
     public updateUser(
         id: string,
-        requestBody: UserRequest,
+        requestBody: UpdateUserRequest,
     ): CancelablePromise<UserResponse> {
         return this.httpRequest.request({
             method: 'PUT',
@@ -51,6 +53,8 @@ export class UserApiService {
             mediaType: 'application/json',
             errors: {
                 400: `Invalid input data`,
+                401: `Unauthorized`,
+                403: `Forbidden`,
                 404: `User not found`,
             },
         });
@@ -72,20 +76,26 @@ export class UserApiService {
                 'id': id,
             },
             errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
                 404: `User not found`,
             },
         });
     }
     /**
-     * Get all users
-     * Retrieves a list of all users
-     * @returns UserResponse Users retrieved successfully
+     * Get all users (Admin only)
+     * Retrieves a list of all users. Currently restricted.
+     * @returns UserResponse Users retrieved successfully (if admin)
      * @throws ApiError
      */
     public getAllUsers(): CancelablePromise<Array<UserResponse>> {
         return this.httpRequest.request({
             method: 'GET',
             url: '/api/v1/users',
+            errors: {
+                401: `Unauthorized`,
+                403: `Forbidden (if not admin)`,
+            },
         });
     }
     /**
@@ -105,6 +115,8 @@ export class UserApiService {
                 'supabaseId': supabaseId,
             },
             errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
                 404: `User not found`,
             },
         });
@@ -126,6 +138,8 @@ export class UserApiService {
                 'email': email,
             },
             errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
                 404: `User not found`,
             },
         });

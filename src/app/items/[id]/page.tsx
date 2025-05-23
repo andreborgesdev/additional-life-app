@@ -106,7 +106,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   };
 
   const handleIAmInterested = () => {
-    router.push(`/users/login`);
+    router.push(`/auth/login`);
   };
 
   const handleShare = (platform: string) => {
@@ -361,13 +361,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <MapPin size={20} className="mr-2" />
               <span>{item.address}</span>
             </div>
-            {item.pickupPossible && (
+            {item.isPickupPossible && (
               <div className="flex items-center text-gray-600 dark:text-gray-300">
                 <MapPinHouse size={20} className="mr-2" />
                 <span>Pickup Available</span>
               </div>
             )}
-            {item.shippingPossible && (
+            {item.isShippingPossible && (
               <div className="flex items-center text-gray-600 dark:text-gray-300">
                 <Truck size={20} className="mr-2" />
                 <span>Shipping Available</span>

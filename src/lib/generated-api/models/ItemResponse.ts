@@ -10,6 +10,8 @@ export type ItemResponse = {
     description?: string;
     condition?: ItemResponse.condition;
     address?: string;
+    isPickupPossible?: boolean;
+    isShippingPossible?: boolean;
     createdAt?: string;
     updatedAt?: string;
     imageUrls?: Array<string>;
@@ -20,8 +22,6 @@ export type ItemResponse = {
     owner?: MinimalUserResponse;
     category?: CategoryResponse;
     sourceExternalPlatform?: ItemResponse.sourceExternalPlatform;
-    pickupPossible?: boolean;
-    shippingPossible?: boolean;
 };
 export namespace ItemResponse {
     export enum condition {

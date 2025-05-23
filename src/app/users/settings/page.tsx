@@ -48,14 +48,14 @@ import { useSession } from "../../auth-provider";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useUpdateUser } from "@/src/hooks/users/use-update-user";
-import { useUserBySupabaseId } from "@/src/hooks/users/use-user-by-supabase-id";
 import { formatDate } from "@/src/utils/date-utils";
-import { UserRequest } from "@/src/lib/generated-api";
+import { UpdateUserRequest } from "@/src/lib/generated-api";
 import { PhoneInput } from "@/src/components/shared/phone-input";
 import { uploadImage } from "@/src/lib/supabase/storage/client";
 import { useLogout } from "@/src/hooks/auth/use-logout";
 import { useUpdatePassword } from "@/src/hooks/users/use-update-password";
 import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
+import { useUserByEmail } from "@/src/hooks/users/use-user-by-email";
 
 interface PasswordRequirementStatus {
   length: boolean;
@@ -66,8 +66,8 @@ interface PasswordRequirementStatus {
 
 export default function UserSettingsPage() {
   const { session, isLoading: isLoadingSession } = useSession();
-  const { data: userData, isLoading: isLoadingUserData } = useUserBySupabaseId(
-    session?.user?.id ?? null
+  const { data: userData, isLoading: isLoadingUserData } = useUserByEmail(
+    session?.user?.email ?? null
   );
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -81,8 +81,8 @@ export default function UserSettingsPage() {
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [language, setLanguage] = useState<UserRequest.preferredLanguage>(
-    UserRequest.preferredLanguage.ENGLISH
+  const [language, setLanguage] = useState<UpdateUserRequest.preferredLanguage>(
+    UpdateUserRequest.preferredLanguage.ENGLISH
   );
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
@@ -123,7 +123,7 @@ export default function UserSettingsPage() {
     useUpdatePassword();
 
   useEffect(() => {
-    if (!isLoadingSession && !session) router.replace("/users/login");
+    if (!isLoadingSession && !session) router.replace("/auth/login");
   }, [router, session, isLoadingSession]);
 
   useEffect(() => {
@@ -135,7 +135,8 @@ export default function UserSettingsPage() {
       setBio(userData.bio || "");
       setAvatarUrl(userData.avatarUrl || null);
       setLanguage(
-        userData.preferredLanguage || UserRequest.preferredLanguage.ENGLISH
+        userData.preferredLanguage ||
+          UpdateUserRequest.preferredLanguage.ENGLISH
       );
       setIsLoading(false);
     } else if (!isLoadingUserData && !userData) {
@@ -242,8 +243,7 @@ export default function UserSettingsPage() {
       }
     }
 
-    const profileData: UserRequest = {
-      supabaseId: session?.user?.id || "",
+    const profileData: UpdateUserRequest = {
       name: name.trim(),
       email: email.trim(),
       phoneNumber: phone.trim() || undefined,
@@ -251,8 +251,8 @@ export default function UserSettingsPage() {
       bio: bio.trim() || undefined,
       avatarUrl: avatarUrlForPayload || undefined,
       preferredLanguage: language,
-      emailVerified: session?.user.user_metadata.email_verified || false,
-      phoneVerified: session?.user.user_metadata.phone_verified || false,
+      isEmailVerified: session?.user.user_metadata.email_verified || false,
+      isPhoneVerified: session?.user.user_metadata.phone_verified || false,
     };
 
     updateUser(
@@ -483,7 +483,7 @@ export default function UserSettingsPage() {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              {userData?.emailVerified ? (
+              {userData?.isEmailVerified ? (
                 <Check className="h-4 w-4 text-green-500" />
               ) : (
                 <X className="h-4 w-4 text-red-500" />
@@ -630,12 +630,12 @@ export default function UserSettingsPage() {
                       value={language}
                       onChange={(e) =>
                         setLanguage(
-                          e.target.value as UserRequest.preferredLanguage
+                          e.target.value as UpdateUserRequest.preferredLanguage
                         )
                       }
                       className="w-full px-3 py-2 border rounded-md"
                     >
-                      {Object.values(UserRequest.preferredLanguage).map(
+                      {Object.values(UpdateUserRequest.preferredLanguage).map(
                         (lang) => (
                           <option key={lang} value={lang}>
                             {lang.charAt(0) + lang.slice(1).toLowerCase()}

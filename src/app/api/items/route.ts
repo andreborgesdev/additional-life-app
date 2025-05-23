@@ -52,8 +52,8 @@ const postItemHandler = async (
     condition: body.condition as ItemRequest.condition,
     address: body.address,
     categoryId: body.categoryId,
-    pickupPossible: body.pickupPossible,
-    shippingPossible: body.shippingPossible,
+    isPickupPossible: body.isPickupPossible,
+    isShippingPossible: body.isShippingPossible,
     imageUrls: body.imageUrls,
   };
 

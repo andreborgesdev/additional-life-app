@@ -96,13 +96,13 @@ export default function DetailedItemCardList({
               </div>
 
               <div className="flex items-center gap-1 sm:gap-1.5 sm:col-span-2 md:col-span-2">
-                {item.pickupPossible && (
+                {item.isPickupPossible && (
                   <div className="flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium">
                     <MapPinHouse className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
                     <span className="text-[10px] sm:text-xs">Pickup</span>
                   </div>
                 )}
-                {item.shippingPossible && (
+                {item.isShippingPossible && (
                   <div className="flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-medium">
                     <Truck className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
                     <span className="text-[10px] sm:text-xs">Shipping</span>

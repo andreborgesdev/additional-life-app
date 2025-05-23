@@ -1,5 +1,5 @@
 import { OauthUserRegisterPayload } from "@/src/app/api/users/oauth-register/route";
-import { UserRequest, UserResponse } from "@/src/lib/api-client";
+import { UserResponse } from "@/src/lib/generated-api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 async function createUser(

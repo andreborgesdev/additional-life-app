@@ -5,8 +5,6 @@
 import type { ItemRequest } from '../models/ItemRequest';
 import type { ItemResponse } from '../models/ItemResponse';
 import type { ItemStatusRequest } from '../models/ItemStatusRequest';
-import type { Pageable } from '../models/Pageable';
-import type { PageItemResponse } from '../models/PageItemResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class ItemApiService {
@@ -33,6 +31,8 @@ export class ItemApiService {
             mediaType: 'application/json',
             errors: {
                 400: `Invalid input data`,
+                401: `Unauthorized`,
+                403: `Forbidden`,
                 404: `Item not found`,
             },
         });
@@ -54,6 +54,8 @@ export class ItemApiService {
                 'id': id,
             },
             errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
                 404: `Item not found`,
             },
         });
@@ -75,6 +77,7 @@ export class ItemApiService {
             mediaType: 'application/json',
             errors: {
                 400: `Invalid input data`,
+                401: `Unauthorized`,
                 422: `Item could not be processed`,
             },
         });
@@ -100,45 +103,9 @@ export class ItemApiService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
                 404: `Item not found`,
-            },
-        });
-    }
-    /**
-     * Batch create items
-     * Creates multiple items in a single request for better performance
-     * @param requestBody
-     * @returns any Items created successfully
-     * @throws ApiError
-     */
-    public batchCreateItems(
-        requestBody: Array<ItemRequest>,
-    ): CancelablePromise<Record<string, Record<string, any>>> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/api/v1/items/batch',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Invalid input data`,
-            },
-        });
-    }
-    /**
-     * Check if an item is available
-     * Checks if an item exists, is active, and not taken
-     * @param id
-     * @returns any Availability check completed
-     * @throws ApiError
-     */
-    public isItemAvailable(
-        id: string,
-    ): CancelablePromise<Record<string, Record<string, any>>> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/items/{id}/available',
-            path: {
-                'id': id,
             },
         });
     }
@@ -153,33 +120,8 @@ export class ItemApiService {
             method: 'GET',
             url: '/api/v1/items/user/{userId}',
             errors: {
+                401: `Unauthorized`,
                 404: `User not found`,
-            },
-        });
-    }
-    /**
-     * Get items by type
-     * Retrieves a paginated list of items of the specified type (INTERNAL or EXTERNAL)
-     * @param itemType
-     * @param pageable
-     * @returns PageItemResponse Items retrieved successfully
-     * @throws ApiError
-     */
-    public getItemsByType(
-        itemType: 'INTERNAL' | 'EXTERNAL',
-        pageable: Pageable,
-    ): CancelablePromise<PageItemResponse> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/v1/items/type/{itemType}',
-            path: {
-                'itemType': itemType,
-            },
-            query: {
-                'pageable': pageable,
-            },
-            errors: {
-                400: `Invalid item type`,
             },
         });
     }

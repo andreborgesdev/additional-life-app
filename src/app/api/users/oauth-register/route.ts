@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   ApiClient,
-  UserRequest,
+  CreateUserRequest,
   withPublicApiClient,
 } from "@/src/lib/api-client";
 
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export interface OauthUserRegisterPayload {
   recaptchaToken: string;
-  userData: UserRequest;
+  userData: CreateUserRequest;
 }
 
 const registerHandler = async (client: ApiClient, request: NextRequest) => {
@@ -20,24 +20,24 @@ const registerHandler = async (client: ApiClient, request: NextRequest) => {
       supabaseId,
       name,
       email,
-      phoneNumber,
-      emailVerified,
-      phoneVerified,
+      isEmailVerified,
+      isPhoneVerified,
       avatarUrl,
+      authProvider,
     },
   } = body as OauthUserRegisterPayload;
 
-  const userRequest: UserRequest = {
+  const userRequest: CreateUserRequest = {
     supabaseId: supabaseId,
     name: name,
     email: email,
-    phoneNumber: phoneNumber || "",
-    emailVerified: emailVerified || false,
-    phoneVerified: phoneVerified || false,
+    isEmailVerified: isEmailVerified || false,
+    isPhoneVerified: isPhoneVerified || false,
     avatarUrl: avatarUrl,
+    authProvider: authProvider,
   };
   try {
-    await client.publicUserApi.createUser(recaptchaToken, userRequest);
+    await client.publicUserApi.createUser(userRequest);
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err: any) {
     // Rollback: delete Supabase user if backend registration fails

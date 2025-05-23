@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   ApiClient,
-  UserRequest,
+  CreateUserRequest,
   withPublicApiClient,
 } from "@/src/lib/api-client";
 import { useSupabaseServer } from "@/src/lib/supabase/supabase-server";
@@ -20,39 +20,106 @@ const registerHandler = async (client: ApiClient, request: NextRequest) => {
   const { email, password, name, recaptchaToken } = body as RegisterPayload;
   const supabase = await useSupabaseServer();
 
-  // 1. Register in Supabase
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: name,
+  // try {
+  //   await validateRecaptcha(recaptchaToken);
+  // } catch (recaptchaError: any) {
+  //   console.error("Recaptcha validation failed:", recaptchaError.message);
+  //   return NextResponse.json(
+  //     { message: "Recaptcha validation failed. Please try again." },
+  //     { status: 403 }
+  //   );
+  // }
+
+  const { data: supabaseData, error: supabaseError } =
+    await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name,
+        },
       },
-    },
-  });
-  if (error) {
-    throw new Error(error.message);
+    });
+
+  if (supabaseError) {
+    if (
+      supabaseError.message.toLowerCase().includes("user already registered")
+    ) {
+      return NextResponse.json(
+        { message: "This email is already registered. Please try to login." },
+        { status: 409 }
+      );
+    }
+    console.error("Supabase signUp error:", supabaseError);
+    return NextResponse.json(
+      {
+        message:
+          supabaseError.message ||
+          "Registration failed during Supabase signup.",
+      },
+      { status: (supabaseError as any).status || 500 }
+    );
   }
 
-  // 2. Register in backend API
-  // await validateRecaptcha(recaptchaToken);
-  const userRequest: UserRequest = {
-    supabaseId: data?.user?.id || "",
+  if (!supabaseData?.user?.id) {
+    console.error("Supabase signUp successful but no user data returned.");
+    return NextResponse.json(
+      { message: "Registration failed: Incomplete Supabase user data." },
+      { status: 500 }
+    );
+  }
+
+  const userRequest: CreateUserRequest = {
+    supabaseId: supabaseData.user.id,
     name: name,
     email: email,
-    phoneNumber: "",
-    emailVerified: false,
-    phoneVerified: false,
+    isEmailVerified: !!supabaseData.user.email_confirmed_at,
+    isPhoneVerified: !!supabaseData.user.phone_confirmed_at,
+    avatarUrl: supabaseData.user.user_metadata?.avatar_url || undefined,
+    authProvider: CreateUserRequest.authProvider.SUPBASE,
   };
+
   try {
-    await client.publicUserApi.createUser(recaptchaToken, userRequest);
-    return NextResponse.json({ success: true }, { status: 201 });
-  } catch (err: any) {
-    // Rollback: delete Supabase user if backend registration fails
-    // if (data?.user?.id) {
-    //   await supabase.auth.admin.deleteUser(data.user.id);
-    // }
-    throw err;
+    await client.publicUserApi.createUser(userRequest);
+    return NextResponse.json(
+      {
+        success: true,
+        message:
+          "Registration successful! Please check your email to verify your account.",
+      },
+      { status: 201 }
+    );
+  } catch (apiError: any) {
+    if (apiError.status !== 409) {
+      try {
+        await supabase.auth.admin.deleteUser(supabaseData.user.id);
+        console.log(
+          `Successfully rolled back Supabase user: ${supabaseData.user.id}`
+        );
+      } catch (rollbackError: any) {
+        console.error(
+          `Failed to rollback Supabase user ${supabaseData.user.id}:`,
+          rollbackError.message
+        );
+      }
+    }
+
+    if (apiError.message && apiError.status === 409) {
+      return NextResponse.json(
+        {
+          message: "This email is already registered with our service.",
+        },
+        { status: 409 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        message:
+          apiError.message || "Registration failed due to a server error.",
+      },
+      { status: apiError.response?.status || 500 }
+    );
   }
 };
 

@@ -2,10 +2,10 @@ import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRegisterOauthUser } from "../users/use-create-user";
 import { useUpdateUser } from "../users/use-update-user";
-import { fetchUserBySupabaseId } from "../users/use-user-by-supabase-id";
-import { UserRequest } from "@/src/lib/api-client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { CreateUserRequest, UpdateUserRequest } from "@/src/lib/generated-api";
+import { fetchUserByEmail } from "../users/use-user-by-email";
 
 export const useGoogleLogin = () => {
   const queryClient = useQueryClient();
@@ -32,8 +32,8 @@ export const useGoogleLogin = () => {
           const {
             full_name: fullName,
             avatar_url: avatarUrl,
-            email_verified: emailVerified,
-            phone_verified: phoneVerified,
+            email_verified: isEmailVerified,
+            phone_verified: isPhoneVerified,
           } = user_metadata || {};
 
           if (!email) {
@@ -41,24 +41,32 @@ export const useGoogleLogin = () => {
             return;
           }
 
-          const existingUser = await fetchUserBySupabaseId(supabaseId);
-
-          const userData: UserRequest = {
-            email,
-            name: fullName,
-            avatarUrl,
-            supabaseId,
-            phoneNumber,
-            emailVerified,
-            phoneVerified,
-          };
+          const existingUser = await fetchUserByEmail(email);
 
           if (existingUser) {
+            const userData: UpdateUserRequest = {
+              email: email,
+              name: fullName,
+              avatarUrl: avatarUrl || existingUser.avatarUrl,
+              isEmailVerified: isEmailVerified || existingUser.isEmailVerified,
+              isPhoneVerified: isPhoneVerified || existingUser.isPhoneVerified,
+            };
+
             await updateUser({
               userId: existingUser.id,
               userData,
             });
           } else {
+            const userData: CreateUserRequest = {
+              supabaseId: supabaseId,
+              email: email,
+              name: fullName,
+              avatarUrl: avatarUrl,
+              isEmailVerified: isEmailVerified,
+              isPhoneVerified: isPhoneVerified,
+              authProvider: CreateUserRequest.authProvider.GOOGLE,
+            };
+
             await registerOauthUser({
               recaptchaToken: "recaptchaToken",
               userData,
@@ -86,7 +94,7 @@ export const useGoogleLogin = () => {
       const { error, data } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/users/login`,
+          redirectTo: `${window.location.origin}/auth/login`,
         },
       });
       if (error) throw error;

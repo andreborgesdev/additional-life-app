@@ -14,8 +14,8 @@ export type UserResponse = {
     preferredLanguage?: UserResponse.preferredLanguage;
     createdAt?: string;
     updatedAt?: string;
-    emailVerified?: boolean;
-    phoneVerified?: boolean;
+    isEmailVerified?: boolean;
+    isPhoneVerified?: boolean;
     active?: boolean;
 };
 export namespace UserResponse {

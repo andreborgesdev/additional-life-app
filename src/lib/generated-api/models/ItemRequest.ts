@@ -7,10 +7,10 @@ export type ItemRequest = {
     description?: string;
     condition: ItemRequest.condition;
     address?: string;
+    isPickupPossible: boolean;
+    isShippingPossible: boolean;
     imageUrls: Array<string>;
     categoryId: string;
-    pickupPossible?: boolean;
-    shippingPossible?: boolean;
 };
 export namespace ItemRequest {
     export enum condition {

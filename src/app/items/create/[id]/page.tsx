@@ -26,8 +26,8 @@ import Link from "next/link";
 import { ArrowLeft, Loader2, Home } from "lucide-react";
 import { uploadImage, deleteImage } from "@/src/lib/supabase/storage/client";
 import { useCreateOrUpdateItem } from "@/src/hooks/items/use-create-or-update-item";
-import { useUserBySupabaseId } from "@/src/hooks/users/use-user-by-supabase-id";
 import { v4 as uuidv4 } from "uuid";
+import { useUserByEmail } from "@/src/hooks/users/use-user-by-email";
 
 const MAX_IMAGES = 5;
 const conditionOptions = Object.values(ItemRequest.condition);
@@ -80,8 +80,8 @@ export default function CreateProductPage() {
   const { data: allCategories, isLoading: isLoadingCategories } =
     useCategories();
 
-  const { data: userData, isLoading: isLoadingUserData } = useUserBySupabaseId(
-    session?.user?.id ?? null
+  const { data: userData, isLoading: isLoadingUserData } = useUserByEmail(
+    session?.user.email ?? null
   );
 
   const initialCategoryIdForSelector =
@@ -89,7 +89,7 @@ export default function CreateProductPage() {
 
   useEffect(() => {
     if (!isLoadingSession && !session) {
-      router.replace("/users/login");
+      router.replace("/auth/login");
       return;
     }
 
@@ -145,8 +145,8 @@ export default function CreateProductPage() {
         }));
         setImageSources(persistedSources);
         setRemovedPersistedImageUrls([]);
-        setPickupPossible(itemDataFromHook.pickupPossible || false);
-        setShippingPossible(itemDataFromHook.shippingPossible || false);
+        setPickupPossible(itemDataFromHook.isPickupPossible || false);
+        setShippingPossible(itemDataFromHook.isShippingPossible || false);
       } else if (!isLoadingItemData && !itemDataFromHook && productId) {
         // If in edit mode, but no data (e.g., item not found or after ID change before new data load)
         // Reset form to prevent showing stale data from a previous item.
@@ -487,8 +487,8 @@ export default function CreateProductPage() {
       condition: condition as ItemRequest.condition,
       categoryId: formSelectedCategoryId!,
       address,
-      pickupPossible,
-      shippingPossible,
+      isPickupPossible: pickupPossible,
+      isShippingPossible: shippingPossible,
       imageUrls: finalImageUrls.length > 0 ? finalImageUrls : undefined,
     };
 
@@ -504,6 +504,7 @@ export default function CreateProductPage() {
         description: `Your item has been ${
           isEditMode ? "updated" : "added"
         } successfully!`,
+        variant: "success",
       });
 
       if (removedPersistedImageUrls.length > 0) {
@@ -543,7 +544,7 @@ export default function CreateProductPage() {
       if (isEditMode && productId) {
         router.refresh();
       }
-      router.push(isEditMode && productId ? `/items/${productId}` : "/");
+      router.push(`/items/published`);
     } else {
       toast({
         title: "Error Submitting Item",

@@ -155,7 +155,7 @@ export default function LoginPage() {
                   Password
                 </label>
                 <Link
-                  href="/forgot-password"
+                  href="/auth/forgot-password"
                   className="text-sm font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
                 >
                   Forgot password?
@@ -245,7 +245,7 @@ export default function LoginPage() {
         <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
           Don't have an account?{" "}
           <Link
-            href="/users/register"
+            href="/auth/register"
             className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
           >
             Sign up for free

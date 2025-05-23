@@ -1,21 +1,51 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { RegisterPayload } from "@/src/app/api/users/register/route";
+import { RegisterPayload } from "@/src/app/api/auth/register/route";
+
+interface RegisterSuccessResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface RegisterErrorResponse {
+  status: number;
+  message: string;
+}
+
+export class RegistrationError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "RegistrationError";
+    this.status = status;
+  }
+}
 
 export const useRegister = () => {
-  return useMutation<RegisterPayload, Error, RegisterPayload, unknown>({
+  return useMutation<
+    RegisterSuccessResponse,
+    RegistrationError,
+    RegisterPayload,
+    unknown
+  >({
     mutationFn: async (payload: RegisterPayload) => {
-      const response = await fetch("/api/users/register", {
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      const responseBody = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Registration failed");
+        throw new RegistrationError(
+          (responseBody as RegisterErrorResponse).message ||
+            `Registration failed with status ${response.status}`,
+          response.status
+        );
       }
-      return response.json();
+      return responseBody as RegisterSuccessResponse;
     },
   });
 };

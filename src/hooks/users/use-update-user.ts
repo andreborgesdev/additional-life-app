@@ -1,9 +1,9 @@
-import { UserRequest, UserResponse } from "@/src/lib/api-client";
+import { UpdateUserRequest, UserResponse } from "@/src/lib/generated-api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UpdateUserPayload {
   userId: string;
-  userData: UserRequest;
+  userData: UpdateUserRequest;
 }
 
 async function updateUser({

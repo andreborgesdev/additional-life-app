@@ -11,15 +11,15 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { CategoryResponse } from './models/CategoryResponse';
+export { CreateUserRequest } from './models/CreateUserRequest';
 export { ItemRequest } from './models/ItemRequest';
 export { ItemResponse } from './models/ItemResponse';
 export { ItemStatusRequest } from './models/ItemStatusRequest';
 export type { MinimalUserResponse } from './models/MinimalUserResponse';
-export type { Pageable } from './models/Pageable';
 export type { PageableObject } from './models/PageableObject';
 export type { PageItemResponse } from './models/PageItemResponse';
 export type { SortObject } from './models/SortObject';
-export { UserRequest } from './models/UserRequest';
+export { UpdateUserRequest } from './models/UpdateUserRequest';
 export { UserResponse } from './models/UserResponse';
 
 export { ItemApiService } from './services/ItemApiService';

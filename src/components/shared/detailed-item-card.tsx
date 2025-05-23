@@ -109,13 +109,13 @@ export default function DetailedItemCard({ item }: DetailedItemCardProps) {
             </div>
 
             <div className="flex items-center gap-2 text-xs">
-              {item.pickupPossible && (
+              {item.isPickupPossible && (
                 <div className="flex items-center px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium">
                   <MapPinHouse className="w-4 h-4 mr-1.5" />
                   Pickup
                 </div>
               )}
-              {item.shippingPossible && (
+              {item.isShippingPossible && (
                 <div className="flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-medium">
                   <Truck className="w-4 h-4 mr-1.5" />
                   Shipping

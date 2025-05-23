@@ -58,7 +58,7 @@ export default function Cta() {
             size="lg"
             className="bg-white text-green-700 hover:bg-green-50 rounded-full"
           >
-            <Link href="/users/register">Sign Up Now</Link>
+            <Link href="/auth/register">Sign Up Now</Link>
           </Button>
           <Button
             asChild
