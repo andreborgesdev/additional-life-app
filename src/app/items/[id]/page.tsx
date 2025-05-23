@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { notFound, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -55,6 +55,12 @@ import { conditionDetails } from "@/src/components/shared/detailed-item-card";
 import { Separator } from "@/src/components/ui/separator";
 import { getTimeAgo } from "@/src/utils/date-utils";
 import { useUser } from "@/src/hooks/users/use-user";
+import MapCaller from "@/src/components/ui/map-caller";
+import {
+  convertToLatLng,
+  getCoordinatesForItem,
+  parseAddressToCoordinates,
+} from "@/src/utils/location-utils";
 
 const fadeIn = {
   hidden: { opacity: 0 },
@@ -66,10 +72,13 @@ const slideUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-export default function ProductPage({ params }: { params: { id: string } }) {
+export default function ItemPage({ params }: { params: { id: string } }) {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
+  const [itemCoordinates, setItemCoordinates] = useState<[number, number]>([
+    47.3769, 8.5417,
+  ]);
   const { toast } = useToast();
   const { session } = useSession();
   const router = useRouter();
@@ -79,6 +88,14 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     isLoading: isLoadingItemData,
     error,
   } = useItem(params.id);
+
+  useEffect(() => {
+    if (item) {
+      parseAddressToCoordinates(item.address).then((coords) => {
+        setItemCoordinates(convertToLatLng(coords));
+      });
+    }
+  }, [item]);
 
   const { data: ownerData, isLoading: isLoadingOwnerData } = useUser(
     item?.owner.id
@@ -506,14 +523,22 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           )}
         </motion.div>
       </div>
-      {/* <div className="mt-8">
+      <div className="mt-8">
         <h2 className="text-2xl font-bold text-green-800 dark:text-green-200 mb-4">
           Location
         </h2>
         <div className="h-[400px] rounded-lg overflow-hidden">
-          <MapCaller posix={[4.79029, -75.69003]} />
+          <MapCaller posix={itemCoordinates} zoom={13} />
         </div>
-      </div> */}
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+          <MapPin className="inline w-4 h-4 mr-1" />
+          {item.address}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+          Note: Map shows approximate location. Contact the owner for exact
+          pickup details.
+        </p>
+      </div>
     </div>
   );
 }

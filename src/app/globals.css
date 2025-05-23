@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Leaflet CSS imports */
+@import "leaflet/dist/leaflet.css";
+@import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css";
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
