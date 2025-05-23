@@ -27,17 +27,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} flex flex-col min-h-screen`}>
         <ReactQueryClientProvider>
           <I18nAppProvider>
             <AuthProvider>
               <Toaster />
               <Header />
-              <div className="pt-14">
-                {" "}
-                {/* Add padding to account for fixed header */}
-                {children}
-              </div>
+              <main className="flex-1 pt-14">{children}</main>
               <Footer />
               <Script id="handle-prefers-color-scheme">
                 {`

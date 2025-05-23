@@ -6,7 +6,6 @@ export const useCreateOrUpdateItem = async (
   itemId?: string | null
 ): Promise<{ success: boolean; error?: string }> => {
   try {
-    console.log("Item Payload:", itemPayload);
     const endpoint =
       isEditMode && itemId ? `/api/items/${itemId}` : "/api/items";
     const method = isEditMode ? "PUT" : "POST";

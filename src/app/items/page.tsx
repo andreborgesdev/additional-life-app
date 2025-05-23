@@ -29,12 +29,12 @@ import DetailedItemCard, {
 import { motion } from "framer-motion";
 import { useToast } from "@/src/hooks/use-toast";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { ToggleGroup, ToggleGroupItem } from "@/src/components/ui/toggle-group";
 import { Badge } from "@/src/components/ui/badge";
 import FiltersSheet from "@/src/components/items/filters-sheet";
 import DetailedItemCardList from "@/src/components/shared/detailed-item-card-list";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import CategoryFilter from "@/src/components/items/category-filter";
+import ViewModeToggle from "@/src/components/items/view-mode-toggle";
 
 enum SortByOptions {
   RELEVANCE,
@@ -341,7 +341,6 @@ function ItemsPageContent() {
             setSelectedConditions={(newConditions) => {
               setSelectedConditions(newConditions);
               setPage(0);
-              // refetch(); // Removed: useItems will react
             }}
             sortByOptions={sortByOptions.map((opt) => ({
               value: opt.value.toString(),
@@ -353,15 +352,13 @@ function ItemsPageContent() {
             setItemsType={(newType) => {
               setItemsType(newType as "all" | "internal" | "external");
               setPage(0);
-              // refetch(); // Removed: useItems will react
             }}
           />
         </div>
       </div>
 
-      {/* Desktop Filter Bar */}
       <div className="hidden md:block mb-6">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+        <div className="bg-white dark:bg-gray-800">
           <div className="flex flex-wrap gap-4 items-center">
             <CategoryFilter
               categories={allCategoriesData || []}
@@ -372,10 +369,9 @@ function ItemsPageContent() {
             <div>
               <Select
                 onValueChange={handleOnSortByChanged}
-                value={sortBy.toString()} // Ensure value is string for Select
+                value={sortBy.toString()}
               >
                 <SelectTrigger className="w-[180px]">
-                  {/* <ChevronDown className="mr-2 h-4 w-4" /> Replaced by SelectValue placeholder */}
                   <SelectValue placeholder={t("sort.sort_by")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -386,38 +382,16 @@ function ItemsPageContent() {
                     >
                       {t(
                         `sort.${option.label.toLowerCase().replace(/ /g, "_")}`
-                      )}{" "}
+                      )}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <ToggleGroup
-                type="single"
-                value={viewMode}
-                onValueChange={(value) =>
-                  value && setViewMode(value as "grid" | "row")
-                }
-                className="border rounded-md"
-              >
-                <ToggleGroupItem
-                  value="grid"
-                  aria-label={t("grid_view_aria_label")}
-                  className="data-[state=on]:bg-green-100 data-[state=on]:text-green-800 dark:data-[state=on]:bg-green-800 dark:data-[state=on]:text-green-100"
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value="row"
-                  aria-label={t("row_view_aria_label")}
-                  className="data-[state=on]:bg-green-100 data-[state=on]:text-green-800 dark:data-[state=on]:bg-green-800 dark:data-[state=on]:text-green-100"
-                >
-                  <ListIcon className="h-4 w-4" />{" "}
-                  {/* Changed from List to ListIcon */}
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </div>
+            <ViewModeToggle
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
             {activeFilterCount > 0 && (
               <Button
                 variant="outline"
@@ -431,7 +405,6 @@ function ItemsPageContent() {
             )}
           </div>
 
-          {/* Condition Filter Pills */}
           <div className="mt-4 flex flex-wrap gap-2">
             {conditionDetails.map((condition) => (
               <Badge
@@ -453,7 +426,6 @@ function ItemsPageContent() {
                       : [...prev, condition.key]
                   );
                   setPage(0);
-                  // refetch(); // Removed: useItems will react
                 }}
               >
                 {condition.placeholder}
@@ -464,7 +436,6 @@ function ItemsPageContent() {
             ))}
           </div>
 
-          {/* Active Filter Tags */}
           {activeFilterTags.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">
@@ -476,8 +447,7 @@ function ItemsPageContent() {
                   variant="secondary"
                   className="flex items-center gap-1 bg-green-50 text-green-800 dark:bg-green-900 dark:text-green-100"
                 >
-                  {tag.label}{" "}
-                  {/* Label is already formatted with "Category:", "Condition:", etc. */}
+                  {tag.label}
                   <X
                     className="h-3 w-3 cursor-pointer"
                     onClick={() => removeFilterTag(tag.id, tag.type)}
@@ -489,10 +459,9 @@ function ItemsPageContent() {
         </div>
       </div>
 
-      {/* Results Count */}
       <div className="flex justify-between items-center mb-4">
         <span className="text-sm text-gray-500 dark:text-gray-400">
-          {isLoadingItems && items ? ( // Show skeleton for count if loading more items but previous data exists
+          {isLoadingItems && items ? (
             <Skeleton className="h-5 w-24" />
           ) : (
             <span>
@@ -500,6 +469,9 @@ function ItemsPageContent() {
             </span>
           )}
         </span>
+        <div className="md:hidden">
+          <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+        </div>
       </div>
 
       {/* Loading State for subsequent loads or filtering (when itemsData exists) */}
@@ -530,7 +502,7 @@ function ItemsPageContent() {
           {/* Items Display */}
           {finalItemsToDisplay.length > 0 ? (
             viewMode === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {finalItemsToDisplay.map(
                   (item) =>
                     item.id !== undefined && ( // Ensure item.id is defined before rendering
@@ -667,7 +639,7 @@ function ItemsPageSkeleton() {
 
       {/* Desktop Filter Bar Skeleton */}
       <div className="hidden md:block mb-6">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+        <div className="bg-white dark:bg-gray-800">
           <div className="flex flex-wrap gap-4 items-center">
             <Skeleton className="h-10 w-[180px]" /> {/* Category Filter */}
             <Skeleton className="h-10 w-[180px]" /> {/* Sort By Select */}

@@ -8,9 +8,16 @@ import { useSupabaseServer } from "@/src/lib/supabase/supabase-server";
 
 export const dynamic = "force-dynamic";
 
+export interface RegisterPayload {
+  email: string;
+  password: string;
+  name: string;
+  recaptchaToken: string;
+}
+
 const registerHandler = async (client: ApiClient, request: NextRequest) => {
   const body = await request.json();
-  const { email, password, name, recaptchaToken } = body;
+  const { email, password, name, recaptchaToken } = body as RegisterPayload;
   const supabase = await useSupabaseServer();
 
   // 1. Register in Supabase

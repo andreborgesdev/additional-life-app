@@ -84,8 +84,6 @@ const updateUserHandler = async (
       userData
     );
 
-    console.log("Updated user in DB successfully:", updatedUserInDb);
-
     if (updatedUserInDb) {
       const { error: authError } = await supabase.auth.updateUser({
         data: {
@@ -101,11 +99,6 @@ const updateUserHandler = async (
       if (authError) {
         console.error("Error updating Supabase auth user metadata:", authError);
       }
-
-      console.log(
-        "Updated Supabase user metadata successfully:",
-        updatedUserInDb.supabaseId
-      );
     }
 
     return NextResponse.json(updatedUserInDb);

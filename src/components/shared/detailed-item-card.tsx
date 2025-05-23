@@ -11,7 +11,7 @@ import {
 import Image from "next/image";
 import { Button } from "@/src/components/ui/button";
 import { ItemResponse } from "@/src/lib/generated-api";
-import { Clock, MapPin, Tag } from "lucide-react";
+import { Clock, MapPin, MapPinHouse, Truck } from "lucide-react";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { getTimeAgo } from "@/src/utils/date-utils";
 
@@ -26,117 +26,104 @@ export interface ConditionDetail {
 }
 
 export const conditionDetails = [
-  { key: ItemResponse.condition.NEW, placeholder: "New", color: "green" },
+  { key: ItemResponse.condition.NEW, placeholder: "New", color: "emerald" },
   {
     key: ItemResponse.condition.LIKE_NEW,
     placeholder: "Like New",
-    color: "green",
+    color: "blue",
   },
-  { key: ItemResponse.condition.USED, placeholder: "Used", color: "green" },
+  { key: ItemResponse.condition.USED, placeholder: "Used", color: "amber" },
   {
     key: ItemResponse.condition.DEFECTIVE,
     placeholder: "Defective",
-    color: "green",
+    color: "red",
   },
 ];
 
 export default function DetailedItemCard({ item }: DetailedItemCardProps) {
+  const conditionDetail = conditionDetails.find(
+    (condition) => condition.key == item.condition
+  );
+
+  const getConditionStyles = (color: string) => {
+    const styles = {
+      emerald: "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25",
+      blue: "bg-blue-500 text-white shadow-lg shadow-blue-500/25",
+      amber: "bg-amber-500 text-white shadow-lg shadow-amber-500/25",
+      red: "bg-red-500 text-white shadow-lg shadow-red-500/25",
+      gray: "bg-gray-500 text-white shadow-lg shadow-gray-500/25",
+    };
+    return styles[color as keyof typeof styles] || styles.gray;
+  };
+
   return (
-    <Card
-      key={item.id}
-      className="overflow-hidden group hover:shadow-lg transition-shadow duration-300 relative dark:bg-gray-800"
-    >
-      {/* Favorite Button */}
-      {/* <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 z-10 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black rounded-full"
-              onClick={(e) => {
-                e.preventDefault();
-                toggleFavorite(item.id);
-              }}
+    <Card className="overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-0 shadow-sm bg-white dark:bg-gray-900 flex flex-col">
+      <Link href={`/items/${item.id}`} className="block h-full flex flex-col">
+        <div className="relative aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+          {item.imageUrls?.[0] && (
+            <Image
+              src={item.imageUrls[0]}
+              alt={item.title || "Item image"}
+              fill
+              className="object-contain transition-transform duration-500 group-hover:scale-110"
+            />
+          )}
+
+          <div className="absolute top-2 left-2 z-10">
+            <div
+              className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide backdrop-blur-sm border border-white/30 ${getConditionStyles(
+                conditionDetail?.color || "gray"
+              )}`}
             >
-              <Heart
-                className={`h-5 w-5 ${
-                  "text-gray-500"
-                    favoriteItems.includes(item.id)
-                      ? "fill-red-500 text-red-500"
-                      : "text-gray-500"
-                }`}
-              />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {favoriteItems.includes(item.id)
-              ? "Remove from favorites"
-              : "Add to favorites"}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider> */}
+              {conditionDetail?.placeholder || "Unknown"}
+            </div>
+          </div>
 
-      {/* Item Badges */}
-      <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-        {/* {item.isNew && (
-          <Badge className="bg-blue-500 hover:bg-blue-600">New</Badge>
-        )}
-        {item.isFeatured && (
-          <Badge className="bg-amber-500 hover:bg-amber-600">
-            <Star className="h-3 w-3 mr-1 fill-white" /> Featured
-          </Badge>
-        )} */}
-      </div>
-
-      <Link href={`/items/${item.id}`} className="block">
-        <div className="relative h-48 overflow-hidden">
-          <Image
-            src={item.imageUrls[0]}
-            alt={item.title || "Placeholder"}
-            fill
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
+          <div className="absolute top-2 right-2 z-10">
+            <div className="flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-black/80 text-white backdrop-blur-sm border border-white/20 shadow-lg transition-all duration-200 hover:bg-black/90">
+              <Clock className="w-3 h-3 mr-1.5" />
+              {getTimeAgo(item.createdAt)}
+            </div>
+          </div>
         </div>
-        <CardHeader className="pb-2">
-          <CardTitle className="line-clamp-1 text-green-800 dark:text-green-200">
-            {item.title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
-            {item.description}
-          </p>
-          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-1">
-            <Tag className="h-3.5 w-3.5 mr-1" />
-            {item.category?.name}
+
+        <div className="p-4 space-y-3 flex-1 flex flex-col">
+          <div className="flex-1">
+            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100 line-clamp-1 mb-1">
+              {item.title}
+            </CardTitle>
+            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed min-h-[2.5rem]">
+              {item.description}
+            </p>
           </div>
-          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-1">
-            <span
-              className={`inline-block w-3 h-3 rounded-full bg-${
-                conditionDetails.find(
-                  (condition) => condition.key == item.condition
-                )?.color || "gray"
-              }-500 mr-1.5`}
-            ></span>
-            {conditionDetails.find(
-              (condition) => condition.key == item.condition
-            )?.placeholder || "Unknown"}
+
+          <div className="space-y-2">
+            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center min-w-0 flex-1">
+                <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate">
+                  {item.address?.split(",").slice(-2).join(",").trim() ||
+                    item.address}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs">
+              {item.pickupPossible && (
+                <div className="flex items-center px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium">
+                  <MapPinHouse className="w-4 h-4 mr-1.5" />
+                  Pickup
+                </div>
+              )}
+              {item.shippingPossible && (
+                <div className="flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-medium">
+                  <Truck className="w-4 h-4 mr-1.5" />
+                  Shipping
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-            <MapPin className="h-3.5 w-3.5 mr-1" />
-            {item.address}
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-between items-center pt-0">
-          <span className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-            <Clock className="h-3 w-3 mr-1" />
-            {getTimeAgo(item.createdAt)}
-          </span>
-          <Button size="sm" className="bg-green-600 hover:bg-green-700">
-            View Details
-          </Button>
-        </CardFooter>
+        </div>
       </Link>
     </Card>
   );
@@ -144,20 +131,20 @@ export default function DetailedItemCard({ item }: DetailedItemCardProps) {
 
 export function DetailedItemCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-      <Skeleton className="w-full h-48" /> {/* Image placeholder */}
-      <div className="p-4">
-        <Skeleton className="h-6 w-3/4 mb-2" /> {/* Title placeholder */}
-        <Skeleton className="h-4 w-1/2 mb-1" /> {/* Category placeholder */}
-        <Skeleton className="h-4 w-1/3 mb-3" /> {/* Location placeholder */}
-        <Skeleton className="h-4 w-full mb-1" /> {/* Description line 1 */}
-        <Skeleton className="h-4 w-5/6 mb-4" /> {/* Description line 2 */}
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-4 w-1/4" /> {/* Posted by placeholder */}
-          <Skeleton className="h-8 w-24 rounded" />{" "}
-          {/* View Details button placeholder */}
+    <Card className="overflow-hidden border-0 shadow-sm bg-white dark:bg-gray-900">
+      <Skeleton className="aspect-[4/3] w-full" />
+      <div className="p-4 space-y-3">
+        <div>
+          <Skeleton className="h-5 w-3/4 mb-2" />
+          <Skeleton className="h-4 w-full mb-1" />
+          <Skeleton className="h-4 w-2/3" />
         </div>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+        <Skeleton className="h-8 w-full rounded" />
       </div>
-    </div>
+    </Card>
   );
 }

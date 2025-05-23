@@ -7,18 +7,25 @@ import {
 
 export const dynamic = "force-dynamic";
 
+export interface OauthUserRegisterPayload {
+  recaptchaToken: string;
+  userData: UserRequest;
+}
+
 const registerHandler = async (client: ApiClient, request: NextRequest) => {
   const body = await request.json();
   const {
-    supabaseId,
-    email,
-    name,
-    avatarUrl,
     recaptchaToken,
-    phoneNumber,
-    emailVerified,
-    phoneVerified,
-  } = body;
+    userData: {
+      supabaseId,
+      name,
+      email,
+      phoneNumber,
+      emailVerified,
+      phoneVerified,
+      avatarUrl,
+    },
+  } = body as OauthUserRegisterPayload;
 
   const userRequest: UserRequest = {
     supabaseId: supabaseId,

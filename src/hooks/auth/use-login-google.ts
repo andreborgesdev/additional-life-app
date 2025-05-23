@@ -1,15 +1,82 @@
 import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCreateUser } from "../users/use-create-user";
+import { useRegisterOauthUser } from "../users/use-create-user";
 import { useUpdateUser } from "../users/use-update-user";
-import { getUserQueryOptions } from "../users/use-user-by-supabase-id";
+import { fetchUserBySupabaseId } from "../users/use-user-by-supabase-id";
 import { UserRequest } from "@/src/lib/api-client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export const useGoogleLogin = () => {
   const queryClient = useQueryClient();
   const supabase = useSupabaseBrowser();
-  const { mutateAsync: createUser } = useCreateUser();
+  const router = useRouter();
+  const { mutateAsync: registerOauthUser } = useRegisterOauthUser();
   const { mutateAsync: updateUser } = useUpdateUser();
+
+  useEffect(() => {
+    if (!supabase) return;
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        try {
+          const { user: supabaseUser } = session;
+          const {
+            id: supabaseId,
+            email,
+            phone: phoneNumber,
+            user_metadata,
+          } = supabaseUser;
+          const {
+            full_name: fullName,
+            avatar_url: avatarUrl,
+            email_verified: emailVerified,
+            phone_verified: phoneVerified,
+          } = user_metadata || {};
+
+          if (!email) {
+            console.error("No email found in OAuth user data");
+            return;
+          }
+
+          const existingUser = await fetchUserBySupabaseId(supabaseId);
+
+          const userData: UserRequest = {
+            email,
+            name: fullName,
+            avatarUrl,
+            supabaseId,
+            phoneNumber,
+            emailVerified,
+            phoneVerified,
+          };
+
+          if (existingUser) {
+            await updateUser({
+              userId: existingUser.id,
+              userData,
+            });
+          } else {
+            await registerOauthUser({
+              recaptchaToken: "recaptchaToken",
+              userData,
+            });
+          }
+
+          queryClient.invalidateQueries({ queryKey: ["supabase-session"] });
+          router.push("/");
+        } catch (error) {
+          console.error("Error handling OAuth user:", error);
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase, queryClient, registerOauthUser, updateUser, router]);
 
   return useMutation({
     mutationFn: async () => {
@@ -18,77 +85,15 @@ export const useGoogleLogin = () => {
       }
       const { error, data } = await supabase.auth.signInWithOAuth({
         provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/users/login`,
+        },
       });
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["supabase-session"] });
-
-      if (!supabase) {
-        return;
-      }
-
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === "SIGNED_IN" && session) {
-          if (subscription) {
-            subscription.unsubscribe();
-          }
-
-          try {
-            const supabaseUser = session.user;
-            const supabaseId = supabaseUser.id;
-            const email = supabaseUser.email;
-            const phoneNumber = supabaseUser.phone;
-            const fullName = supabaseUser.user_metadata?.full_name;
-            const avatarUrl = supabaseUser.user_metadata?.avatar_url;
-            const emailVerified = supabaseUser.user_metadata?.email_verified;
-            const phoneVerified = supabaseUser.user_metadata?.phone_verified;
-
-            if (!email) {
-              return;
-            }
-
-            const existingUser = await queryClient.fetchQuery(
-              getUserQueryOptions(supabaseId)
-            );
-
-            const userCreateData: UserRequest = {
-              email,
-              name: fullName,
-              avatarUrl: avatarUrl,
-              supabaseId,
-              phoneNumber: phoneNumber,
-              emailVerified: emailVerified,
-              phoneVerified: phoneVerified,
-            };
-
-            if (existingUser) {
-              const userUpdateData: Partial<UserRequest> = {
-                email,
-                name: fullName,
-                avatarUrl: avatarUrl,
-                phoneNumber: phoneNumber,
-                emailVerified: emailVerified,
-                phoneVerified: phoneVerified,
-              };
-              await updateUser({
-                userId: existingUser.id,
-                userData: userUpdateData as UserRequest,
-              });
-            } else {
-              await createUser(userCreateData);
-            }
-          } catch (error) {}
-        } else if (event === "SIGNED_OUT") {
-          if (subscription) {
-            subscription.unsubscribe();
-          }
-        }
-      });
+    onError: (error) => {
+      console.error("Google login error:", error);
     },
-    onError: (error) => {},
   });
 };

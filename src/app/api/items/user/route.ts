@@ -8,7 +8,6 @@ const getUserItemsHandler = async (
   jwt: string,
   _request: NextRequest
 ) => {
-  console.log("GET user items");
   try {
     const items = await client.itemApi.getUserItems();
     return NextResponse.json(items);

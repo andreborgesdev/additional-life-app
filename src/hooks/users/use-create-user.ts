@@ -1,13 +1,16 @@
+import { OauthUserRegisterPayload } from "@/src/app/api/users/oauth-register/route";
 import { UserRequest, UserResponse } from "@/src/lib/api-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-async function createUser(userData: UserRequest): Promise<UserResponse> {
-  const response = await fetch(`/api/users`, {
+async function createUser(
+  payload: OauthUserRegisterPayload
+): Promise<UserResponse> {
+  const response = await fetch(`/api/users/oauth-register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(userData),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
@@ -19,19 +22,27 @@ async function createUser(userData: UserRequest): Promise<UserResponse> {
   return response.json();
 }
 
-export const useCreateUser = () => {
+export const useRegisterOauthUser = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<UserResponse, Error, UserRequest, unknown>({
+  return useMutation<
+    OauthUserRegisterPayload,
+    Error,
+    OauthUserRegisterPayload,
+    unknown
+  >({
     mutationFn: createUser,
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: ["userBySupabaseId", data.supabaseId],
+        queryKey: ["userBySupabaseId", data.userData.supabaseId],
       });
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.setQueryData(["user", data.id], data);
-      if (data.supabaseId) {
-        queryClient.setQueryData(["userBySupabaseId", data.supabaseId], data);
+      queryClient.setQueryData(["user", data.userData.id], data);
+      if (data.userData.supabaseId) {
+        queryClient.setQueryData(
+          ["userBySupabaseId", data.userData.supabaseId],
+          data
+        );
       }
     },
   });

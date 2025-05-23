@@ -35,8 +35,6 @@ export const useUpdateUser = () => {
         queryKey: ["userBySupabaseId", data.supabaseId],
       });
       queryClient.invalidateQueries({ queryKey: ["user", variables.userId] });
-      // Potentially update the specific user query if needed
-      // queryClient.setQueryData(['user', variables.userId], data);
     },
   });
 };

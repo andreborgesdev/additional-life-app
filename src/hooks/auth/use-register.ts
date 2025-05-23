@@ -1,14 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { UserResponse } from "../../lib/api-client";
-
-export interface RegisterPayload {
-  email: string;
-  password: string;
-  name: string;
-  recaptchaToken: string;
-}
+import { RegisterPayload } from "@/src/app/api/users/register/route";
 
 export const useRegister = () => {
   return useMutation<RegisterPayload, Error, RegisterPayload, unknown>({
