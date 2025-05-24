@@ -26,7 +26,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
-    adaptiveHeight: false,
+    adaptiveHeight: true,
     accessibility: true,
     arrows: false,
     autoplay: images.length > 1,
@@ -57,8 +57,8 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
   if (images.length === 1) {
     return (
       <div className="w-full overflow-hidden">
-        <div className="relative w-full max-h-[400px] overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
-          <div className="aspect-[4/3] w-full relative flex items-center justify-center">
+        <div className="relative w-full h-[400px] overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+          <div className="w-full h-full relative flex items-center justify-center">
             <Image
               src={images[0] || "/placeholder.svg"}
               alt={alt}
@@ -75,12 +75,12 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
 
   return (
     <div className="w-full overflow-hidden">
-      <div className="relative w-full max-h-[400px] overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
-        <div className="aspect-[4/3] w-full">
+      <div className="relative w-full h-[400px] overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+        <div className="w-full h-full">
           <Slider ref={sliderRef} {...settings}>
             {images.map((image, index) => (
               <div key={index} className="outline-none">
-                <div className="aspect-[4/3] w-full relative flex items-center justify-center">
+                <div className="w-full h-[400px] relative flex items-center justify-center">
                   <Image
                     src={image || "/placeholder.svg"}
                     alt={`${alt} - Image ${index + 1}`}
