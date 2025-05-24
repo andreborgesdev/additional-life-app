@@ -3,6 +3,20 @@ export interface LocationCoordinates {
   lng: number;
 }
 
+export interface BoundingBox {
+  south: number;
+  north: number;
+  west: number;
+  east: number;
+}
+
+export interface LocationData {
+  type: "pin" | "boundingbox";
+  coordinates?: LocationCoordinates;
+  boundingBox?: BoundingBox;
+  displayName?: string;
+}
+
 export const DEFAULT_COORDINATES: LocationCoordinates = {
   lat: 46.8182,
   lng: 8.2275,
@@ -14,9 +28,31 @@ export const convertToLatLng = (
   return [coords.lat, coords.lng];
 };
 
-export const parseAddressToCoordinates = async (
+const boundingBoxArea = (boundingBox: BoundingBox): number => {
+  const latDiff = boundingBox.north - boundingBox.south;
+  const lngDiff = boundingBox.east - boundingBox.west;
+  return latDiff * lngDiff;
+};
+
+const isBoundingBox = (boundingbox: string[]): boolean => {
+  const [south, north, west, east] = boundingbox.map(parseFloat);
+  const area = boundingBoxArea({
+    south,
+    north,
+    west,
+    east,
+  });
+  return area >= 0.000001;
+};
+
+const parseBoundingBox = (boundingbox: string[]): BoundingBox => {
+  const [south, north, west, east] = boundingbox.map(parseFloat);
+  return { south, north, west, east };
+};
+
+export const parseAddressToLocationData = async (
   address: string
-): Promise<LocationCoordinates> => {
+): Promise<LocationData> => {
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
@@ -31,46 +67,66 @@ export const parseAddressToCoordinates = async (
     const data = await response.json();
 
     if (data && data.length > 0) {
-      return {
-        lat: parseFloat(data[0].lat),
-        lng: parseFloat(data[0].lon),
+      const result = data[0];
+      const coordinates: LocationCoordinates = {
+        lat: parseFloat(result.lat),
+        lng: parseFloat(result.lon),
       };
+
+      if (result.boundingbox && isBoundingBox(result.boundingbox)) {
+        return {
+          type: "boundingbox",
+          coordinates,
+          boundingBox: parseBoundingBox(result.boundingbox),
+          displayName: result.display_name,
+        };
+      } else {
+        return {
+          type: "pin",
+          coordinates,
+          displayName: result.display_name,
+        };
+      }
     }
 
-    throw new Error("No coordinates found for address");
+    throw new Error("No location data found for address");
   } catch (error) {
     console.warn("Geocoding failed, using default coordinates:", error);
-    return DEFAULT_COORDINATES;
+    return {
+      type: "pin",
+      coordinates: DEFAULT_COORDINATES,
+    };
   }
 };
 
-const SWISS_CITIES_COORDINATES: Record<string, LocationCoordinates> = {
-  zurich: { lat: 47.3769, lng: 8.5417 },
-  geneva: { lat: 46.2044, lng: 6.1432 },
-  basel: { lat: 47.5596, lng: 7.5886 },
-  bern: { lat: 46.9481, lng: 7.4474 },
-  lausanne: { lat: 46.5197, lng: 6.6323 },
-  winterthur: { lat: 47.4989, lng: 8.7233 },
-  "st. gallen": { lat: 47.4245, lng: 9.3767 },
-  lucerne: { lat: 47.0502, lng: 8.3093 },
-  lugano: { lat: 46.0037, lng: 8.9511 },
-  biel: { lat: 47.1424, lng: 7.2662 },
+export const parseAddressToCoordinates = async (
+  address: string
+): Promise<LocationCoordinates> => {
+  const locationData = await parseAddressToLocationData(address);
+  return locationData.coordinates || DEFAULT_COORDINATES;
 };
 
-export const getCoordinatesForItem = (
-  address?: string
-): LocationCoordinates => {
-  if (!address) {
-    return DEFAULT_COORDINATES;
+const calculateBoundingBoxZoom = (boundingBox: BoundingBox): number => {
+  const area = boundingBoxArea(boundingBox);
+
+  if (area < 0.00001) return 19;
+  if (area < 0.0001) return 17;
+  if (area < 0.001) return 15;
+  if (area < 0.01) return 13;
+  if (area < 0.1) return 11;
+  if (area < 1) return 9;
+  if (area < 10) return 7;
+  return 5;
+};
+
+export const getOptimalZoom = (locationData: LocationData): number => {
+  if (locationData.type === "pin") {
+    return 15;
   }
 
-  const normalizedAddress = address.toLowerCase().trim();
-
-  for (const [city, coords] of Object.entries(SWISS_CITIES_COORDINATES)) {
-    if (normalizedAddress.includes(city)) {
-      return coords;
-    }
+  if (locationData.boundingBox) {
+    return calculateBoundingBoxZoom(locationData.boundingBox);
   }
 
-  return DEFAULT_COORDINATES;
+  return 13;
 };

@@ -58,8 +58,9 @@ import { useUser } from "@/src/hooks/users/use-user";
 import MapCaller from "@/src/components/ui/map-caller";
 import {
   convertToLatLng,
-  getCoordinatesForItem,
-  parseAddressToCoordinates,
+  parseAddressToLocationData,
+  getOptimalZoom,
+  type LocationData,
 } from "@/src/utils/location-utils";
 
 const fadeIn = {
@@ -76,9 +77,10 @@ export default function ItemPage({ params }: { params: { id: string } }) {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
-  const [itemCoordinates, setItemCoordinates] = useState<[number, number]>([
-    47.3769, 8.5417,
-  ]);
+  const [locationData, setLocationData] = useState<LocationData>({
+    type: "pin",
+    coordinates: { lat: 47.3769, lng: 8.5417 },
+  });
   const { toast } = useToast();
   const { session } = useSession();
   const router = useRouter();
@@ -91,8 +93,8 @@ export default function ItemPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     if (item) {
-      parseAddressToCoordinates(item.address).then((coords) => {
-        setItemCoordinates(convertToLatLng(coords));
+      parseAddressToLocationData(item.address).then((data) => {
+        setLocationData(data);
       });
     }
   }, [item]);
@@ -528,15 +530,19 @@ export default function ItemPage({ params }: { params: { id: string } }) {
           Location
         </h2>
         <div className="h-[400px] rounded-lg overflow-hidden">
-          <MapCaller posix={itemCoordinates} zoom={13} />
+          <MapCaller
+            locationData={locationData}
+            zoom={getOptimalZoom(locationData)}
+          />
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
           <MapPin className="inline w-4 h-4 mr-1" />
           {item.address}
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-          Note: Map shows approximate location. Contact the owner for exact
-          pickup details.
+          {locationData.type === "boundingbox"
+            ? "Map shows the general area. Contact the owner for exact pickup details."
+            : "Map shows approximate location. Contact the owner for exact pickup details."}
         </p>
       </div>
     </div>

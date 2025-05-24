@@ -277,6 +277,7 @@ export default function UserSettingsPage() {
             title: "Profile updated",
             description:
               "Your profile information has been saved successfully.",
+            variant: "success",
           });
         },
         onError: (error) => {
