@@ -5,6 +5,7 @@ import { useWebSocket, WebSocketMessage } from "../use-websocket";
 
 export interface ChatMessage {
   id: string;
+  conversationId?: string;
   itemId: string;
   senderId: string;
   senderName: string;
@@ -25,7 +26,8 @@ interface UsePrivateChatReturn {
   isLoading: boolean;
   isConnected: boolean;
   error: string | null;
-  sendMessage: (content: string) => void;
+  conversationId: string | null;
+  sendMessage: (content: string, isFirstMessage?: boolean) => void;
   loadChatHistory: () => Promise<void>;
   markAsRead: () => void;
 }
@@ -38,7 +40,7 @@ const fetchChatHistory = async (
   otherUserId: string
 ): Promise<ChatMessage[]> => {
   const response = await fetch(
-    `/api/chat/history?itemId=${itemId}&otherUserId=${otherUserId}`
+    `/api/v1/chat/history?itemId=${itemId}&otherUserId=${otherUserId}`
   );
 
   if (!response.ok) {
@@ -48,11 +50,34 @@ const fetchChatHistory = async (
   return response.json();
 };
 
+const getOrCreateConversation = async (
+  itemId: string,
+  currentUserId: string,
+  otherUserId: string
+): Promise<string> => {
+  const response = await fetch(
+    `/api/v1/chat/conversation?itemId=${itemId}&currentUser=${currentUserId}&otherUser=${otherUserId}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to get conversation: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.conversationId;
+};
+
 const markChatAsRead = async (
   itemId: string,
   otherUserId: string
 ): Promise<void> => {
-  const response = await fetch("/api/chat/mark-read", {
+  const response = await fetch("/api/v1/chat/mark-read", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -72,6 +97,7 @@ export function usePrivateChat({
 }: UsePrivateChatOptions): UsePrivateChatReturn {
   const { session } = useSession();
   const [realtimeMessages, setRealtimeMessages] = useState<ChatMessage[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -87,6 +113,26 @@ export function usePrivateChat({
     refetchOnWindowFocus: false,
   });
 
+  useEffect(() => {
+    const fetchConversationId = async () => {
+      if (session?.user?.id && itemId && otherUserId) {
+        try {
+          const convId = await getOrCreateConversation(
+            itemId,
+            session.user.id,
+            otherUserId
+          );
+          setConversationId(convId);
+        } catch (err) {
+          console.error("Failed to get conversation ID:", err);
+          setError("Failed to get conversation");
+        }
+      }
+    };
+
+    fetchConversationId();
+  }, [session?.user?.id, itemId, otherUserId]);
+
   const markAsReadMutation = useMutation({
     mutationFn: () => markChatAsRead(itemId, otherUserId),
     onError: (err) => {
@@ -94,30 +140,33 @@ export function usePrivateChat({
     },
   });
 
-  const handleWebSocketMessage = useCallback(
-    (wsMessage: WebSocketMessage) => {
-      const chatMessage: ChatMessage = {
-        id: wsMessage.id,
-        itemId: wsMessage.itemId,
-        senderId: wsMessage.senderId,
-        senderName: wsMessage.senderName,
-        recipientId: wsMessage.recipientId,
-        content: wsMessage.content,
-        type: wsMessage.type,
-        timestamp: wsMessage.timestamp,
-      };
+  const handleWebSocketMessage = useCallback((wsMessage: WebSocketMessage) => {
+    const chatMessage: ChatMessage = {
+      id: wsMessage.id,
+      conversationId: wsMessage.conversationId,
+      itemId: wsMessage.itemId,
+      senderId: wsMessage.senderId,
+      senderName: wsMessage.senderName,
+      recipientId: wsMessage.recipientId,
+      content: wsMessage.content,
+      type: wsMessage.type,
+      timestamp: wsMessage.timestamp,
+    };
 
-      setRealtimeMessages((prev) => {
-        const exists = prev.some((msg) => msg.id === chatMessage.id);
-        if (exists) return prev;
-        return [...prev, chatMessage];
-      });
-    },
-    [itemId, otherUserId]
-  );
+    setRealtimeMessages((prev) => {
+      const exists = prev.some((msg) => msg.id === chatMessage.id);
+      if (exists) return prev;
+      return [...prev, chatMessage];
+    });
+  }, []);
 
-  const { isConnected, sendMessage: sendWebSocketMessage } = useWebSocket({
-    url: websocketUrl,
+  const {
+    isConnected,
+    sendMessage: sendWebSocketMessage,
+    startConversation,
+  } = useWebSocket({
+    url: websocketUrl || "",
+    conversationId: conversationId || undefined,
     onMessage: handleWebSocketMessage,
     onError: () => {
       setError("Connection error");
@@ -125,13 +174,14 @@ export function usePrivateChat({
   });
 
   const sendMessage = useCallback(
-    (content: string) => {
+    (content: string, isFirstMessage = false) => {
       if (!session?.user?.id || !isConnected) {
         setError("Cannot send message: not connected");
         return;
       }
 
-      sendWebSocketMessage({
+      const messageData = {
+        conversationId: conversationId || undefined,
         itemId,
         senderId: session.user.id,
         senderName:
@@ -140,15 +190,23 @@ export function usePrivateChat({
           "Unknown User",
         recipientId: otherUserId,
         content,
-        type: "CHAT",
-      });
+        type: "CHAT" as const,
+      };
+
+      if (isFirstMessage || !conversationId) {
+        startConversation(messageData);
+      } else {
+        sendWebSocketMessage(messageData);
+      }
     },
     [
       session?.user?.id,
       session?.user?.user_metadata?.full_name,
       session?.user?.email,
       isConnected,
+      conversationId,
       sendWebSocketMessage,
+      startConversation,
       itemId,
       otherUserId,
     ]
@@ -192,6 +250,7 @@ export function usePrivateChat({
     isLoading,
     isConnected,
     error,
+    conversationId,
     sendMessage,
     loadChatHistory: () => loadChatHistory().then(() => {}),
     markAsRead,

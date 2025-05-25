@@ -20,6 +20,7 @@ import { useFeaturedCategories } from "../../hooks/use-categories";
 import { Button } from "@/src/components/ui/button";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 
 function CategoryCardSkeleton() {
   return (
@@ -51,6 +52,7 @@ function CategoriesSkeleton() {
 }
 
 export default function Categories() {
+  const { t } = useTranslation("common");
   const { data: categories, isLoading, error } = useFeaturedCategories();
 
   if (isLoading) {
@@ -61,9 +63,11 @@ export default function Categories() {
     return (
       <section className="mb-12">
         <h2 className="text-3xl font-bold text-green-800 dark:text-green-100">
-          Browse Categories
+          {t("home_categories.browse_categories_title")}
         </h2>
-        <p className="text-red-500 text-center">Could not load categories.</p>
+        <p className="text-red-500 text-center">
+          {t("home_categories.error_loading_categories")}
+        </p>
       </section>
     );
   }
@@ -72,10 +76,10 @@ export default function Categories() {
     return (
       <section className="mb-12">
         <h2 className="text-3xl font-bold text-green-800 dark:text-green-100">
-          Browse Categories
+          {t("home_categories.browse_categories_title")}
         </h2>
         <p className="text-gray-500 dark:text-gray-400 text-center">
-          No categories found.
+          {t("home_categories.no_categories_found")}
         </p>
       </section>
     );
@@ -86,7 +90,7 @@ export default function Categories() {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-10">
           <h2 className="text-3xl font-bold text-green-800 dark:text-green-100">
-            Browse Categories
+            {t("home_categories.browse_categories_title")}
           </h2>
           <Button
             asChild
@@ -94,7 +98,7 @@ export default function Categories() {
             className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
           >
             <Link href="/categories">
-              View All Categories
+              {t("home_categories.view_all_categories_button")}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>

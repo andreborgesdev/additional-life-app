@@ -1,16 +1,20 @@
+"use client";
+
 import Link from "next/link";
 import { Card, CardContent } from "@/src/components/ui/card";
 import Image from "next/image";
 import { Clock, MapPin } from "lucide-react";
 import { ItemResponse } from "@/src/lib/generated-api";
 import { getTimeAgo } from "@/src/utils/date-utils";
-import { conditionDetails } from "./detailed-item-card";
+import { getConditionDetails } from "./detailed-item-card";
+import { useTranslation } from "react-i18next";
 
 interface SimpleItemCardProps {
   item: ItemResponse;
 }
 
 export default function SimpleItemCard({ item }: SimpleItemCardProps) {
+  const { t } = useTranslation("common");
   return (
     <Card className="overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-0 shadow-sm bg-white dark:bg-gray-900">
       <Link href={`/items/${item.id}`} className="block">
@@ -18,7 +22,7 @@ export default function SimpleItemCard({ item }: SimpleItemCardProps) {
           {item.imageUrls?.[0] && (
             <Image
               src={item.imageUrls[0]}
-              alt={item.title || "Item image"}
+              alt={item.title || t("forms.item_image")}
               fill
               className="object-contain transition-transform duration-500 group-hover:scale-110"
             />
@@ -29,7 +33,7 @@ export default function SimpleItemCard({ item }: SimpleItemCardProps) {
               className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wide backdrop-blur-sm border border-white/30 bg-emerald-500 text-white shadow-lg shadow-emerald-500/25`}
             >
               <div className="w-1.5 h-1.5 rounded-full bg-white mr-1.5 animate-pulse"></div>
-              NEW
+              {t("item_details.new_badge")}
             </div>
           </div>
 

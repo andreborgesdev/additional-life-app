@@ -32,7 +32,7 @@ const getChatHistoryHandler = async (
 
   try {
     const response = await fetch(
-      `${process.env.BACKEND_URL}/api/chat/history?itemId=${itemId}&otherUserId=${otherUserId}`,
+      `${process.env.API_URL}/api/v1/chat/history?itemId=${itemId}&otherUserId=${otherUserId}`,
       {
         method: "GET",
         headers: {

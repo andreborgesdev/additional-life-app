@@ -20,7 +20,7 @@ const getChatNotificationsHandler = async (
 ): Promise<NextResponse<ChatNotification[] | { error: string }>> => {
   try {
     const response = await fetch(
-      `${process.env.BACKEND_URL}/api/chat/notifications`,
+      `${process.env.API_URL}/api/v1/chat/notifications`,
       {
         method: "GET",
         headers: {

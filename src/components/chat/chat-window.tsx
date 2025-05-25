@@ -110,19 +110,27 @@ export default function ChatWindow({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: otherUser, isLoading: userLoading } = useUser(otherUserId);
-  const { messages, isLoading, isConnected, error, sendMessage, markAsRead } =
-    usePrivateChat({
-      itemId,
-      otherUserId,
-    });
+  const {
+    messages,
+    isLoading,
+    isConnected,
+    error,
+    conversationId,
+    sendMessage,
+    markAsRead,
+  } = usePrivateChat({
+    itemId,
+    otherUserId,
+  });
 
   const handleSendMessage = useCallback(() => {
     if (messageInput.trim()) {
-      sendMessage(messageInput.trim());
+      const isFirstMessage = messages.length === 0;
+      sendMessage(messageInput.trim(), isFirstMessage);
       setMessageInput("");
       inputRef.current?.focus();
     }
-  }, [messageInput, sendMessage]);
+  }, [messageInput, sendMessage, messages.length]);
 
   const handleKeyPress = useCallback(
     (e: React.KeyboardEvent) => {
@@ -189,7 +197,11 @@ export default function ChatWindow({
         key={item.id}
         message={item}
         isOwn={isOwn}
-        senderName={isOwn ? session?.user?.name : otherUserName}
+        senderName={
+          isOwn
+            ? session?.user?.user_metadata?.full_name || session?.user?.email
+            : otherUserName
+        }
         showAvatar={item.showAvatar}
       />
     );

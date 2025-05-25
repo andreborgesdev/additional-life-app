@@ -10,6 +10,7 @@ import "slick-carousel/slick/slick-theme.css";
 import { ReactQueryClientProvider } from "./react-query-client-provider";
 import { I18nAppProvider } from "./i18n-provider";
 import { AuthProvider } from "./auth-provider";
+import { ChatProvider } from "@/src/contexts/chat-context";
 import { Toaster } from "@/src/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -31,12 +32,13 @@ export default function RootLayout({
         <ReactQueryClientProvider>
           <I18nAppProvider>
             <AuthProvider>
-              <Toaster />
-              <Header />
-              <main className="flex-1 pt-14">{children}</main>
-              <Footer />
-              <Script id="handle-prefers-color-scheme">
-                {`
+              <ChatProvider>
+                <Toaster />
+                <Header />
+                <main className="flex-1 pt-14">{children}</main>
+                <Footer />
+                <Script id="handle-prefers-color-scheme">
+                  {`
             (function() {
               function getInitialColorMode() {
                 const persistedColorPreference = window.localStorage.getItem('color-mode');
@@ -55,7 +57,8 @@ export default function RootLayout({
               document.documentElement.classList.toggle('dark', colorMode === 'dark');
             })();
           `}
-              </Script>
+                </Script>
+              </ChatProvider>
             </AuthProvider>
           </I18nAppProvider>
         </ReactQueryClientProvider>

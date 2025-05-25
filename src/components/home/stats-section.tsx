@@ -1,6 +1,10 @@
+"use client";
+
 import { NumberTicker } from "../magicui/number-ticker";
+import { useTranslation } from "react-i18next";
 
 export default function StatsSection() {
+  const { t } = useTranslation("common");
   return (
     <section className="py-2">
       <div className="container mx-auto px-4">
@@ -14,7 +18,7 @@ export default function StatsSection() {
               +
             </div>
             <div className="text-lg text-gray-700 dark:text-gray-300">
-              Items Shared
+              {t("home_stats_section.items_shared")}
             </div>
           </div>
           <div>
@@ -25,7 +29,7 @@ export default function StatsSection() {
               />
             </div>
             <div className="text-lg text-gray-700 dark:text-gray-300">
-              Active Users
+              {t("home_stats_section.active_users")}
             </div>
           </div>
           <div>
@@ -37,7 +41,7 @@ export default function StatsSection() {
               KGs
             </div>
             <div className="text-lg text-gray-700 dark:text-gray-300">
-              Saved from Landfill
+              {t("home_stats_section.saved_from_landfill")}
             </div>
           </div>
         </div>

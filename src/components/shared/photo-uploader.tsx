@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from "react";
 import { Upload, XCircle, Star } from "lucide-react";
 import { Label } from "@/src/components/ui/label";
+import { useTranslation } from "react-i18next";
 
 interface ImagePreview {
   id: string;
@@ -30,6 +31,7 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
   isSubmitting,
   inputDisabled,
 }) => {
+  const { t } = useTranslation("common");
   const [isDraggingOverContainer, setIsDraggingOverContainer] = useState(false);
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
 
@@ -162,14 +164,14 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
                   {item.id === mainImageId && (
                     <div className="absolute top-1 left-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full flex items-center">
                       <Star className="h-3 w-3 mr-1" fill="white" />
-                      Main
+                      {t("photo_uploader.main")}
                     </div>
                   )}
                   <button
                     type="button"
                     onClick={() => onRemoveImage(item.id)}
                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-80 group-hover:opacity-100 transition-opacity"
-                    aria-label="Remove image"
+                    aria-label={t("photo_uploader.remove_image")}
                     disabled={isSubmitting}
                   >
                     <XCircle className="h-4 w-4" />
@@ -179,8 +181,8 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
                       type="button"
                       onClick={() => onSetMainImage(item.id)}
                       className="absolute bottom-1 right-1 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-1 opacity-80 group-hover:opacity-100 transition-opacity"
-                      aria-label="Set as main image"
-                      title="Set as main image"
+                      aria-label={t("photo_uploader.set_as_main_image")}
+                      title={t("photo_uploader.set_as_main_image")}
                       disabled={isSubmitting}
                     >
                       <Star className="h-3 w-3" fill="white" />
@@ -199,7 +201,7 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
                 >
                   <Upload className="h-6 w-6 text-gray-400 dark:text-gray-500 mb-1" />
                   <span className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                    Add more
+                    {t("photo_uploader.add_more")}
                   </span>
                   <input
                     id="file-upload-more"
@@ -217,9 +219,11 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
               )}
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-center">
-              {imagePreviews.length} image
-              {imagePreviews.length === 1 ? "" : "s"} selected. You can add up
-              to {maxImages} images. Drag to reorder.
+              {t("photo_uploader.images_selected", {
+                count: imagePreviews.length,
+                plural: imagePreviews.length === 1 ? "" : "s",
+                max: maxImages,
+              })}
             </p>
           </>
         ) : (
@@ -234,9 +238,9 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
               }
             >
               <span className="text-green-600 dark:text-green-400 font-medium hover:text-green-700 dark:hover:text-green-300">
-                Click to upload
+                {t("photo_uploader.click_to_upload")}
               </span>{" "}
-              or drag and drop
+              {t("photo_uploader.or_drag_and_drop")}
               <input
                 id="photo-upload-main-input"
                 name="file-upload"
@@ -249,7 +253,7 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
               />
             </label>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              PNG, JPG or JPEG (MAX. 5MB each, up to {maxImages} images)
+              {t("photo_uploader.file_formats", { max: maxImages })}
             </p>
           </div>
         )}

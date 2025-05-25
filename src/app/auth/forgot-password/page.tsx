@@ -4,11 +4,13 @@ import { useState } from "react";
 import { useForgotPassword } from "@/src/hooks/auth/use-forgot-password";
 import Link from "next/link";
 import { ArrowLeft, Mail } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const forgotPasswordMutation = useForgotPassword();
+  const { t } = useTranslation("common");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,16 +33,16 @@ export default function ForgotPasswordPage() {
           className="absolute top-24 left-8 flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-500 transition-colors"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to login
+          {t("auth.back_to_login")}
         </Link>
 
         <div className="w-full max-w-md mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl">
           <div className="flex flex-col space-y-2 text-center mb-8">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Check your email
+              {t("auth.check_your_email")}
             </h1>
             <p className="text-gray-500 dark:text-gray-400">
-              We've sent a password reset link to
+              {t("auth.password_reset_sent")}
             </p>
             <p className="text-green-600 dark:text-green-400 font-medium">
               {email}
@@ -50,7 +52,7 @@ export default function ForgotPasswordPage() {
           <div className="space-y-6">
             <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
               <p className="text-sm text-green-700 dark:text-green-300">
-                Didn't receive the email? Check your spam folder or try again.
+                {t("auth.email_not_received")}
               </p>
             </div>
 
@@ -58,14 +60,14 @@ export default function ForgotPasswordPage() {
               onClick={() => setIsSubmitted(false)}
               className="w-full flex justify-center items-center px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 transition-colors duration-200"
             >
-              Try again
+              {t("auth.try_again")}
             </button>
 
             <Link
               href="/auth/login"
               className="w-full flex justify-center items-center px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 transition-colors duration-200"
             >
-              Back to login
+              {t("auth.back_to_login")}
             </Link>
           </div>
         </div>
@@ -80,17 +82,16 @@ export default function ForgotPasswordPage() {
         className="absolute top-24 left-8 flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-500 transition-colors"
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to login
+        {t("auth.back_to_login")}
       </Link>
 
       <div className="w-full max-w-md mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl">
         <div className="flex flex-col space-y-2 text-center mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Forgot your password?
+            {t("auth.forgot_password_title")}
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Enter your email address and we'll send you a link to reset your
-            password.
+            {t("auth.forgot_password_description")}
           </p>
         </div>
 
@@ -100,7 +101,7 @@ export default function ForgotPasswordPage() {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              Email address
+              {t("auth.email_address")}
             </label>
             <div className="relative rounded-md shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -115,7 +116,7 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="johndoe@example.com"
+                placeholder={t("auth.email_placeholder")}
               />
             </div>
           </div>
@@ -124,7 +125,7 @@ export default function ForgotPasswordPage() {
             <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
               <p className="text-sm text-red-700 dark:text-red-300">
                 {forgotPasswordMutation.error.message ||
-                  "Failed to send reset email. Please try again."}
+                  t("auth.reset_email_error")}
               </p>
             </div>
           )}
@@ -157,8 +158,8 @@ export default function ForgotPasswordPage() {
               </svg>
             ) : null}
             {forgotPasswordMutation.isPending
-              ? "Sending..."
-              : "Send reset link"}
+              ? t("auth.sending")
+              : t("auth.send_reset_link")}
           </button>
 
           <div className="text-center">
@@ -166,18 +167,18 @@ export default function ForgotPasswordPage() {
               href="/auth/login"
               className="text-sm font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
             >
-              Back to login
+              {t("auth.back_to_login")}
             </Link>
           </div>
         </form>
 
         <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
-          Don't have an account?{" "}
+          {t("auth.no_account")}{" "}
           <Link
             href="/auth/register"
             className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
           >
-            Sign up for free
+            {t("auth.sign_up_free")}
           </Link>
         </p>
       </div>

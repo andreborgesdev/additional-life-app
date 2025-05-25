@@ -319,7 +319,7 @@ export default function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[180px] p-2">
                 <DropdownMenuLabel className="text-xs text-gray-500 dark:text-gray-400 px-2 pb-1.5">
-                  Select Language
+                  {t("ui.select_language")}
                 </DropdownMenuLabel>
                 {languages.map((lang) => (
                   <DropdownMenuItem
@@ -356,17 +356,21 @@ export default function Header() {
                 >
                   {darkMode ? <Sun size={20} /> : <Moon size={20} />}
                   <span className="sr-only">
-                    {darkMode ? "Switch to light mode" : "Switch to dark mode"}
+                    {darkMode
+                      ? t("ui.switch_to_light_mode")
+                      : t("ui.switch_to_dark_mode")}
                   </span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                {darkMode ? "Switch to light mode" : "Switch to dark mode"}
+                {darkMode
+                  ? t("ui.switch_to_light_mode")
+                  : t("ui.switch_to_dark_mode")}
               </TooltipContent>
             </Tooltip>
 
             {/* Notifications */}
-            {/* {session && (
+            {session && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
@@ -391,12 +395,14 @@ export default function Header() {
                         {notificationCount}
                       </Badge>
                     )}
-                    <span className="sr-only">Notifications</span>
+                    <span className="sr-only">{t("ui.notifications")}</span>
                   </Link>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">Notifications</TooltipContent>
+                <TooltipContent side="bottom">
+                  {t("ui.notifications")}
+                </TooltipContent>
               </Tooltip>
-            )} */}
+            )}
 
             {/* User Menu (Desktop) */}
             {session ? (
@@ -506,7 +512,7 @@ export default function Header() {
                   )}
                 >
                   <Menu className="h-5 w-5" />
-                  <span className="sr-only">Open menu</span>
+                  <span className="sr-only">{t("ui.open_menu")}</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0">
@@ -577,7 +583,7 @@ export default function Header() {
                     <>
                       <div className="mt-6 pt-6 border-t space-y-1">
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 px-3 mb-2">
-                          Account
+                          {t("ui.account")}
                         </h3>
                         {accountNavItems.map((item) => (
                           <SheetClose asChild key={item.href}>
@@ -652,7 +658,7 @@ export default function Header() {
                       <div className="flex items-center gap-2">
                         <Globe className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                         <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                          Language
+                          {t("ui.language")}
                         </span>
                       </div>
                       <div className="flex gap-1">
@@ -680,14 +686,14 @@ export default function Header() {
                           <Moon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                         )}
                         <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                          {darkMode ? "Light Mode" : "Dark Mode"}
+                          {darkMode ? t("ui.light_mode") : t("ui.dark_mode")}
                         </span>
                       </div>
                       <button
                         onClick={toggleDarkMode}
                         className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-700"
                       >
-                        <span className="sr-only">Toggle theme</span>
+                        <span className="sr-only">{t("ui.toggle_theme")}</span>
                         <span
                           className={`${
                             darkMode ? "translate-x-6" : "translate-x-1"
@@ -717,7 +723,7 @@ export default function Header() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search for items..."
+                  placeholder={t("ui.search_for_items")}
                   className="pl-9 bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                 />
               </div>

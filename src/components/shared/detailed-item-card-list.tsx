@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Card } from "@/src/components/ui/card";
 import Image from "next/image";
@@ -5,7 +7,8 @@ import { Button } from "@/src/components/ui/button";
 import { ItemResponse } from "@/src/lib/generated-api";
 import { MapPin, Tag, Clock, MapPinHouse, Truck } from "lucide-react";
 import { getTimeAgo } from "@/src/utils/date-utils";
-import { conditionDetails } from "./detailed-item-card";
+import { getConditionDetails } from "./detailed-item-card";
+import { useTranslation } from "react-i18next";
 
 interface DetailedItemCardListProps {
   item: ItemResponse;
@@ -14,7 +17,9 @@ interface DetailedItemCardListProps {
 export default function DetailedItemCardList({
   item,
 }: DetailedItemCardListProps) {
-  const conditionDetail = conditionDetails.find(
+  const { t } = useTranslation("common");
+  const translatedConditionDetails = getConditionDetails(t);
+  const conditionDetail = translatedConditionDetails.find(
     (condition) => condition.key === item.condition
   );
 
@@ -38,7 +43,7 @@ export default function DetailedItemCardList({
               {item.imageUrls?.[0] && (
                 <Image
                   src={item.imageUrls[0]}
-                  alt={item.title || "Item image"}
+                  alt={item.title || t("forms.item_image")}
                   fill
                   className="object-contain transition-transform duration-500 group-hover:scale-110"
                 />
@@ -51,10 +56,12 @@ export default function DetailedItemCardList({
                   )}`}
                 >
                   <span className="hidden sm:inline">
-                    {conditionDetail?.placeholder || "Unknown"}
+                    {conditionDetail?.placeholder || t("conditions.unknown")}
                   </span>
                   <span className="sm:hidden text-[10px]">
-                    {(conditionDetail?.placeholder || "Unknown").slice(0, 3)}
+                    {(
+                      conditionDetail?.placeholder || t("conditions.unknown")
+                    ).slice(0, 3)}
                   </span>
                 </div>
               </div>
@@ -90,13 +97,17 @@ export default function DetailedItemCardList({
                 {item.isPickupPossible && (
                   <div className="flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium">
                     <MapPinHouse className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
-                    <span className="text-[10px] sm:text-xs">Pickup</span>
+                    <span className="text-[10px] sm:text-xs">
+                      {t("availability.pickup")}
+                    </span>
                   </div>
                 )}
                 {item.isShippingPossible && (
                   <div className="flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-medium">
                     <Truck className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
-                    <span className="text-[10px] sm:text-xs">Shipping</span>
+                    <span className="text-[10px] sm:text-xs">
+                      {t("availability.shipping")}
+                    </span>
                   </div>
                 )}
                 <div className="flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400 font-medium ml-auto">

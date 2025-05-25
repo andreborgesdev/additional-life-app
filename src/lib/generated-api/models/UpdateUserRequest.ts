@@ -12,7 +12,7 @@ export type UpdateUserRequest = {
     preferredLanguage?: UpdateUserRequest.preferredLanguage;
     isEmailVerified?: boolean;
     isPhoneVerified?: boolean;
-    contactOptions?: Array<'CHAT' | 'EMAIL' | 'PHONE' | 'WHATSAPP'>;
+    contactOptions?: Array<'EMAIL' | 'PHONE' | 'WHATSAPP'>;
 };
 export namespace UpdateUserRequest {
     export enum preferredLanguage {

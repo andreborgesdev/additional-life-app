@@ -19,7 +19,7 @@ const markChatAsReadHandler = async (
     }
 
     const response = await fetch(
-      `${process.env.BACKEND_URL}/api/chat/mark-read`,
+      `${process.env.API_URL}/api/v1/chat/mark-read`,
       {
         method: "POST",
         headers: {

@@ -640,6 +640,60 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ItemResponse"
+  /api/v1/chat/{conversationId}/history:
+    get:
+      tags:
+      - chat-controller
+      operationId: getChatHistoryByConversationId
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+  /api/v1/chat/history:
+    get:
+      tags:
+      - chat-controller
+      operationId: getOrCreateConversationAndFetchHistory
+      parameters:
+      - name: itemId
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: currentUser
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: otherUser
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
 components:
   schemas:
     UpdateUserRequest:
@@ -679,7 +733,6 @@ components:
           items:
             type: string
             enum:
-            - CHAT
             - EMAIL
             - PHONE
             - WHATSAPP
@@ -701,7 +754,6 @@ components:
           items:
             type: string
             enum:
-            - CHAT
             - EMAIL
             - PHONE
             - WHATSAPP
@@ -732,7 +784,6 @@ components:
         active:
           type: boolean
       required:
-      - contactOptions
       - createdAt
       - email
       - id
@@ -933,12 +984,12 @@ components:
     PageItemResponse:
       type: object
       properties:
-        totalElements:
-          type: integer
-          format: int64
         totalPages:
           type: integer
           format: int32
+        totalElements:
+          type: integer
+          format: int64
         first:
           type: boolean
         last:
@@ -955,11 +1006,11 @@ components:
           format: int32
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: boolean
     PageableObject:
@@ -989,3 +1040,32 @@ components:
           type: boolean
         unsorted:
           type: boolean
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        conversationId:
+          type: string
+          format: uuid
+        itemId:
+          type: string
+          format: uuid
+        senderId:
+          type: string
+          format: uuid
+        recipientId:
+          type: string
+          format: uuid
+        content:
+          type: string
+        type:
+          type: string
+          enum:
+          - CHAT
+          - JOIN
+          - LEAVE
+        timestamp:
+          type: string
+          format: date-time

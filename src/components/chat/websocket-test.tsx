@@ -12,51 +12,54 @@ export function WebSocketTest() {
   const [inputMessage, setInputMessage] = useState("");
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
-  const { isConnected, isConnecting, error, sendMessage } = useWebSocket({
-    url: process.env.NEXT_PUBLIC_WEBSOCKET_URL || "ws://localhost:8080/ws-chat",
-    onMessage: (message) => {
-      const timestamp = new Date().toLocaleTimeString();
-      setMessages((prev) => [
-        ...prev,
-        `[${timestamp}] Received: ${JSON.stringify(message, null, 2)}`,
-      ]);
-    },
-    onOpen: () => {
-      const timestamp = new Date().toLocaleTimeString();
-      setMessages((prev) => [
-        ...prev,
-        `[${timestamp}] ✅ Connected to WebSocket`,
-      ]);
-      setDebugInfo((prev) => [
-        ...prev,
-        `[${timestamp}] STOMP connection established`,
-      ]);
-    },
-    onClose: () => {
-      const timestamp = new Date().toLocaleTimeString();
-      setMessages((prev) => [
-        ...prev,
-        `[${timestamp}] ❌ Disconnected from WebSocket`,
-      ]);
-      setDebugInfo((prev) => [
-        ...prev,
-        `[${timestamp}] STOMP connection closed`,
-      ]);
-    },
-    onError: (error) => {
-      const timestamp = new Date().toLocaleTimeString();
-      setMessages((prev) => [...prev, `[${timestamp}] ⚠️ Error: ${error}`]);
-      setDebugInfo((prev) => [
-        ...prev,
-        `[${timestamp}] WebSocket error occurred`,
-      ]);
-    },
-  });
+  const { isConnected, isConnecting, error, sendMessage, startConversation } =
+    useWebSocket({
+      url: process.env.NEXT_PUBLIC_WEBSOCKET_URL,
+      conversationId: "test-conversation-123",
+      onMessage: (message) => {
+        const timestamp = new Date().toLocaleTimeString();
+        setMessages((prev) => [
+          ...prev,
+          `[${timestamp}] Received: ${JSON.stringify(message, null, 2)}`,
+        ]);
+      },
+      onOpen: () => {
+        const timestamp = new Date().toLocaleTimeString();
+        setMessages((prev) => [
+          ...prev,
+          `[${timestamp}] ✅ Connected to WebSocket`,
+        ]);
+        setDebugInfo((prev) => [
+          ...prev,
+          `[${timestamp}] STOMP connection established`,
+        ]);
+      },
+      onClose: () => {
+        const timestamp = new Date().toLocaleTimeString();
+        setMessages((prev) => [
+          ...prev,
+          `[${timestamp}] ❌ Disconnected from WebSocket`,
+        ]);
+        setDebugInfo((prev) => [
+          ...prev,
+          `[${timestamp}] STOMP connection closed`,
+        ]);
+      },
+      onError: (error) => {
+        const timestamp = new Date().toLocaleTimeString();
+        setMessages((prev) => [...prev, `[${timestamp}] ⚠️ Error: ${error}`]);
+        setDebugInfo((prev) => [
+          ...prev,
+          `[${timestamp}] WebSocket error occurred`,
+        ]);
+      },
+    });
 
   const handleSendMessage = () => {
     if (inputMessage.trim() && isConnected) {
       const timestamp = new Date().toLocaleTimeString();
       const messageToSend = {
+        conversationId: "test-conversation-123",
         itemId: "test-item-123",
         senderId: session?.user?.id || "test-user",
         senderName: session?.user?.user_metadata?.full_name || "Test User",
@@ -73,6 +76,32 @@ export function WebSocketTest() {
       setDebugInfo((prev) => [
         ...prev,
         `[${timestamp}] Message sent to /app/chat.sendMessage`,
+      ]);
+      setInputMessage("");
+    }
+  };
+
+  const handleStartConversation = () => {
+    if (inputMessage.trim() && isConnected) {
+      const timestamp = new Date().toLocaleTimeString();
+      const messageToSend = {
+        conversationId: "test-conversation-123",
+        itemId: "test-item-123",
+        senderId: session?.user?.id || "test-user",
+        senderName: session?.user?.user_metadata?.full_name || "Test User",
+        recipientId: "test-recipient",
+        content: inputMessage,
+        type: "JOIN" as const,
+      };
+
+      startConversation(messageToSend);
+      setMessages((prev) => [
+        ...prev,
+        `[${timestamp}] 🚀 Started conversation: ${inputMessage}`,
+      ]);
+      setDebugInfo((prev) => [
+        ...prev,
+        `[${timestamp}] Conversation started via /app/chat.startConversation`,
       ]);
       setInputMessage("");
     }
@@ -125,16 +154,25 @@ export function WebSocketTest() {
         <div className="space-y-2">
           <h4 className="font-medium">Backend Configuration:</h4>
           <p className="text-sm">
-            <strong>WebSocket URL:</strong> {process.env.NEXT_PUBLIC_WEBSOCKET_URL || "ws://localhost:8080/ws-chat"}
+            <strong>WebSocket URL:</strong>{" "}
+            {process.env.NEXT_PUBLIC_WEBSOCKET_URL}
+          </p>
+          <p className="text-sm">
+            <strong>API URL:</strong>{" "}
+            {process.env.API_URL || "http://localhost:8080"}
           </p>
           <p className="text-sm">
             <strong>Send Destination:</strong> /app/chat.sendMessage
           </p>
           <p className="text-sm">
-            <strong>Subscribe Topic:</strong> /topic/public
+            <strong>Subscribe Topics:</strong>{" "}
+            /topic/chat/test-conversation-123, /topic/public
           </p>
           <p className="text-sm">
             <strong>Protocol:</strong> STOMP over SockJS
+          </p>
+          <p className="text-sm text-red-500">
+            <strong>Issue:</strong> CORS not configured for localhost:3000
           </p>
         </div>
       </div>
@@ -154,6 +192,14 @@ export function WebSocketTest() {
             className="whitespace-nowrap"
           >
             Send Message
+          </Button>
+          <Button
+            onClick={handleStartConversation}
+            disabled={!isConnected || !inputMessage.trim()}
+            variant="outline"
+            className="whitespace-nowrap"
+          >
+            Start Conversation
           </Button>
         </div>
       </div>

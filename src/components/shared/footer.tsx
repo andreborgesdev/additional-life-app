@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { Facebook, Twitter, Instagram } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function Footer() {
   const [mounted, setMounted] = useState(false);
+  const { t } = useTranslation("common");
 
   useEffect(() => {
     setMounted(true);
@@ -19,23 +21,23 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h3 className="text-xl font-semibold mb-4">
-              About Additional Life
+              {t("footer.about_additional_life")}
             </h3>
             <p className="text-green-200 dark:text-green-300">
-              Additional Life is a platform dedicated to promoting
-              sustainability and reducing waste by connecting people who want to
-              give away items they no longer need.
+              {t("footer.about_description")}
             </p>
           </div>
           <div>
-            <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
+            <h3 className="text-xl font-semibold mb-4">
+              {t("footer.quick_links")}
+            </h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/about"
                   className="text-green-200 dark:text-green-300 hover:text-white"
                 >
-                  About Us
+                  {t("footer.about_us")}
                 </Link>
               </li>
               <li>
@@ -43,7 +45,7 @@ export default function Footer() {
                   href="/how-it-works"
                   className="text-green-200 dark:text-green-300 hover:text-white"
                 >
-                  How It Works
+                  {t("footer.how_it_works")}
                 </Link>
               </li>
               {/* <li>
@@ -86,7 +88,7 @@ export default function Footer() {
                   href="/terms-and-conditions"
                   className="text-green-200 dark:text-green-300 hover:text-white text-sm"
                 >
-                  Terms and Conditions
+                  {t("footer.terms_and_conditions")}
                 </Link>
               </li>
               <li>
@@ -94,7 +96,7 @@ export default function Footer() {
                   href="/data-privacy"
                   className="text-green-200 dark:text-green-300 hover:text-white text-sm"
                 >
-                  Data Privacy Policy
+                  {t("footer.data_privacy_policy")}
                 </Link>
               </li>
             </ul>
@@ -102,8 +104,8 @@ export default function Footer() {
         </div>
         <div className="mt-8 text-center text-green-200 dark:text-green-300">
           <p>
-            &copy; {new Date().getFullYear()} Additional Life. All rights
-            reserved.
+            &copy; {new Date().getFullYear()} Additional Life.{" "}
+            {t("footer.all_rights_reserved")}
           </p>
         </div>
       </div>

@@ -5,7 +5,6 @@ import { useUpdateUser } from "../users/use-update-user";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CreateUserRequest, UpdateUserRequest } from "@/src/lib/generated-api";
-import { fetchUserByEmail } from "../users/use-user-by-email";
 
 export const useGoogleLogin = () => {
   const queryClient = useQueryClient();
@@ -105,3 +104,6 @@ export const useGoogleLogin = () => {
     },
   });
 };
+function fetchUserByEmail(email: string) {
+  throw new Error("Function not implemented.");
+}

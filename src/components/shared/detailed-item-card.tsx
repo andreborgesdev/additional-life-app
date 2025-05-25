@@ -14,6 +14,7 @@ import { ItemResponse } from "@/src/lib/generated-api";
 import { Clock, MapPin, MapPinHouse, Truck } from "lucide-react";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { getTimeAgo } from "@/src/utils/date-utils";
+import { useTranslation } from "react-i18next";
 
 interface DetailedItemCardProps {
   item: ItemResponse;
@@ -24,6 +25,29 @@ export interface ConditionDetail {
   placeholder: string;
   color: string;
 }
+
+export const getConditionDetails = (t: (key: string) => string) => [
+  {
+    key: ItemResponse.condition.NEW,
+    placeholder: t("conditions.new"),
+    color: "emerald",
+  },
+  {
+    key: ItemResponse.condition.LIKE_NEW,
+    placeholder: t("conditions.like_new"),
+    color: "blue",
+  },
+  {
+    key: ItemResponse.condition.USED,
+    placeholder: t("conditions.used"),
+    color: "amber",
+  },
+  {
+    key: ItemResponse.condition.DEFECTIVE,
+    placeholder: t("conditions.defective"),
+    color: "red",
+  },
+];
 
 export const conditionDetails = [
   { key: ItemResponse.condition.NEW, placeholder: "New", color: "emerald" },
@@ -41,7 +65,9 @@ export const conditionDetails = [
 ];
 
 export default function DetailedItemCard({ item }: DetailedItemCardProps) {
-  const conditionDetail = conditionDetails.find(
+  const { t } = useTranslation("common");
+  const translatedConditionDetails = getConditionDetails(t);
+  const conditionDetail = translatedConditionDetails.find(
     (condition) => condition.key == item.condition
   );
 
@@ -63,7 +89,7 @@ export default function DetailedItemCard({ item }: DetailedItemCardProps) {
           {item.imageUrls?.[0] && (
             <Image
               src={item.imageUrls[0]}
-              alt={item.title || "Item image"}
+              alt={item.title || t("forms.item_image")}
               fill
               className="object-contain transition-transform duration-500 group-hover:scale-110"
             />
@@ -75,7 +101,7 @@ export default function DetailedItemCard({ item }: DetailedItemCardProps) {
                 conditionDetail?.color || "gray"
               )}`}
             >
-              {conditionDetail?.placeholder || "Unknown"}
+              {conditionDetail?.placeholder || t("conditions.unknown")}
             </div>
           </div>
 
@@ -112,13 +138,13 @@ export default function DetailedItemCard({ item }: DetailedItemCardProps) {
               {item.isPickupPossible && (
                 <div className="flex items-center px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium">
                   <MapPinHouse className="w-4 h-4 mr-1.5" />
-                  Pickup
+                  {t("availability.pickup")}
                 </div>
               )}
               {item.isShippingPossible && (
                 <div className="flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-medium">
                   <Truck className="w-4 h-4 mr-1.5" />
-                  Shipping
+                  {t("availability.shipping")}
                 </div>
               )}
             </div>

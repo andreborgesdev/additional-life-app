@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import ChatList from "@/src/components/chat/chat-list";
 import ChatWindow from "@/src/components/chat/chat-window";
 import { MessageCircle } from "lucide-react";
+import { WebSocketTest } from "@/src/components/chat/websocket-test";
 
 function ChatContent() {
   const searchParams = useSearchParams();
@@ -62,6 +63,8 @@ function ChatContent() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               Welcome to Messages
             </h2>
+            <WebSocketTest />
+
             <p className="text-gray-600 dark:text-gray-400 max-w-md">
               Select a conversation from the sidebar to start chatting, or start
               a new conversation by messaging someone about an item.

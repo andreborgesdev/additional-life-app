@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { CategoryResponse, ItemResponse } from "@/src/lib/generated-api";
 import DetailedItemCard, {
-  conditionDetails,
+  getConditionDetails,
   DetailedItemCardSkeleton,
 } from "@/src/components/shared/detailed-item-card";
 import { motion } from "framer-motion";
@@ -114,11 +114,6 @@ function ItemsPageContent() {
   >([]);
   const { toast } = useToast();
 
-  const [favoriteItems, setFavoriteItems] = useState<string[]>([]);
-  const [itemsType, setItemsType] = useState<"all" | "internal" | "external">(
-    "all"
-  );
-
   const selectedSortOptionDetails = sortByOptions.find(
     (option) => option.value === sortBy
   );
@@ -130,17 +125,18 @@ function ItemsPageContent() {
   } = useItems({
     page,
     size: 10,
-    sortBy: selectedSortOptionDetails?.sortBy || SortBy.POSTED_ON,
+    sortBy: selectedSortOptionDetails?.sortBy || SortBy.CREATED_AT,
     direction: selectedSortOptionDetails?.direction || QueryDirection.DESC,
     query: searchQuery || undefined,
     category: selectedCategoryId || undefined,
     condition:
       selectedConditions.length > 0 ? selectedConditions.join(",") : undefined,
-    itemType: itemsType === "all" ? undefined : itemsType,
   });
 
   const { data: allCategoriesData, isLoading: isLoadingAllCategories } =
     useCategories();
+
+  const conditionDetails = getConditionDetails(t);
 
   useEffect(() => {
     const newTags: { id: string; label: string; type: string }[] = [];
@@ -176,35 +172,33 @@ function ItemsPageContent() {
         if (selectedCat && selectedCat.name) {
           categoryLabel = selectedCat.name;
         } else {
-          categoryLabel = "Selected Category";
+          categoryLabel = t("filters.selected_category");
         }
       }
       newTags.push({
         id: `category-${selectedCategoryId}`,
-        label: `Category: ${categoryLabel}`,
+        label: `${t("filters.category_label")} ${categoryLabel}`,
         type: "category",
       });
     }
     selectedConditions.forEach((condition) => {
       newTags.push({
         id: `condition-${condition}`,
-        label: `Condition: ${
-          conditionDetails.find((c) => c.key === condition)?.placeholder
+        label: `${t("filters.condition_label")} ${
+          conditionDetails.find((c) => c.key === condition)?.placeholder ||
+          condition
         }`,
         type: "condition",
       });
     });
-    if (itemsType !== "all") {
-      newTags.push({
-        id: `type-${itemsType}`,
-        label: `Type: ${
-          itemsType.charAt(0).toUpperCase() + itemsType.slice(1)
-        }`,
-        type: "itemsType",
-      });
-    }
     setActiveFilterTags(newTags);
-  }, [selectedCategoryId, selectedConditions, itemsType, allCategoriesData]);
+  }, [
+    selectedCategoryId,
+    selectedConditions,
+    allCategoriesData,
+    conditionDetails,
+    t,
+  ]);
 
   if (isLoadingItems && !items) {
     return <ItemsPageSkeleton />;
@@ -218,7 +212,6 @@ function ItemsPageContent() {
     let count = 0;
     if (selectedCategoryId) count++;
     count += selectedConditions.length;
-    if (itemsType !== "all") count++;
     return count;
   };
   const activeFilterCount = getActiveFilterCount();
@@ -229,7 +222,6 @@ function ItemsPageContent() {
     setSelectedCategoryId(null);
     setSelectedConditions([]);
     setSortBy(SortByOptions.RELEVANCE);
-    setItemsType("all");
     setPage(0);
 
     const newSearchParams = new URLSearchParams(searchParams.toString());
@@ -246,10 +238,6 @@ function ItemsPageContent() {
     } else if (type === "condition") {
       const condition = tagId.replace("condition-", "");
       setSelectedConditions((prev) => prev.filter((c) => c !== condition));
-      // If conditions were URL params, update newSearchParams here
-    } else if (type === "itemsType") {
-      setItemsType("all");
-      // If itemsType was URL param, update newSearchParams here
     }
     setPage(0);
     router.push(pathname + "?" + newSearchParams.toString());
@@ -348,11 +336,6 @@ function ItemsPageContent() {
             }))}
             currentSortByValue={sortBy.toString()}
             setSortBy={handleOnSortByChanged}
-            itemsType={itemsType}
-            setItemsType={(newType) => {
-              setItemsType(newType as "all" | "internal" | "external");
-              setPage(0);
-            }}
           />
         </div>
       </div>
@@ -483,19 +466,9 @@ function ItemsPageContent() {
               : "space-y-4"
           }`}
         >
-          {(items.content || Array.from({ length: items.size || 4 })).map(
-            // Use existing items or skeleton placeholders
-            (item, index) =>
-              item && item.id ? (
-                viewMode === "grid" ? (
-                  <DetailedItemCardSkeleton key={item.id.toString()} />
-                ) : (
-                  <DetailedItemCardSkeleton key={item.id.toString()} />
-                )
-              ) : (
-                <DetailedItemCardSkeleton key={`skeleton-${index}`} />
-              )
-          )}
+          {Array.from({ length: 4 }).map((_, index) => (
+            <DetailedItemCardSkeleton key={`skeleton-${index}`} />
+          ))}
         </div>
       ) : (
         <>
@@ -505,23 +478,14 @@ function ItemsPageContent() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {finalItemsToDisplay.map(
                   (item) =>
-                    item.id !== undefined && ( // Ensure item.id is defined before rendering
+                    item.id !== undefined && (
                       <motion.div
-                        key={item.id.toString()} // Use toString for key if id is number
+                        key={item.id.toString()}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <DetailedItemCard
-                          item={item} // Pass the whole item object
-                          isFavorite={favoriteItems.includes(
-                            item.id.toString()
-                          )}
-                          onToggleFavorite={() =>
-                            toggleFavorite(item.id.toString())
-                          }
-                          viewMode={viewMode}
-                        />
+                        <DetailedItemCard item={item} />
                       </motion.div>
                     )
                 )}
@@ -537,16 +501,7 @@ function ItemsPageContent() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <DetailedItemCardList
-                          item={item}
-                          isFavorite={favoriteItems.includes(
-                            item.id.toString()
-                          )}
-                          onToggleFavorite={() =>
-                            toggleFavorite(item.id.toString())
-                          }
-                          viewMode={viewMode}
-                        />
+                        <DetailedItemCardList item={item} />
                       </motion.div>
                     )
                 )}
@@ -603,14 +558,14 @@ function ItemsPageContent() {
           <span className="self-center text-sm">
             {t("items.page_indicator", {
               currentPage: page + 1,
-              totalPages: items.totalPages,
+              totalPages: items?.totalPages || 1,
             })}
           </span>
           <Button
             onClick={() =>
-              setPage((p) => Math.min(items.totalPages - 1, p + 1))
+              setPage((p) => Math.min((items?.totalPages || 1) - 1, p + 1))
             }
-            disabled={page >= items.totalPages - 1 || isLoadingItems}
+            disabled={page >= (items?.totalPages || 1) - 1 || isLoadingItems}
             variant="outline"
             className="ml-2"
           >

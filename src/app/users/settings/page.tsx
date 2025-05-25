@@ -57,6 +57,7 @@ import { useUpdatePassword } from "@/src/hooks/users/use-update-password";
 import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
 import { useUserByEmail } from "@/src/hooks/users/use-user-by-email";
 import { Checkbox } from "@/src/components/ui/checkbox";
+import { useTranslation } from "react-i18next";
 
 interface PasswordRequirementStatus {
   length: boolean;
@@ -74,6 +75,7 @@ export default function UserSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const logout = useLogout();
   const supabase = useSupabaseBrowser();
+  const { t } = useTranslation("common");
 
   // User profile state
   const [name, setName] = useState("");
@@ -193,16 +195,16 @@ export default function UserSettingsPage() {
 
     if (!name.trim()) {
       toast({
-        title: "Name required",
-        description: "Please enter your full name.",
+        title: t("settings.name_required"),
+        description: t("settings.enter_name"),
         variant: "destructive",
       });
       return;
     }
     if (!email.trim()) {
       toast({
-        title: "Email required",
-        description: "Please enter your email address.",
+        title: t("settings.email_required"),
+        description: t("settings.enter_email"),
         variant: "destructive",
       });
       return;
@@ -210,8 +212,8 @@ export default function UserSettingsPage() {
 
     if (bio.length > 250) {
       toast({
-        title: "Bio too long",
-        description: "Your bio must be 250 characters or less.",
+        title: t("settings.bio_too_long"),
+        description: t("settings.bio_limit"),
         variant: "destructive",
       });
       return;
@@ -224,8 +226,8 @@ export default function UserSettingsPage() {
       try {
         if (!session?.user?.id) {
           toast({
-            title: "Authentication Error",
-            description: "User session not found. Cannot upload avatar.",
+            title: t("settings.auth_error"),
+            description: t("settings.session_not_found"),
             variant: "destructive",
           });
           setIsUploadingAvatar(false);
@@ -238,15 +240,17 @@ export default function UserSettingsPage() {
         });
 
         if (uploadResult.error) {
-          throw new Error(uploadResult.error || "Failed to upload avatar.");
+          throw new Error(
+            uploadResult.error || t("settings.avatar_upload_failed")
+          );
         }
         avatarUrlForPayload = uploadResult.imageUrl;
         setAvatarUrl(avatarUrlForPayload);
         setAvatarFile(null);
       } catch (error: any) {
         toast({
-          title: "Avatar Upload Failed",
-          description: error.message || "Could not upload new avatar.",
+          title: t("settings.avatar_upload_failed"),
+          description: error.message || t("settings.avatar_upload_error"),
           variant: "destructive",
         });
         setIsUploadingAvatar(false);
@@ -274,16 +278,15 @@ export default function UserSettingsPage() {
       {
         onSuccess: async (updatedUserData) => {
           toast({
-            title: "Profile updated",
-            description:
-              "Your profile information has been saved successfully.",
+            title: t("settings.profile_updated"),
+            description: t("settings.profile_saved"),
             variant: "success",
           });
         },
         onError: (error) => {
           toast({
-            title: "Update failed",
-            description: error.message || "Could not update profile.",
+            title: t("settings.update_failed"),
+            description: error.message || t("settings.update_error"),
             variant: "destructive",
           });
         },
@@ -294,8 +297,8 @@ export default function UserSettingsPage() {
   const handleNotificationSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     toast({
-      title: "Notification preferences updated",
-      description: "Your notification settings have been saved successfully.",
+      title: t("settings.notifications_updated"),
+      description: t("settings.notifications_saved"),
     });
   };
 
@@ -507,7 +510,7 @@ export default function UserSettingsPage() {
               ) : (
                 <X className="h-4 w-4 text-red-500" />
               )}
-              <span>Email Verified</span>
+              <span>{t("settings.email_verified")}</span>
             </div>
           </div>
         </div>
@@ -517,7 +520,7 @@ export default function UserSettingsPage() {
         <TabsList className="grid grid-cols-4 mb-8">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
-            <span className="hidden sm:inline">Profile</span>
+            <span className="hidden sm:inline">{t("settings.profile")}</span>
           </TabsTrigger>
           {/* <TabsTrigger
             value="notifications"
@@ -532,7 +535,7 @@ export default function UserSettingsPage() {
           </TabsTrigger> */}
           <TabsTrigger value="security" className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
-            <span className="hidden sm:inline">Security</span>
+            <span className="hidden sm:inline">{t("settings.security")}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -540,10 +543,9 @@ export default function UserSettingsPage() {
         <TabsContent value="profile">
           <Card>
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
+              <CardTitle>{t("settings.profile_information")}</CardTitle>
               <CardDescription>
-                Update your personal information and how others see you on the
-                platform
+                {t("settings.update_personal_info")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -551,72 +553,78 @@ export default function UserSettingsPage() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
+                      <Label htmlFor="name">{t("settings.full_name")}</Label>
                       <Input
                         id="name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Your full name"
+                        placeholder={t("settings.name_placeholder")}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
+                      <Label htmlFor="email">
+                        {t("settings.email_address")}
+                      </Label>
                       <Input
                         id="email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="your.email@example.com"
+                        placeholder={t("settings.email_placeholder")}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
+                      <Label htmlFor="phone">
+                        {t("settings.phone_number")}
+                      </Label>
                       <PhoneInput
                         id="phone"
                         value={phone}
                         onChange={setPhone}
-                        placeholder="Your phone number"
+                        placeholder={t("settings.phone_placeholder")}
                         defaultCountry="CH"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="location">Location</Label>
+                      <Label htmlFor="location">{t("settings.location")}</Label>
                       <Input
                         id="location"
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
-                        placeholder="City, State"
+                        placeholder={t("settings.location_placeholder")}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="bio">Bio</Label>
+                    <Label htmlFor="bio">{t("settings.bio")}</Label>
                     <Textarea
                       id="bio"
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
-                      placeholder="Tell others about yourself..."
+                      placeholder={t("settings.bio_placeholder")}
                       rows={4}
                     />
                     <p className="text-sm text-muted-foreground">
-                      {bio.length}/250 characters
+                      {bio.length}/250 {t("settings.characters")}
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="avatar">Profile Picture</Label>
+                    <Label htmlFor="avatar">
+                      {t("settings.profile_picture")}
+                    </Label>
                     <div className="flex items-center gap-4">
                       <Avatar className="h-16 w-16">
                         <AvatarImage
-                          src={avatarPreviewUrl || avatarUrl}
-                          alt={name}
+                          src={avatarPreviewUrl || avatarUrl || undefined}
+                          alt={name || undefined}
                         />
                         <AvatarFallback>
-                          {name.charAt(0).toUpperCase()}
+                          {name?.charAt(0)?.toUpperCase() || "U"}
                         </AvatarFallback>
                       </Avatar>
                       <input
@@ -636,14 +644,16 @@ export default function UserSettingsPage() {
                       >
                         <Upload className="h-4 w-4" />
                         {isUploadingAvatar
-                          ? "Uploading..."
-                          : "Upload New Picture"}
+                          ? t("settings.uploading")
+                          : t("settings.upload_new_picture")}
                       </Button>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="language">Preferred Language</Label>
+                    <Label htmlFor="language">
+                      {t("settings.preferred_language")}
+                    </Label>
                     <select
                       id="language"
                       value={language}
@@ -667,10 +677,10 @@ export default function UserSettingsPage() {
                   <div className="space-y-4">
                     <div>
                       <Label className="text-base font-medium">
-                        Contact Preferences
+                        {t("settings.contact_preferences")}
                       </Label>
                       <p className="text-sm text-muted-foreground">
-                        Select how others can contact you about items
+                        {t("settings.contact_description")}
                       </p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -685,7 +695,7 @@ export default function UserSettingsPage() {
                           className="flex items-center gap-2 font-normal"
                         >
                           <Mail className="h-4 w-4" />
-                          Email
+                          {t("settings.email")}
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -699,7 +709,7 @@ export default function UserSettingsPage() {
                           className="flex items-center gap-2 font-normal"
                         >
                           <Phone className="h-4 w-4" />
-                          Phone Call/Message
+                          {t("settings.phone_call_message")}
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -713,7 +723,7 @@ export default function UserSettingsPage() {
                           className="flex items-center gap-2 font-normal"
                         >
                           <MessageSquare className="h-4 w-4" />
-                          WhatsApp
+                          {t("settings.whatsapp")}
                         </Label>
                       </div>
                     </div>
@@ -726,8 +736,8 @@ export default function UserSettingsPage() {
                     disabled={isUpdatingUser || isUploadingAvatar}
                   >
                     {isUpdatingUser || isUploadingAvatar
-                      ? "Saving..."
-                      : "Save Profile Changes"}
+                      ? t("settings.saving")
+                      : t("settings.save_profile_changes")}
                   </Button>
                 </div>
               </form>

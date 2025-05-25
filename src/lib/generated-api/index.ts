@@ -11,6 +11,7 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { CategoryResponse } from './models/CategoryResponse';
+export { ChatMessage } from './models/ChatMessage';
 export { CreateUserRequest } from './models/CreateUserRequest';
 export { ItemRequest } from './models/ItemRequest';
 export { ItemResponse } from './models/ItemResponse';
@@ -22,6 +23,7 @@ export type { SortObject } from './models/SortObject';
 export { UpdateUserRequest } from './models/UpdateUserRequest';
 export { UserResponse } from './models/UserResponse';
 
+export { ChatControllerService } from './services/ChatControllerService';
 export { ItemApiService } from './services/ItemApiService';
 export { PingControllerService } from './services/PingControllerService';
 export { PublicCategoryApiService } from './services/PublicCategoryApiService';

@@ -37,6 +37,7 @@ import { useDeleteItem } from "@/src/hooks/items/use-delete-item";
 import { ItemResponse, ItemStatusRequest } from "@/src/lib/generated-api";
 import { conditionDetails } from "@/src/components/shared/detailed-item-card";
 import { formatDate } from "@/src/utils/date-utils";
+import { useTranslation } from "react-i18next";
 
 interface ItemCardProps {
   item: ItemResponse;
@@ -44,6 +45,7 @@ interface ItemCardProps {
 }
 
 export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
+  const { t } = useTranslation("common");
   const [itemToDelete, setItemToDelete] = useState<ItemResponse | null>(null);
   const [itemToChangeStatus, setItemToChangeStatus] =
     useState<ItemResponse | null>(null);
@@ -99,14 +101,14 @@ export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
   const getItemStatusConfig = (status: ItemResponse.status | undefined) => {
     if (status === ItemResponse.status.TAKEN) {
       return {
-        label: "Taken",
+        label: t("item_status.taken"),
         variant: "secondary" as const,
         className:
           "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800",
       };
     }
     return {
-      label: "Available",
+      label: t("item_status.available"),
       variant: "default" as const,
       className:
         "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800",
@@ -125,7 +127,7 @@ export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
         <div className="aspect-[4/3] overflow-hidden">
           <img
             src={item.imageUrls?.[0]}
-            alt={item.title || "Item image"}
+            alt={item.title || t("forms.item_image")}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </div>
@@ -146,7 +148,9 @@ export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
           </CardTitle>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="h-4 w-4" />
-            <span>Listed {formatDate(item.createdAt)}</span>
+            <span>
+              {t("item_details.listed")} {formatDate(item.createdAt)}
+            </span>
           </div>
         </div>
 
@@ -157,7 +161,7 @@ export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
 
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className="bg-background">
-            {item.category?.name || "Uncategorized"}
+            {item.category?.name || t("forms.uncategorized")}
           </Badge>
           {conditionLabel && (
             <Badge variant="outline" className="bg-background">
@@ -184,7 +188,7 @@ export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
           >
             <Link href={`/items/${item.id}`}>
               <Eye className="h-4 w-4 mr-1.5" />
-              View
+              {t("actions.view")}
             </Link>
           </Button>
           {item.status === ItemResponse.status.AVAILABLE && (
@@ -197,7 +201,7 @@ export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
             >
               <Link href={`/items/create/${item.id}`}>
                 <Pencil className="h-4 w-4 mr-1.5" />
-                Edit
+                {t("actions.edit")}
               </Link>
             </Button>
           )}
@@ -221,17 +225,19 @@ export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
                 >
                   <Archive className="h-4 w-4 mr-1.5" />
                   {isChangingStatus && itemToChangeStatus?.id === item.id
-                    ? "Marking..."
-                    : "Mark as Taken"}
+                    ? t("loading_states.marking")
+                    : t("actions.mark_as_taken")}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Mark Item as Taken</AlertDialogTitle>
+                  <AlertDialogTitle>
+                    {t("dialogs.mark_item_taken_title")}
+                  </AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to mark "{itemToChangeStatus?.title}"
-                    as taken? This item will no longer be available for others
-                    to claim.
+                    {t("dialogs.mark_item_taken_description", {
+                      title: itemToChangeStatus?.title,
+                    })}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -239,14 +245,16 @@ export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
                     onClick={() => setItemToChangeStatus(null)}
                     disabled={isChangingStatus}
                   >
-                    Cancel
+                    {t("actions.cancel")}
                   </AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleConfirmItemTaken}
                     className="bg-amber-600 hover:bg-amber-700 text-white"
                     disabled={isChangingStatus}
                   >
-                    {isChangingStatus ? "Confirming..." : "Confirm"}
+                    {isChangingStatus
+                      ? t("loading_states.confirming")
+                      : t("actions.confirm")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -268,17 +276,19 @@ export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
                 >
                   <Check className="h-4 w-4 mr-1.5" />
                   {isChangingStatus && itemToChangeStatus?.id === item.id
-                    ? "Making available..."
-                    : "Mark as Available"}
+                    ? t("loading_states.making_available")
+                    : t("actions.mark_as_available")}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Mark Item as Available</AlertDialogTitle>
+                  <AlertDialogTitle>
+                    {t("dialogs.mark_item_available_title")}
+                  </AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to mark "{itemToChangeStatus?.title}"
-                    as available? This item will be available for others to
-                    claim.
+                    {t("dialogs.mark_item_available_description", {
+                      title: itemToChangeStatus?.title,
+                    })}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -286,14 +296,16 @@ export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
                     onClick={() => setItemToChangeStatus(null)}
                     disabled={isChangingStatus}
                   >
-                    Cancel
+                    {t("actions.cancel")}
                   </AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleConfirmItemAvailable}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white"
                     disabled={isChangingStatus}
                   >
-                    {isChangingStatus ? "Confirming..." : "Confirm"}
+                    {isChangingStatus
+                      ? t("loading_states.confirming")
+                      : t("actions.confirm")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -316,16 +328,19 @@ export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
               >
                 <Trash2 className="h-4 w-4 mr-1.5" />
                 {isDeletingItem && itemToDelete?.id === item.id
-                  ? "Deleting..."
-                  : "Delete"}
+                  ? t("loading_states.deleting")
+                  : t("actions.delete")}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete Item Listing</AlertDialogTitle>
+                <AlertDialogTitle>
+                  {t("dialogs.delete_item_title")}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently delete your listing for "
-                  {itemToDelete?.title}". This action cannot be undone.
+                  {t("dialogs.delete_item_description", {
+                    title: itemToDelete?.title,
+                  })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -333,7 +348,7 @@ export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
                   onClick={() => setItemToDelete(null)}
                   disabled={isDeletingItem}
                 >
-                  Cancel
+                  {t("actions.cancel")}
                 </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => handleDeleteItem(itemToDelete?.id)}
@@ -341,8 +356,8 @@ export function PublishedItemCard({ item, onRefetch }: ItemCardProps) {
                   disabled={isDeletingItem}
                 >
                   {isDeletingItem && itemToDelete?.id === item.id
-                    ? "Deleting..."
-                    : "Delete"}
+                    ? t("loading_states.deleting")
+                    : t("actions.delete")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

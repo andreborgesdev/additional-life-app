@@ -28,9 +28,6 @@ const nextConfig = {
       },
     ],
   },
-  experimental: {
-    suppressHydrationWarning: true,
-  },
   webpack: (config) => {
     config.ignoreWarnings = [{ message: /Extra attributes from the server/ }];
     return config;

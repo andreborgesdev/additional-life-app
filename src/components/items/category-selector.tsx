@@ -10,6 +10,7 @@ import { Button } from "@/src/components/ui/button";
 import { ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
 import { CategoryResponse } from "@/src/lib/generated-api";
 import { cn } from "@/src/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface CategorySelectorProps {
   allCategories: CategoryResponse[];
@@ -28,6 +29,7 @@ export function CategorySelector({
   className,
   disabled,
 }: CategorySelectorProps) {
+  const { t } = useTranslation("common");
   const [currentParentCategory, setCurrentParentCategory] =
     useState<CategoryResponse | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
@@ -115,8 +117,8 @@ export function CategorySelector({
         >
           {selectedCategoryId
             ? allCategories.find((cat) => cat.id === selectedCategoryId)
-                ?.name || "Select Category"
-            : "Select Category"}
+                ?.name || t("category_selector.select_category")
+            : t("category_selector.select_category")}
           <ChevronDown className="h-4 w-4" />
         </Button>
       </PopoverTrigger>
@@ -126,7 +128,7 @@ export function CategorySelector({
       >
         {isLoadingAllCategories ? (
           <p className="text-gray-500 dark:text-gray-400">
-            Loading categories...
+            {t("category_selector.loading_categories")}
           </p>
         ) : currentParentCategory ? (
           <>
@@ -137,7 +139,7 @@ export function CategorySelector({
               onClick={handleBackClick}
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
+              {t("category_selector.back")}
             </Button>
             <div className="px-2 py-2 font-bold border-b">
               <h3>{currentParentCategory.name}</h3>

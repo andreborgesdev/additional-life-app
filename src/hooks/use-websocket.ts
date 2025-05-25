@@ -5,6 +5,7 @@ import { useSession } from "@/src/app/auth-provider";
 
 export interface WebSocketMessage {
   id: string;
+  conversationId?: string;
   itemId: string;
   senderId: string;
   senderName: string;
@@ -16,6 +17,7 @@ export interface WebSocketMessage {
 
 interface UseWebSocketOptions {
   url: string;
+  conversationId?: string;
   onMessage?: (message: WebSocketMessage) => void;
   onError?: (error: Event) => void;
   onOpen?: () => void;
@@ -29,12 +31,16 @@ interface UseWebSocketReturn {
   isConnecting: boolean;
   error: string | null;
   sendMessage: (message: Omit<WebSocketMessage, "id" | "timestamp">) => void;
+  startConversation: (
+    message: Omit<WebSocketMessage, "id" | "timestamp">
+  ) => void;
   disconnect: () => void;
   connect: () => void;
 }
 
 export function useWebSocket({
   url,
+  conversationId,
   onMessage,
   onError,
   onOpen,
@@ -112,14 +118,33 @@ export function useWebSocket({
           reconnectCount.current = 0;
           onOpen?.();
 
-          console.log("📝 Subscribing to /topic/public...");
+          console.log("📝 Subscribing to conversation topics...");
+
+          if (conversationId) {
+            stompClient.current?.subscribe(
+              `/topic/chat/${conversationId}`,
+              (message: IMessage) => {
+                console.log("📨 Received conversation message:", message);
+                try {
+                  const chatMessage: WebSocketMessage = JSON.parse(
+                    message.body
+                  );
+                  console.log("✅ Parsed chat message:", chatMessage);
+                  onMessage?.(chatMessage);
+                } catch (err) {
+                  console.error("❌ Failed to parse STOMP message:", err);
+                }
+              }
+            );
+          }
+
           stompClient.current?.subscribe(
             "/topic/public",
             (message: IMessage) => {
-              console.log("📨 Received STOMP message:", message);
+              console.log("📨 Received public message:", message);
               try {
                 const chatMessage: WebSocketMessage = JSON.parse(message.body);
-                console.log("✅ Parsed chat message:", chatMessage);
+                console.log("✅ Parsed public message:", chatMessage);
                 onMessage?.(chatMessage);
               } catch (err) {
                 console.error("❌ Failed to parse STOMP message:", err);
@@ -176,6 +201,7 @@ export function useWebSocket({
     }
   }, [
     url,
+    conversationId,
     session?.access_token,
     onMessage,
     onError,
@@ -215,6 +241,42 @@ export function useWebSocket({
     []
   );
 
+  const startConversation = useCallback(
+    (message: Omit<WebSocketMessage, "id" | "timestamp">) => {
+      if (!stompClient.current || !stompClient.current.connected) {
+        console.error(
+          "❌ Cannot start conversation: STOMP client not connected"
+        );
+        setError("STOMP client is not connected");
+        return;
+      }
+
+      const startConversationRequest = {
+        itemId: message.itemId,
+        senderId: message.senderId,
+        recipientId: message.recipientId,
+        content: message.content,
+      };
+
+      console.log(
+        "📤 Starting conversation via /app/chat.startConversation:",
+        startConversationRequest
+      );
+
+      try {
+        stompClient.current.publish({
+          destination: "/app/chat.startConversation",
+          body: JSON.stringify(startConversationRequest),
+        });
+        console.log("✅ Conversation started successfully");
+      } catch (err) {
+        console.error("❌ Failed to start conversation:", err);
+        setError("Failed to start conversation");
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     return () => {
       shouldReconnect.current = false;
@@ -237,6 +299,7 @@ export function useWebSocket({
     isConnecting,
     error,
     sendMessage,
+    startConversation,
     disconnect,
     connect,
   };

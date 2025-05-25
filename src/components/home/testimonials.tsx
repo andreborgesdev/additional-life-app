@@ -1,36 +1,41 @@
+"use client";
+
 import Image from "next/image";
 import { Avatar, AvatarFallback } from "@/src/components/ui/avatar";
-
-const testimonials = [
-  {
-    id: 1,
-    name: "Léonard Gage",
-    avatar: "/public/avatar.png",
-    text: "I've been able to declutter my home while helping others find items they need. The platform is so easy to use!",
-    location: "Geneva",
-  },
-  {
-    id: 2,
-    name: "Margarete König",
-    avatar: "/public/avatar.png",
-    text: "As a college student on a budget, Additional Life has been a game-changer. I've furnished my entire apartment for free!",
-    location: "Interlaken",
-  },
-  {
-    id: 3,
-    name: "Joāo Silva",
-    avatar: "/public/avatar.png",
-    text: "I love the community aspect. I've met wonderful people in my neighborhood through exchanging items.",
-    location: "Payerne",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export default function Testimonials() {
+  const { t } = useTranslation("common");
+
+  const testimonials = [
+    {
+      id: 1,
+      name: t("testimonials.testimonial_1.name"),
+      avatar: "/public/avatar.png",
+      text: t("testimonials.testimonial_1.text"),
+      location: t("testimonials.testimonial_1.location"),
+    },
+    {
+      id: 2,
+      name: t("testimonials.testimonial_2.name"),
+      avatar: "/public/avatar.png",
+      text: t("testimonials.testimonial_2.text"),
+      location: t("testimonials.testimonial_2.location"),
+    },
+    {
+      id: 3,
+      name: t("testimonials.testimonial_3.name"),
+      avatar: "/public/avatar.png",
+      text: t("testimonials.testimonial_3.text"),
+      location: t("testimonials.testimonial_3.location"),
+    },
+  ];
+
   return (
     <section className="py-16">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold text-green-800 dark:text-green-100 text-center mb-12">
-          What Our Community Says
+          {t("home.what_our_community_says")}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

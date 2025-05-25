@@ -7,11 +7,13 @@ import { motion } from "framer-motion";
 import { useEffect, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { SparklesText } from "../magicui/sparkles-text";
+import { useTranslation } from "react-i18next";
 
 export default function Hero() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
+  const { t } = useTranslation("common");
 
   useEffect(() => {
     setIsLoaded(true);
@@ -71,15 +73,17 @@ export default function Hero() {
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-800 dark:text-white mb-6">
-            Give Your Belongings an{" "}
+            {
+              t("home.give_belongings_additional_life").split(
+                "Additional Life"
+              )[0]
+            }
             <SparklesText className="text-green-800 dark:text-green-400">
               Additional Life
             </SparklesText>
           </h1>
           <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-10">
-            Join our community-driven marketplace where you can share items you
-            no longer need and find treasures others are sharing. Reduce waste,
-            help the environment, and connect with your community.
+            {t("home.join_community_description")}
           </p>
           <motion.div
             className="max-w-2xl mx-auto"
@@ -98,7 +102,7 @@ export default function Hero() {
                 type="search"
                 name="search"
                 id="search"
-                placeholder="What are you looking for?"
+                placeholder={t("items.what_are_you_looking_for_placeholder")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-3 text-gray-700 dark:text-gray-200 bg-transparent focus:outline-none placeholder-gray-400 dark:placeholder-gray-500"
@@ -107,7 +111,7 @@ export default function Hero() {
                 type="submit"
                 className="px-6 py-3 bg-green-800 hover:bg-teal-600 text-white font-semibold transition-colors duration-300 focus:outline-none"
               >
-                Search
+                {t("items.search")}
               </button>
             </form>
             {/* <div className="mt-6 text-sm text-gray-500 dark:text-gray-400">
@@ -160,7 +164,7 @@ export default function Hero() {
               className="bg-green-600 hover:bg-green-700 rounded-full"
             >
               <Link href="/items">
-                Browse Items
+                {t("hero.browse_items")}
                 <ArrowRight className="ml-2 -mr-1 h-5 w-5" />
               </Link>
             </Button>
@@ -170,7 +174,9 @@ export default function Hero() {
               size="lg"
               className="rounded-full"
             >
-              <Link href="/items/create/new">Give Something Away</Link>
+              <Link href="/items/create/new">
+                {t("home.give_something_away")}
+              </Link>
             </Button>
           </motion.div>
         </div>

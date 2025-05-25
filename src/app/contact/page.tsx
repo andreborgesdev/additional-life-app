@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import {
   Mail,
@@ -10,9 +10,12 @@ import {
   Facebook,
   Twitter,
   Instagram,
+  HelpCircle, // Added HelpCircle icon
+  Users, // Added Users icon
 } from "lucide-react";
 
 export default function ContactPage() {
+  const { t } = useTranslation("common"); // Ensure namespace is common
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -26,51 +29,49 @@ export default function ContactPage() {
     setEmail("");
     setMessage("");
     // Show a success message (in a real app, you'd want to handle this more robustly)
-    alert("Thank you for your message. We'll get back to you soon!");
+    alert(t("contact.form.successMessage"));
   };
 
   return (
     <div className="bg-green-50 dark:bg-green-900 min-h-screen">
       <div className="container mx-auto px-4 py-16">
         <h1 className="text-4xl md:text-5xl font-bold text-green-800 dark:text-green-100 text-center mb-8">
-          Contact Us
+          {t("contact.title")}
         </h1>
 
         <div className="max-w-4xl mx-auto bg-white dark:bg-green-800 rounded-lg shadow-lg p-8 mb-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <h2 className="text-2xl font-semibold text-green-700 dark:text-green-200 mb-4">
-                Get in Touch
+                {t("contact.getInTouch.title")}
               </h2>
               <p className="text-gray-700 dark:text-gray-300 mb-6">
-                We'd love to hear from you! Whether you have a question about
-                our platform, need help with your account, or want to share your
-                Additional Life experience, we're here to help.
+                {t("contact.getInTouch.description")}
               </p>
               <div className="space-y-4">
                 <div className="flex items-center">
                   <Mail className="h-6 w-6 text-green-600 mr-2" />
                   <span className="text-gray-700 dark:text-gray-300">
-                    support@additionallife.com
+                    {t("contact.details.email")}
                   </span>
                 </div>
                 <div className="flex items-center">
                   <Phone className="h-6 w-6 text-green-600 mr-2" />
                   <span className="text-gray-700 dark:text-gray-300">
-                    +1 (555) 123-4567
+                    {t("contact.details.phone")}
                   </span>
                 </div>
                 <div className="flex items-center">
                   <MapPin className="h-6 w-6 text-green-600 mr-2" />
                   <span className="text-gray-700 dark:text-gray-300">
-                    123 Green Street, Eco City, EC 12345
+                    {t("contact.details.address")}
                   </span>
                 </div>
               </div>
             </div>
             <div>
               <h2 className="text-2xl font-semibold text-green-700 dark:text-green-200 mb-4">
-                Send Us a Message
+                {t("contact.form.title")}
               </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
@@ -78,7 +79,7 @@ export default function ContactPage() {
                     htmlFor="name"
                     className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
-                    Name
+                    {t("contact.form.nameLabel")}
                   </label>
                   <input
                     type="text"
@@ -94,7 +95,7 @@ export default function ContactPage() {
                     htmlFor="email"
                     className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
-                    Email
+                    {t("contact.form.emailLabel")}
                   </label>
                   <input
                     type="email"
@@ -110,7 +111,7 @@ export default function ContactPage() {
                     htmlFor="message"
                     className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
-                    Message
+                    {t("contact.form.messageLabel")}
                   </label>
                   <textarea
                     id="message"
@@ -125,7 +126,7 @@ export default function ContactPage() {
                   type="submit"
                   className="w-full bg-green-600 text-white rounded-md py-2 px-4 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-300"
                 >
-                  Send Message
+                  {t("contact.form.submitButton")}
                 </button>
               </form>
             </div>
@@ -134,12 +135,12 @@ export default function ContactPage() {
 
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-semibold text-green-700 dark:text-green-200 mb-4 text-center">
-            Other Ways to Connect
+            {t("contact.otherWays.title")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
               <h3 className="text-xl font-semibold text-green-700 dark:text-green-200 mb-2">
-                Follow Us
+                {t("contact.otherWays.followUs")}
               </h3>
               <div className="flex space-x-4 mt-2">
                 <a
@@ -163,31 +164,27 @@ export default function ContactPage() {
               </div>
             </div>
             <div className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
+              <HelpCircle className="h-12 w-12 text-green-500 mb-4" />
               <h3 className="text-xl font-semibold text-green-700 dark:text-green-200 mb-2">
-                FAQ
+                {t("contact.otherWays.faqTitle")}
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Find answers to common questions about Additional Life.
-              </p>
               <a
-                href="/faq"
-                className="mt-2 text-green-600 hover:text-green-700 transition-colors duration-300"
+                href="/faq" // Assuming you have a FAQ page
+                className="text-green-600 hover:text-green-700 transition-colors duration-300 mt-2"
               >
-                View FAQ
+                {t("contact.otherWays.faqLinkText")}
               </a>
             </div>
             <div className="bg-white dark:bg-green-800 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
+              <Users className="h-12 w-12 text-green-500 mb-4" />
               <h3 className="text-xl font-semibold text-green-700 dark:text-green-200 mb-2">
-                Community Forum
+                {t("contact.otherWays.communityTitle")}
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Join discussions and share experiences with other members.
-              </p>
               <a
-                href="/forum"
-                className="mt-2 text-green-600 hover:text-green-700 transition-colors duration-300"
+                href="/community" // Assuming you have a community page/forum
+                className="text-green-600 hover:text-green-700 transition-colors duration-300 mt-2"
               >
-                Visit Forum
+                {t("contact.otherWays.communityLinkText")}
               </a>
             </div>
           </div>

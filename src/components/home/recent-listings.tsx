@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { SortBy, useItems } from "@/src/hooks/items/use-items";
+import { SortBy, useItems, QueryDirection } from "@/src/hooks/items/use-items";
 import { Button } from "@/src/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import SimpleItemCard from "@/src/components/shared/simple-item-card";
 import { Skeleton } from "@/src/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 function SimpleItemCardSkeleton() {
   return (
@@ -39,11 +40,12 @@ function RecentListingsSkeleton() {
 }
 
 export default function RecentListings() {
+  const { t } = useTranslation("common");
   const { data, isLoading, error } = useItems({
     page: 0,
     size: 5,
     sortBy: SortBy.CREATED_AT,
-    direction: "desc",
+    direction: QueryDirection.DESC,
   });
 
   if (isLoading) {
@@ -54,10 +56,10 @@ export default function RecentListings() {
     return (
       <section className="mb-12">
         <h2 className="text-3xl font-bold text-green-800 dark:text-green-100">
-          Recent Listings
+          {t("home.recent_listings")}
         </h2>
         <p className="text-red-500 text-center">
-          Could not load recent listings.
+          {t("home.could_not_load_recent_listings")}
         </p>
       </section>
     );
@@ -67,7 +69,7 @@ export default function RecentListings() {
     <section className="mb-12">
       <div className="flex items-center justify-between mb-1">
         <h2 className="text-3xl font-bold text-green-800 dark:text-green-100">
-          Recent Listings
+          {t("home.recent_listings")}
         </h2>
         <Button
           asChild
@@ -75,13 +77,13 @@ export default function RecentListings() {
           className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
         >
           <Link href="/items">
-            View All Items
+            {t("items.view_all_items")}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
       </div>
       <p className="text-muted-foreground dark:text-gray-300 mb-6">
-        Browse the latest free items that have been added to our platform.
+        {t("home.recent_listings_description")}
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {data?.content?.map((item) => (

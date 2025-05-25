@@ -1,3 +1,5 @@
+"use client";
+
 import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -23,7 +25,12 @@ import React from "react";
 import { CategoryResponse } from "@/src/lib/generated-api";
 import CategoryFilter from "./category-filter";
 import { ConditionDetail } from "../shared/detailed-item-card";
-import { SortOption } from "@/src/app/items/page";
+import { useTranslation } from "react-i18next";
+
+interface SortOptionSimple {
+  value: string;
+  label: string;
+}
 
 interface FiltersSheetProps {
   activeFilterCount: number;
@@ -34,11 +41,9 @@ interface FiltersSheetProps {
   conditions: ConditionDetail[];
   selectedConditions: string[];
   setSelectedConditions: (value: string[]) => void;
-  sortByOptions: SortOption[];
+  sortByOptions: SortOptionSimple[];
   currentSortByValue: string;
   setSortBy: (value: string) => void;
-  itemsType: "all" | "internal" | "external";
-  setItemsType: (value: "all" | "internal" | "external") => void;
   clearFilters: () => void;
 }
 
@@ -54,17 +59,17 @@ export default function FiltersSheet({
   sortByOptions,
   currentSortByValue,
   setSortBy,
-  itemsType,
-  setItemsType,
   clearFilters,
 }: FiltersSheetProps) {
+  const { t } = useTranslation("common");
+
   const itemTypeOptions: {
     value: "all" | "internal" | "external";
     label: string;
   }[] = [
-    { value: "all", label: "All Types" },
-    { value: "internal", label: "Internal" },
-    { value: "external", label: "External" },
+    { value: "all", label: t("filters.all_types") },
+    { value: "internal", label: t("filters.internal") },
+    { value: "external", label: t("filters.external") },
   ];
 
   return (
@@ -81,26 +86,26 @@ export default function FiltersSheet({
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-md">
         <SheetHeader>
-          <SheetTitle>Filters & Sort</SheetTitle>
-          <SheetDescription>Refine your search results</SheetDescription>
+          <SheetTitle>{t("filters.filters_and_sort")}</SheetTitle>
+          <SheetDescription>
+            {t("filters.refine_search_results")}
+          </SheetDescription>
         </SheetHeader>
         <div className="space-y-6 py-4">
           <div className="flex-col gap-2">
-            <Label htmlFor="mobile-category">Category</Label>
+            <Label htmlFor="mobile-category">{t("filters.category")}</Label>
             <div className="mt-2">
               <CategoryFilter
                 categories={allCategories}
                 isLoadingAllCategories={isLoadingAllCategories}
                 onApplyFilter={onApplyCategoryFilter}
                 selectedCategoryId={selectedCategoryId}
-                buttonClassName="w-full justify-start"
-                popoverAlign="start"
               />
             </div>
           </div>
 
           <div>
-            <Label>Condition</Label>
+            <Label>{t("filters.condition")}</Label>
             <div className="grid grid-cols-2 gap-2 mt-2">
               {conditions.map((condition) => (
                 <div key={condition.key} className="flex items-center">
@@ -154,13 +159,13 @@ export default function FiltersSheet({
           {/* <Separator /> */}
 
           <div>
-            <Label htmlFor="mobile-sortBy">Sort By</Label>
+            <Label htmlFor="mobile-sortBy">{t("sort.sort_by")}</Label>
             <Select
               onValueChange={(value) => setSortBy(value)}
               value={currentSortByValue}
             >
               <SelectTrigger id="mobile-sortBy">
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder={t("sort.sort_by")} />
               </SelectTrigger>
               <SelectContent>
                 {sortByOptions.map((option) => (
@@ -174,12 +179,12 @@ export default function FiltersSheet({
 
           {activeFilterCount > 0 && (
             <Button variant="outline" onClick={clearFilters} className="w-full">
-              Clear All Filters
+              {t("filters.clear_all_filters")}
             </Button>
           )}
         </div>
         <SheetClose asChild>
-          <Button className="w-full mt-4">Apply Filters</Button>
+          <Button className="w-full mt-4">{t("filters.apply_filters")}</Button>
         </SheetClose>
       </SheetContent>
     </Sheet>

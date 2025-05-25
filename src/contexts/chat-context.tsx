@@ -33,7 +33,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
     setIsLoading(true);
     try {
-      const response = await fetch("/api/chat/notifications", {
+      const response = await fetch("/api/v1/chat/notifications", {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
@@ -53,7 +53,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     if (!session?.access_token) return;
 
     try {
-      await fetch("/api/chat/mark-read", {
+      await fetch("/api/v1/chat/mark-read", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

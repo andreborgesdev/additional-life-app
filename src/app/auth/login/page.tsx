@@ -11,6 +11,7 @@ import { ArrowLeft, Eye, EyeOff, Facebook, LogIn, Mail } from "lucide-react";
 import { toast } from "@/src/hooks/use-toast";
 import { useGoogleLogin } from "@/src/hooks/auth/use-login-google";
 import { useFacebookLogin } from "@/src/hooks/auth/use-login-facebook";
+import { useTranslation } from "react-i18next";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const { mutate: login, isPending: isLoading, error } = useLogin();
   const { mutate: googleLogin, isPending: isGoogleLoading } = useGoogleLogin();
   const { mutate: facebookLogin } = useFacebookLogin();
+  const { t } = useTranslation("common");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,10 +33,9 @@ export default function LoginPage() {
           router.push("/");
         },
         onError: (err) => {
-          // Handle error, e.g., show a notification
           toast({
-            title: "Login failed",
-            description: "Please check your credentials and try again.",
+            title: t("auth.login_failed"),
+            description: t("auth.check_credentials"),
             variant: "destructive",
           });
         },
@@ -57,16 +58,16 @@ export default function LoginPage() {
         className="absolute top-24 left-8 flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-500 transition-colors"
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to home
+        {t("auth.back_to_home")}
       </Link>
 
       <div className="w-full max-w-md mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl">
         <div className="flex flex-col space-y-2 text-center mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Welcome back
+            {t("auth.welcome_back")}
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Enter your credentials to access your account
+            {t("auth.enter_credentials")}
           </p>
         </div>
 
@@ -101,7 +102,9 @@ export default function LoginPage() {
               ) : (
                 <FcGoogle className="h-5 w-5 mr-2" />
               )}
-              <span>{isGoogleLoading ? "Connecting..." : "Google"}</span>
+              <span>
+                {isGoogleLoading ? t("auth.connecting") : t("auth.google")}
+              </span>
             </button>
 
             {/* <button
@@ -116,7 +119,7 @@ export default function LoginPage() {
 
           <div className="relative flex justify-center text-sm">
             <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-              Or continue with email
+              {t("auth.or_continue_email")}
             </span>
           </div>
 
@@ -126,7 +129,7 @@ export default function LoginPage() {
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Email
+                {t("auth.email")}
               </label>
               <div className="relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -141,7 +144,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                  placeholder="johndoe@example.com"
+                  placeholder={t("auth.email_placeholder")}
                 />
               </div>
             </div>
@@ -152,13 +155,13 @@ export default function LoginPage() {
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
-                  Password
+                  {t("auth.password")}
                 </label>
                 <Link
                   href="/auth/forgot-password"
                   className="text-sm font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
                 >
-                  Forgot password?
+                  {t("auth.forgot_password")}
                 </Link>
               </div>
               <div className="relative rounded-md shadow-sm">
@@ -171,7 +174,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-4 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                  placeholder="••••••••"
+                  placeholder={t("auth.password_placeholder")}
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                   <button
@@ -203,7 +206,7 @@ export default function LoginPage() {
                   htmlFor="remember-me"
                   className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
                 >
-                  Remember me
+                  {t("auth.remember_me")}
                 </label>
               </div>
             </div>
@@ -237,18 +240,18 @@ export default function LoginPage() {
               ) : (
                 <LogIn className="mr-2 h-4 w-4" />
               )}
-              {isLoading ? "Logging in..." : "Log in"}
+              {isLoading ? t("auth.logging_in") : t("auth.log_in")}
             </button>
           </form>
         </div>
 
         <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
-          Don't have an account?{" "}
+          {t("auth.no_account")}{" "}
           <Link
             href="/auth/register"
             className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
           >
-            Sign up for free
+            {t("auth.sign_up_free")}
           </Link>
         </p>
       </div>

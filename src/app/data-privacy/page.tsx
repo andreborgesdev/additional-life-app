@@ -1,61 +1,61 @@
+"use client";
+
+import { useTranslation } from "next-i18next";
+
 export default function DataPrivacyPage() {
+  const { t } = useTranslation("common");
   return (
     <div className="bg-green-50 dark:bg-green-900 min-h-screen">
       <div className="container mx-auto px-4 py-16">
         <h1 className="text-4xl md:text-5xl font-bold text-green-800 dark:text-green-100 text-center mb-12">
-          Data Privacy Policy
+          {t("data_privacy_page.title")}
         </h1>
 
         <div className="max-w-4xl mx-auto bg-white dark:bg-green-800 rounded-lg shadow-md p-8">
           <p className="text-gray-700 dark:text-gray-300 mb-6">
-            At Additional Life, we are committed to protecting your privacy and ensuring the security of your personal
-            information. This Data Privacy Policy explains how we collect, use, and safeguard your data.
-          </p>
-
-          <h2 className="text-2xl font-semibold text-green-700 dark:text-green-200 mb-4">1. Information We Collect</h2>
-          <p className="text-gray-700 dark:text-gray-300 mb-6">
-            We collect information you provide directly to us, such as when you create an account, list an item, or
-            contact us. This may include your name, email address, location, and details about the items you're giving
-            away or seeking.
+            {t("data_privacy_page.introduction")}
           </p>
 
           <h2 className="text-2xl font-semibold text-green-700 dark:text-green-200 mb-4">
-            2. How We Use Your Information
+            {t("data_privacy_page.information_we_collect_title")}
           </h2>
           <p className="text-gray-700 dark:text-gray-300 mb-6">
-            We use the information we collect to operate and improve our platform, communicate with you, and provide
-            customer support. We may also use your information to send you updates about Additional Life and our
-            services.
-          </p>
-
-          <h2 className="text-2xl font-semibold text-green-700 dark:text-green-200 mb-4">3. Data Security</h2>
-          <p className="text-gray-700 dark:text-gray-300 mb-6">
-            We implement a variety of security measures to maintain the safety of your personal information. However, no
-            method of transmission over the Internet or electronic storage is 100% secure, and we cannot guarantee
-            absolute security.
+            {t("data_privacy_page.information_we_collect_text")}
           </p>
 
           <h2 className="text-2xl font-semibold text-green-700 dark:text-green-200 mb-4">
-            4. Sharing Your Information
+            {t("data_privacy_page.how_we_use_your_information_title")}
           </h2>
           <p className="text-gray-700 dark:text-gray-300 mb-6">
-            We do not sell, trade, or otherwise transfer your personally identifiable information to outside parties.
-            This does not include trusted third parties who assist us in operating our website, conducting our business,
-            or servicing you, as long as those parties agree to keep this information confidential.
+            {t("data_privacy_page.how_we_use_your_information_text")}
           </p>
 
-          <h2 className="text-2xl font-semibold text-green-700 dark:text-green-200 mb-4">5. Your Rights</h2>
+          <h2 className="text-2xl font-semibold text-green-700 dark:text-green-200 mb-4">
+            {t("data_privacy_page.data_security_title")}
+          </h2>
           <p className="text-gray-700 dark:text-gray-300 mb-6">
-            You have the right to access, correct, or delete your personal information at any time. You can do this
-            through your account settings or by contacting us directly.
+            {t("data_privacy_page.data_security_text")}
+          </p>
+
+          <h2 className="text-2xl font-semibold text-green-700 dark:text-green-200 mb-4">
+            {t("data_privacy_page.sharing_your_information_title")}
+          </h2>
+          <p className="text-gray-700 dark:text-gray-300 mb-6">
+            {t("data_privacy_page.sharing_your_information_text")}
+          </p>
+
+          <h2 className="text-2xl font-semibold text-green-700 dark:text-green-200 mb-4">
+            {t("data_privacy_page.your_rights_title")}
+          </h2>
+          <p className="text-gray-700 dark:text-gray-300 mb-6">
+            {t("data_privacy_page.your_rights_text")}
           </p>
 
           <p className="text-gray-700 dark:text-gray-300 mt-8">
-            If you have any questions about this Data Privacy Policy, please contact us.
+            {t("data_privacy_page.contact_us_text")}
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }
-
