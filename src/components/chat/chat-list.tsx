@@ -39,54 +39,54 @@ const ChatListItemComponent = memo(function ChatListItemComponent({
   return (
     <div
       onClick={onSelect}
-      className={`p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 ${
-        isSelected
-          ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
-          : ""
-      }`}
+      className={`
+        relative p-4 cursor-pointer transition-all duration-200 group
+        hover:bg-gray-50 dark:hover:bg-gray-700/50
+        ${
+          isSelected
+            ? "bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-r-2 border-blue-500"
+            : "border-b border-gray-100 dark:border-gray-700/50"
+        }
+      `}
     >
       <div className="flex items-center space-x-3">
-        <div className="relative">
-          <Avatar className="h-12 w-12 ring-2 ring-white dark:ring-gray-900">
+        <div className="relative flex-shrink-0">
+          <Avatar className="h-12 w-12 ring-2 ring-white dark:ring-gray-800 shadow-sm">
             <AvatarImage
               src={chat.item.imageUrls[0] || chat.otherUser.avatarUrl}
-              alt={chat.item.imageUrls[0] || chat.otherUser.avatarUrl}
+              alt={chat.otherUser.name}
             />
-            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-sm">
               {chat.otherUser.name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          {/* {chat.isOnline && (
-            <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
-          )} */}
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate text-sm">
               {chat.otherUser.name}
             </h3>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-shrink-0">
               {chat.unreadMessagesCount > 0 && (
-                <Badge
-                  variant="default"
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 text-xs"
-                >
+                <Badge className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-0.5 text-xs font-medium">
                   {chat.unreadMessagesCount}
                 </Badge>
               )}
-              <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
-                <Clock className="h-3 w-3 mr-1" />
-                {timeAgo}
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {timeAgo.replace("about ", "")}
               </span>
             </div>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300 truncate">
+          <p className="text-sm text-gray-600 dark:text-gray-300 truncate mb-1 leading-relaxed">
             {chat.lastMessage}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
-            {chat.item.title}
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate flex-1">
+              📦 {chat.item.title}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -164,9 +164,9 @@ const ChatList = memo(function ChatList({
   const totalChats = filteredChats.length;
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
-      <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-800">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+    <div className="h-full flex flex-col bg-white dark:bg-gray-800">
+      <div className="flex-shrink-0 p-4 bg-white dark:bg-gray-800 border-b border-gray-200/50 dark:border-gray-700/50">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
           Messages
         </h2>
         <div className="relative">
@@ -176,16 +176,19 @@ const ChatList = memo(function ChatList({
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+            className="pl-10 h-10 bg-gray-50 dark:bg-gray-700/50 border-gray-200/50 dark:border-gray-600/50 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
           />
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
-          <div className="space-y-4 p-4">
+          <div className="space-y-1 p-2">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center space-x-3">
+              <div
+                key={i}
+                className="flex items-center space-x-3 p-4 rounded-lg bg-gray-50/50 dark:bg-gray-700/20"
+              >
                 <Skeleton className="h-12 w-12 rounded-full" />
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-24" />
@@ -196,18 +199,20 @@ const ChatList = memo(function ChatList({
           </div>
         ) : totalChats === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 text-center h-full">
-            <MessageCircle className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+            <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 w-16 h-16 rounded-2xl flex items-center justify-center mb-4">
+              <MessageCircle className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
               {searchQuery ? "No chats found" : "No messages yet"}
             </h3>
-            <p className="text-gray-500 dark:text-gray-400 max-w-xs">
+            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-xs">
               {searchQuery
                 ? "Try searching with different keywords"
-                : "Start a chat by messaging someone about an item"}
+                : "Start chatting by messaging someone about an item you're interested in"}
             </p>
           </div>
         ) : (
-          <div>
+          <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
             {filteredChats.map((chat) => (
               <UserChatListItemWrapper
                 key={chat.chatId}

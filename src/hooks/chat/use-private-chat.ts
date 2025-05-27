@@ -158,7 +158,7 @@ export function usePrivateChat({
       const messageData = {
         chatId: chatId || undefined,
         itemId,
-        senderId: session.user.id,
+        senderId: session.user.user_metadata.user_id,
         senderName: getUserDisplayName(session),
         recipientId: otherUserId,
         content,

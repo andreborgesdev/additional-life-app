@@ -683,6 +683,7 @@
     "password_placeholder": "Your password",
     "confirm_password": "Confirm Password",
     "confirm_password_placeholder": "Confirm your password",
+    "passwords_match": "Passwords match",
     "passwords_do_not_match": "Passwords do not match",
     "password_strength": {
       "label": "Password Strength",
