@@ -20,8 +20,13 @@ import {
   Recycle,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next"; // Corrected import
+import { useTranslation } from "react-i18next";
 import { SearchDropdown } from "./search-dropdown";
+import {
+  getUserDisplayName,
+  getUserInitials,
+  getUserAvatarUrl,
+} from "@/src/utils/user-metadata-utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -418,12 +423,9 @@ export default function Header() {
                     )}
                   >
                     <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={session.user.user_metadata.avatar_url}
-                        alt="User"
-                      />
+                      <AvatarImage src={getUserAvatarUrl(session)} alt="User" />
                       <AvatarFallback className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-lg">
-                        {session.user.user_metadata.full_name.charAt(0)}
+                        {getUserInitials(session)}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -432,7 +434,7 @@ export default function Header() {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        {session.user.user_metadata.full_name}
+                        {getUserDisplayName(session)}
                       </p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {session.user.email}
@@ -527,16 +529,16 @@ export default function Header() {
                     <div className="mb-6 pb-6 border-b flex items-center gap-4">
                       <Avatar className="h-12 w-12">
                         <AvatarImage
-                          src={session.user.user_metadata.avatar_url}
+                          src={getUserAvatarUrl(session)}
                           alt="User"
                         />
                         <AvatarFallback className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-lg">
-                          JD
+                          {getUserInitials(session)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="font-medium">
-                          {session.user.user_metadata.name}
+                          {getUserDisplayName(session)}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {session.user.email}

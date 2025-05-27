@@ -5,7 +5,7 @@ import { useSession } from "@/src/app/auth-provider";
 
 export interface WebSocketMessage {
   id: string;
-  conversationId?: string;
+  chatId?: string;
   itemId: string;
   senderId: string;
   senderName: string;
@@ -17,7 +17,7 @@ export interface WebSocketMessage {
 
 interface UseWebSocketOptions {
   url: string;
-  conversationId?: string;
+  chatId?: string;
   onMessage?: (message: WebSocketMessage) => void;
   onError?: (error: Event) => void;
   onOpen?: () => void;
@@ -31,16 +31,14 @@ interface UseWebSocketReturn {
   isConnecting: boolean;
   error: string | null;
   sendMessage: (message: Omit<WebSocketMessage, "id" | "timestamp">) => void;
-  startConversation: (
-    message: Omit<WebSocketMessage, "id" | "timestamp">
-  ) => void;
+  startChat: (message: Omit<WebSocketMessage, "id" | "timestamp">) => void;
   disconnect: () => void;
   connect: () => void;
 }
 
 export function useWebSocket({
   url,
-  conversationId,
+  chatId,
   onMessage,
   onError,
   onOpen,
@@ -57,6 +55,29 @@ export function useWebSocket({
   const reconnectCount = useRef(0);
   const reconnectTimer = useRef<NodeJS.Timeout | null>(null);
   const shouldReconnect = useRef(true);
+  const currentSubscription = useRef<any>(null);
+
+  const stableOnMessage = useCallback(
+    (message: WebSocketMessage) => {
+      onMessage?.(message);
+    },
+    [onMessage]
+  );
+
+  const stableOnError = useCallback(
+    (event: Event) => {
+      onError?.(event);
+    },
+    [onError]
+  );
+
+  const stableOnOpen = useCallback(() => {
+    onOpen?.();
+  }, [onOpen]);
+
+  const stableOnClose = useCallback(() => {
+    onClose?.();
+  }, [onClose]);
 
   const disconnect = useCallback(() => {
     shouldReconnect.current = false;
@@ -64,6 +85,12 @@ export function useWebSocket({
     if (reconnectTimer.current) {
       clearTimeout(reconnectTimer.current);
       reconnectTimer.current = null;
+    }
+
+    if (currentSubscription.current) {
+      console.log("🧹 Cleaning up chat subscription");
+      currentSubscription.current.unsubscribe();
+      currentSubscription.current = null;
     }
 
     if (stompClient.current && stompClient.current.connected) {
@@ -82,8 +109,19 @@ export function useWebSocket({
       return;
     }
 
-    if (stompClient.current && stompClient.current.connected) {
-      console.log("✅ WebSocket already connected, skipping");
+    if (!url) {
+      setError("WebSocket URL is required");
+      console.log("❌ WebSocket connection failed: No URL provided");
+      return;
+    }
+
+    if (stompClient.current?.active) {
+      console.log("✅ WebSocket already active, skipping");
+      return;
+    }
+
+    if (isConnecting) {
+      console.log("⏳ Connection already in progress, skipping");
       return;
     }
 
@@ -96,6 +134,10 @@ export function useWebSocket({
     );
 
     try {
+      if (stompClient.current) {
+        stompClient.current.deactivate();
+      }
+
       stompClient.current = new Client({
         webSocketFactory: () => {
           console.log("🏭 Creating SockJS connection...");
@@ -107,7 +149,7 @@ export function useWebSocket({
         debug: (str) => {
           console.log("📡 STOMP Debug:", str);
         },
-        reconnectDelay: reconnectDelay,
+        reconnectDelay: 0,
         heartbeatIncoming: 4000,
         heartbeatOutgoing: 4000,
         onConnect: (frame) => {
@@ -116,47 +158,13 @@ export function useWebSocket({
           setIsConnecting(false);
           setError(null);
           reconnectCount.current = 0;
-          onOpen?.();
-
-          console.log("📝 Subscribing to conversation topics...");
-
-          if (conversationId) {
-            stompClient.current?.subscribe(
-              `/topic/chat/${conversationId}`,
-              (message: IMessage) => {
-                console.log("📨 Received conversation message:", message);
-                try {
-                  const chatMessage: WebSocketMessage = JSON.parse(
-                    message.body
-                  );
-                  console.log("✅ Parsed chat message:", chatMessage);
-                  onMessage?.(chatMessage);
-                } catch (err) {
-                  console.error("❌ Failed to parse STOMP message:", err);
-                }
-              }
-            );
-          }
-
-          stompClient.current?.subscribe(
-            "/topic/public",
-            (message: IMessage) => {
-              console.log("📨 Received public message:", message);
-              try {
-                const chatMessage: WebSocketMessage = JSON.parse(message.body);
-                console.log("✅ Parsed public message:", chatMessage);
-                onMessage?.(chatMessage);
-              } catch (err) {
-                console.error("❌ Failed to parse STOMP message:", err);
-              }
-            }
-          );
+          stableOnOpen();
         },
         onDisconnect: (frame) => {
           console.log("❌ STOMP disconnected:", frame);
           setIsConnected(false);
           setIsConnecting(false);
-          onClose?.();
+          stableOnClose();
 
           if (
             shouldReconnect.current &&
@@ -169,7 +177,9 @@ export function useWebSocket({
               `🔄 Reconnecting in ${delay}ms (attempt ${reconnectCount.current}/${reconnectAttempts})`
             );
             reconnectTimer.current = setTimeout(() => {
-              connect();
+              if (shouldReconnect.current) {
+                connect();
+              }
             }, delay);
           }
         },
@@ -183,13 +193,13 @@ export function useWebSocket({
             }`
           );
           setIsConnecting(false);
-          onError?.(new Event("stomp-error"));
+          stableOnError(new Event("stomp-error"));
         },
         onWebSocketError: (event) => {
           console.error("❌ WebSocket error:", event);
           setError("WebSocket connection error");
           setIsConnecting(false);
-          onError?.(event);
+          stableOnError(event);
         },
       });
 
@@ -201,15 +211,49 @@ export function useWebSocket({
     }
   }, [
     url,
-    conversationId,
     session?.access_token,
-    onMessage,
-    onError,
-    onOpen,
-    onClose,
+    stableOnOpen,
+    stableOnError,
+    stableOnClose,
     reconnectAttempts,
     reconnectDelay,
+    isConnecting,
   ]);
+
+  const subscribeToChat = useCallback(() => {
+    if (!chatId || !stompClient.current?.connected) {
+      console.log("⏳ Cannot subscribe: no chatId or client not connected");
+      return;
+    }
+
+    if (currentSubscription.current) {
+      console.log("🧹 Unsubscribing from previous chat subscription");
+      currentSubscription.current.unsubscribe();
+      currentSubscription.current = null;
+    }
+
+    try {
+      console.log(`📝 Subscribing to chat topic: /topic/chat/${chatId}`);
+      const subscription = stompClient.current.subscribe(
+        `/topic/chat/${chatId}`,
+        (message: IMessage) => {
+          console.log("📨 Received chat message:", message);
+          try {
+            const chatMessage: WebSocketMessage = JSON.parse(message.body);
+            console.log("✅ Parsed chat message:", chatMessage);
+            stableOnMessage(chatMessage);
+          } catch (err) {
+            console.error("❌ Failed to parse STOMP message:", err);
+          }
+        }
+      );
+      currentSubscription.current = subscription;
+      console.log("✅ Successfully subscribed to chat topics");
+      return subscription;
+    } catch (err) {
+      console.error("❌ Failed to subscribe to chat topics:", err);
+    }
+  }, [chatId, stableOnMessage]);
 
   const sendMessage = useCallback(
     (message: Omit<WebSocketMessage, "id" | "timestamp">) => {
@@ -241,37 +285,31 @@ export function useWebSocket({
     []
   );
 
-  const startConversation = useCallback(
+  const startChat = useCallback(
     (message: Omit<WebSocketMessage, "id" | "timestamp">) => {
       if (!stompClient.current || !stompClient.current.connected) {
-        console.error(
-          "❌ Cannot start conversation: STOMP client not connected"
-        );
+        console.error("❌ Cannot start chat: STOMP client not connected");
         setError("STOMP client is not connected");
         return;
       }
 
-      const startConversationRequest = {
-        itemId: message.itemId,
-        senderId: message.senderId,
-        recipientId: message.recipientId,
-        content: message.content,
+      const fullMessage: WebSocketMessage = {
+        ...message,
+        id: crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
       };
 
-      console.log(
-        "📤 Starting conversation via /app/chat.startConversation:",
-        startConversationRequest
-      );
+      console.log("📤 Starting chat via /app/chat.sendMessage:", fullMessage);
 
       try {
         stompClient.current.publish({
-          destination: "/app/chat.startConversation",
-          body: JSON.stringify(startConversationRequest),
+          destination: "/app/chat.sendMessage",
+          body: JSON.stringify(fullMessage),
         });
-        console.log("✅ Conversation started successfully");
+        console.log("✅ Chat started successfully");
       } catch (err) {
-        console.error("❌ Failed to start conversation:", err);
-        setError("Failed to start conversation");
+        console.error("❌ Failed to start chat:", err);
+        setError("Failed to start chat");
       }
     },
     []
@@ -287,19 +325,37 @@ export function useWebSocket({
   useEffect(() => {
     shouldReconnect.current = true;
 
-    if (session?.access_token) {
-      connect();
+    if (session?.access_token && url) {
+      if (!stompClient.current?.active && !isConnecting) {
+        console.log("🔄 Initiating WebSocket connection");
+        connect();
+      }
     } else {
+      console.log("❌ Missing session or URL, disconnecting");
       disconnect();
     }
-  }, [session?.access_token, connect, disconnect]);
+  }, [session?.access_token, url, connect, disconnect, isConnecting]);
+
+  useEffect(() => {
+    if (isConnected && chatId) {
+      console.log("🔄 Connection ready, subscribing to chat");
+      const subscription = subscribeToChat();
+
+      return () => {
+        if (subscription) {
+          console.log("🧹 Unsubscribing from chat topic");
+          subscription.unsubscribe();
+        }
+      };
+    }
+  }, [isConnected, chatId, subscribeToChat]);
 
   return {
     isConnected,
     isConnecting,
     error,
     sendMessage,
-    startConversation,
+    startChat,
     disconnect,
     connect,
   };

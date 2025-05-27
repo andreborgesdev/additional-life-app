@@ -7,6 +7,7 @@ import type { OpenAPIConfig } from './core/OpenAPI';
 import { AxiosHttpRequest } from './core/AxiosHttpRequest';
 import { ChatControllerService } from './services/ChatControllerService';
 import { ItemApiService } from './services/ItemApiService';
+import { NotificationControllerService } from './services/NotificationControllerService';
 import { PingControllerService } from './services/PingControllerService';
 import { PublicCategoryApiService } from './services/PublicCategoryApiService';
 import { PublicItemApiService } from './services/PublicItemApiService';
@@ -16,6 +17,7 @@ type HttpRequestConstructor = new (config: OpenAPIConfig) => BaseHttpRequest;
 export class ApiClient {
     public readonly chatController: ChatControllerService;
     public readonly itemApi: ItemApiService;
+    public readonly notificationController: NotificationControllerService;
     public readonly pingController: PingControllerService;
     public readonly publicCategoryApi: PublicCategoryApiService;
     public readonly publicItemApi: PublicItemApiService;
@@ -36,6 +38,7 @@ export class ApiClient {
         });
         this.chatController = new ChatControllerService(this.request);
         this.itemApi = new ItemApiService(this.request);
+        this.notificationController = new NotificationControllerService(this.request);
         this.pingController = new PingControllerService(this.request);
         this.publicCategoryApi = new PublicCategoryApiService(this.request);
         this.publicItemApi = new PublicItemApiService(this.request);

@@ -1,23 +1,17 @@
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useSession } from "@/src/app/auth-provider";
-import { useWebSocket, WebSocketMessage } from "../use-websocket";
-
-export interface ChatMessage {
-  id: string;
-  conversationId?: string;
-  itemId: string;
-  senderId: string;
-  senderName: string;
-  recipientId: string;
-  content: string;
-  type: "CHAT" | "JOIN" | "LEAVE";
-  timestamp: string;
-}
+import { useWebSocket } from "../use-websocket";
+import { getUserDisplayName } from "@/src/utils/user-metadata-utils";
+import { useChatId } from "./use-chat-id";
+import { ChatMessage, WebSocketMessage } from "@/src/types/chat";
+import { createChatApiService } from "@/src/services/chat-api.service";
 
 interface UsePrivateChatOptions {
   itemId: string;
+  ownUserId: string;
   otherUserId: string;
+  chatId?: string;
   websocketUrl?: string;
 }
 
@@ -26,7 +20,7 @@ interface UsePrivateChatReturn {
   isLoading: boolean;
   isConnected: boolean;
   error: string | null;
-  conversationId: string | null;
+  chatId: string | undefined;
   sendMessage: (content: string, isFirstMessage?: boolean) => void;
   loadChatHistory: () => Promise<void>;
   markAsRead: () => void;
@@ -35,138 +29,119 @@ interface UsePrivateChatReturn {
 const CHAT_QUERY_KEY = "chat";
 const STALE_TIME = 30 * 1000;
 
-const fetchChatHistory = async (
-  itemId: string,
-  otherUserId: string
-): Promise<ChatMessage[]> => {
-  const response = await fetch(
-    `/api/v1/chat/history?itemId=${itemId}&otherUserId=${otherUserId}`
-  );
-
-  if (!response.ok) {
-    throw new Error(`Failed to load chat history: ${response.statusText}`);
-  }
-
-  return response.json();
-};
-
-const getOrCreateConversation = async (
-  itemId: string,
-  currentUserId: string,
-  otherUserId: string
-): Promise<string> => {
-  const response = await fetch(
-    `/api/v1/chat/conversation?itemId=${itemId}&currentUser=${currentUserId}&otherUser=${otherUserId}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`Failed to get conversation: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data.conversationId;
-};
-
-const markChatAsRead = async (
-  itemId: string,
-  otherUserId: string
-): Promise<void> => {
-  const response = await fetch("/api/v1/chat/mark-read", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ itemId, otherUserId }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to mark messages as read");
-  }
-};
-
 export function usePrivateChat({
   itemId,
+  ownUserId,
   otherUserId,
+  chatId: providedChatId,
   websocketUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL,
 }: UsePrivateChatOptions): UsePrivateChatReturn {
   const { session } = useSession();
   const [realtimeMessages, setRealtimeMessages] = useState<ChatMessage[]>([]);
-  const [conversationId, setConversationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const currentChatRef = useRef<string>("");
+
+  const chatApiService = useMemo(
+    () => createChatApiService(() => session?.access_token || null),
+    [session?.access_token]
+  );
+
+  const {
+    chatId: derivedChatId,
+    isLoading: isChatIdLoading,
+    error: chatIdError,
+  } = useChatId({
+    itemId,
+    userId: ownUserId,
+    enabled: Boolean(
+      !providedChatId && session?.user?.id && itemId && ownUserId
+    ),
+  });
+
+  const chatId = providedChatId || derivedChatId;
 
   const {
     data: historyMessages = [],
-    isLoading,
+    isLoading: isHistoryLoading,
     refetch: loadChatHistory,
     error: historyError,
   } = useQuery({
-    queryKey: [CHAT_QUERY_KEY, "history", itemId, otherUserId],
-    queryFn: () => fetchChatHistory(itemId, otherUserId),
-    enabled: Boolean(session?.access_token && itemId && otherUserId),
+    queryKey: [CHAT_QUERY_KEY, "history", chatId],
+    queryFn: () => {
+      if (!chatId) {
+        throw new Error("Chat ID required");
+      }
+      return chatApiService.getChatHistory(chatId);
+    },
+    enabled: Boolean(session?.access_token && chatId),
     staleTime: STALE_TIME,
     refetchOnWindowFocus: false,
   });
 
-  useEffect(() => {
-    const fetchConversationId = async () => {
-      if (session?.user?.id && itemId && otherUserId) {
-        try {
-          const convId = await getOrCreateConversation(
-            itemId,
-            session.user.id,
-            otherUserId
-          );
-          setConversationId(convId);
-        } catch (err) {
-          console.error("Failed to get conversation ID:", err);
-          setError("Failed to get conversation");
-        }
-      }
-    };
+  const isLoading = isChatIdLoading || isHistoryLoading;
 
-    fetchConversationId();
-  }, [session?.user?.id, itemId, otherUserId]);
+  useEffect(() => {
+    if (historyError) {
+      setError(
+        historyError instanceof Error
+          ? historyError.message
+          : "Failed to load chat history"
+      );
+    } else if (chatIdError) {
+      setError(
+        chatIdError instanceof Error
+          ? chatIdError.message
+          : "Failed to get chat ID"
+      );
+    } else {
+      setError(null);
+    }
+  }, [historyError, chatIdError]);
 
   const markAsReadMutation = useMutation({
-    mutationFn: () => markChatAsRead(itemId, otherUserId),
+    mutationFn: () => {
+      if (!chatId || !session?.user?.id) {
+        throw new Error("Missing required parameters for marking as read");
+      }
+      return chatApiService.markChatAsRead(chatId, session.user.id);
+    },
     onError: (err) => {
       console.error("Failed to mark messages as read:", err);
     },
   });
 
-  const handleWebSocketMessage = useCallback((wsMessage: WebSocketMessage) => {
-    const chatMessage: ChatMessage = {
-      id: wsMessage.id,
-      conversationId: wsMessage.conversationId,
-      itemId: wsMessage.itemId,
-      senderId: wsMessage.senderId,
-      senderName: wsMessage.senderName,
-      recipientId: wsMessage.recipientId,
-      content: wsMessage.content,
-      type: wsMessage.type,
-      timestamp: wsMessage.timestamp,
-    };
+  const handleWebSocketMessage = useCallback(
+    (wsMessage: WebSocketMessage) => {
+      if (wsMessage.chatId !== chatId) return;
 
-    setRealtimeMessages((prev) => {
-      const exists = prev.some((msg) => msg.id === chatMessage.id);
-      if (exists) return prev;
-      return [...prev, chatMessage];
-    });
-  }, []);
+      const chatMessage: ChatMessage = {
+        id: wsMessage.id,
+        chatId: wsMessage.chatId,
+        itemId: wsMessage.itemId,
+        senderId: wsMessage.senderId,
+        senderName: wsMessage.senderName,
+        recipientId: wsMessage.recipientId,
+        content: wsMessage.content,
+        type: wsMessage.type,
+        timestamp: wsMessage.timestamp,
+      };
+
+      setRealtimeMessages((prev) => {
+        const exists = prev.some((msg) => msg.id === chatMessage.id);
+        if (exists) return prev;
+        return [...prev, chatMessage];
+      });
+    },
+    [chatId]
+  );
 
   const {
     isConnected,
     sendMessage: sendWebSocketMessage,
-    startConversation,
+    startChat,
   } = useWebSocket({
     url: websocketUrl || "",
-    conversationId: conversationId || undefined,
+    chatId: chatId || undefined,
     onMessage: handleWebSocketMessage,
     onError: () => {
       setError("Connection error");
@@ -181,41 +156,36 @@ export function usePrivateChat({
       }
 
       const messageData = {
-        conversationId: conversationId || undefined,
+        chatId: chatId || undefined,
         itemId,
         senderId: session.user.id,
-        senderName:
-          session.user.user_metadata?.full_name ||
-          session.user.email ||
-          "Unknown User",
+        senderName: getUserDisplayName(session),
         recipientId: otherUserId,
         content,
         type: "CHAT" as const,
       };
 
-      if (isFirstMessage || !conversationId) {
-        startConversation(messageData);
+      if (isFirstMessage || !chatId) {
+        startChat(messageData);
       } else {
         sendWebSocketMessage(messageData);
       }
     },
     [
       session?.user?.id,
-      session?.user?.user_metadata?.full_name,
-      session?.user?.email,
       isConnected,
-      conversationId,
+      chatId,
       sendWebSocketMessage,
-      startConversation,
+      startChat,
       itemId,
       otherUserId,
     ]
   );
 
   const markAsRead = useCallback(() => {
-    if (!session?.access_token || !itemId || !otherUserId) return;
+    if (!chatId || !session?.user?.id) return;
     markAsReadMutation.mutate();
-  }, [session?.access_token, itemId, otherUserId, markAsReadMutation]);
+  }, [chatId, session?.user?.id, markAsReadMutation]);
 
   const allMessages = useMemo(() => {
     const combined = [...historyMessages, ...realtimeMessages].sort(
@@ -230,19 +200,11 @@ export function usePrivateChat({
   }, [historyMessages, realtimeMessages]);
 
   useEffect(() => {
-    if (historyError) {
-      setError(
-        historyError instanceof Error
-          ? historyError.message
-          : "Failed to load chat history"
-      );
-    } else {
-      setError(null);
+    const currentChatKey = `${itemId}-${otherUserId}`;
+    if (currentChatRef.current !== currentChatKey) {
+      setRealtimeMessages([]);
+      currentChatRef.current = currentChatKey;
     }
-  }, [historyError]);
-
-  useEffect(() => {
-    setRealtimeMessages([]);
   }, [itemId, otherUserId]);
 
   return {
@@ -250,7 +212,7 @@ export function usePrivateChat({
     isLoading,
     isConnected,
     error,
-    conversationId,
+    chatId,
     sendMessage,
     loadChatHistory: () => loadChatHistory().then(() => {}),
     markAsRead,

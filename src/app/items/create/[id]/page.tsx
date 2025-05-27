@@ -130,7 +130,7 @@ export default function CreateProductPage() {
     // if (
     //   !isLoadingSession &&
     //   session &&
-    //   !session.user.user_metadata.email_verified
+    //   !session.user.user_metadata?.email_verified
     // ) {
     //   toast({
     //     title: "Email Verification Required",

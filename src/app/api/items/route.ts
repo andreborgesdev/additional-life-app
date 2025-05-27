@@ -21,12 +21,6 @@ const getItemsHandler = async (client: ApiClient, _request: NextRequest) => {
   const sortBy = url.searchParams.get("sortBy") || "createdAt";
   const direction = url.searchParams.get("direction") || "desc";
 
-  console.log(
-    "GET items" +
-      ` page: ${page}, size: ${size}, sortBy: ${sortBy}, direction: ${direction} ` +
-      `query: ${query}, category: ${category}, condition: ${condition}`
-  );
-
   const items = await client.publicItemApi.getItems(
     query,
     category,

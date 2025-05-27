@@ -20,5 +20,7 @@ export async function getUserFullNameByUUID(
     return null;
   }
 
-  return data.user.user_metadata?.full_name ?? null;
+  return (
+    data.user.user_metadata?.full_name || data.user.user_metadata?.name || null
+  );
 }

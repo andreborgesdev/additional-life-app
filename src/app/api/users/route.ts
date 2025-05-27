@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ApiClient, UserResponse } from "@/src/lib/generated-api";
-import { withApiClient, withPublicApiClient } from "@/src/lib/api-client";
+import { ApiClient, ApiError } from "@/src/lib/generated-api";
+import { withApiClient } from "@/src/lib/api-client";
 
 type RouteContext = {
   params?: { id?: string | string[] };
@@ -24,14 +24,20 @@ export async function getUserByEmailHandler(
     }
 
     const user = await client.userApi.getUserByEmail(email);
-
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
-
     return NextResponse.json(user);
   } catch (error) {
-    console.error("Error fetching user:", error);
+    console.error("Error fetching user by email:", error);
+
+    if (error instanceof ApiError) {
+      return NextResponse.json(
+        {
+          message:
+            error.body?.detail || error.message || `API Error: ${error.status}`,
+        },
+        { status: error.status }
+      );
+    }
+
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

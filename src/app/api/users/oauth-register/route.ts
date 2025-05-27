@@ -4,6 +4,7 @@ import {
   CreateUserRequest,
   withPublicApiClient,
 } from "@/src/lib/api-client";
+import { useSupabaseServer } from "@/src/lib/supabase/supabase-server";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,8 @@ export interface OauthUserRegisterPayload {
 }
 
 const registerHandler = async (client: ApiClient, request: NextRequest) => {
+  const supabase = await useSupabaseServer();
+
   const body = await request.json();
   const {
     recaptchaToken,
@@ -36,8 +39,22 @@ const registerHandler = async (client: ApiClient, request: NextRequest) => {
     avatarUrl: avatarUrl,
     authProvider: authProvider,
   };
+
   try {
-    await client.publicUserApi.createUser(userRequest);
+    const data = await client.publicUserApi.createUser(userRequest);
+
+    const { error: authError } = await supabase.auth.updateUser({
+      data: {
+        user_id: data.id,
+        name: data.name,
+        avatar_url: data.avatarUrl,
+        preferred_language: data.preferredLanguage,
+      },
+    });
+
+    if (authError) {
+      console.error("Error updating Supabase auth user metadata:", authError);
+    }
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err: any) {
     // Rollback: delete Supabase user if backend registration fails
@@ -72,7 +89,6 @@ const validateRecaptcha = async (recaptchaToken: string) => {
     !recaptchaData?.riskAnalysis?.score ||
     recaptchaData?.tokenProperties?.valid !== true
   ) {
-    console.log("Recaptcha failed", JSON.stringify(recaptchaData, null, 2));
     throw new Error("Recaptcha failed");
   }
 };

@@ -1,8 +1,7 @@
 import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 export const useFacebookLogin = () => {
-  const queryClient = useQueryClient();
   const supabase = useSupabaseBrowser();
 
   return useMutation({
@@ -12,11 +11,14 @@ export const useFacebookLogin = () => {
       }
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "facebook",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["supabase-session"] });
+    onError: (error) => {
+      console.error("Facebook login error:", error);
     },
   });
 };

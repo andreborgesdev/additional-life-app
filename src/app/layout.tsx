@@ -10,7 +10,7 @@ import "slick-carousel/slick/slick-theme.css";
 import { ReactQueryClientProvider } from "./react-query-client-provider";
 import { I18nAppProvider } from "./i18n-provider";
 import { AuthProvider } from "./auth-provider";
-import { ChatProvider } from "@/src/contexts/chat-context";
+import { NotificationProvider } from "@/src/contexts/notication-context";
 import { Toaster } from "@/src/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -32,7 +32,7 @@ export default function RootLayout({
         <ReactQueryClientProvider>
           <I18nAppProvider>
             <AuthProvider>
-              <ChatProvider>
+              <NotificationProvider>
                 <Toaster />
                 <Header />
                 <main className="flex-1 pt-14">{children}</main>
@@ -58,7 +58,7 @@ export default function RootLayout({
             })();
           `}
                 </Script>
-              </ChatProvider>
+              </NotificationProvider>
             </AuthProvider>
           </I18nAppProvider>
         </ReactQueryClientProvider>

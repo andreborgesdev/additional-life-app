@@ -201,6 +201,27 @@ paths:
           description: Forbidden
         "404":
           description: Item not found
+  /api/v1/chat/{id}/mark-as-read/{userId}:
+    put:
+      tags:
+      - chat-controller
+      operationId: markChatAsRead
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
   /api/v1/public/users:
     post:
       tags:
@@ -608,6 +629,27 @@ paths:
             application/json:
               schema:
                 type: string
+  /api/v1/notifications/user/{userId}:
+    get:
+      tags:
+      - notification-controller
+      operationId: getNotificationsByUserId
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
   /api/v1/items/user/{userId}:
     get:
       tags:
@@ -640,13 +682,39 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ItemResponse"
-  /api/v1/chat/{conversationId}/history:
+  /api/v1/chat/{id}/unread-count/{userId}:
     get:
       tags:
       - chat-controller
-      operationId: getChatHistoryByConversationId
+      operationId: getUnreadChatCount
       parameters:
-      - name: conversationId
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: integer
+                format: int64
+  /api/v1/chat/{id}/history:
+    get:
+      tags:
+      - chat-controller
+      operationId: getChatHistoryByChatId
+      parameters:
+      - name: id
         in: path
         required: true
         schema:
@@ -660,27 +728,15 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/ChatMessage"
-  /api/v1/chat/history:
+                  $ref: "#/components/schemas/ChatMessageResponse"
+  /api/v1/chat/user/{userId}:
     get:
       tags:
       - chat-controller
-      operationId: getOrCreateConversationAndFetchHistory
+      operationId: getUserChatsList
       parameters:
-      - name: itemId
-        in: query
-        required: true
-        schema:
-          type: string
-          format: uuid
-      - name: currentUser
-        in: query
-        required: true
-        schema:
-          type: string
-          format: uuid
-      - name: otherUser
-        in: query
+      - name: userId
+        in: path
         required: true
         schema:
           type: string
@@ -693,7 +749,33 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/ChatMessage"
+                  $ref: "#/components/schemas/UserChatListResponse"
+  /api/v1/chat/item/{itemId}/user/{userId}:
+    get:
+      tags:
+      - chat-controller
+      operationId: getChatIdByItemIdAndUserId
+      parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: uuid
 components:
   schemas:
     UpdateUserRequest:
@@ -933,8 +1015,7 @@ components:
       properties:
         id:
           type: string
-        supabaseId:
-          type: string
+          format: uuid
         name:
           type: string
         avatarUrl:
@@ -942,7 +1023,6 @@ components:
       required:
       - id
       - name
-      - supabaseId
     CreateUserRequest:
       type: object
       properties:
@@ -1040,13 +1120,25 @@ components:
           type: boolean
         unsorted:
           type: boolean
-    ChatMessage:
+    Notification:
+      type: object
+      properties:
+        recipientId:
+          type: string
+        message:
+          type: string
+        relatedItemId:
+          type: string
+        timestamp:
+          type: integer
+          format: int64
+    ChatMessageResponse:
       type: object
       properties:
         id:
           type: string
           format: uuid
-        conversationId:
+        chatId:
           type: string
           format: uuid
         itemId:
@@ -1069,3 +1161,37 @@ components:
         timestamp:
           type: string
           format: date-time
+      required:
+      - chatId
+      - content
+      - id
+      - itemId
+      - recipientId
+      - senderId
+      - timestamp
+      - type
+    UserChatListResponse:
+      type: object
+      properties:
+        chatId:
+          type: string
+          format: uuid
+        item:
+          $ref: "#/components/schemas/ItemResponse"
+        otherUser:
+          $ref: "#/components/schemas/MinimalUserResponse"
+        unreadMessagesCount:
+          type: integer
+          format: int32
+        lastMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required:
+      - chatId
+      - item
+      - lastMessage
+      - otherUser
+      - timestamp
+      - unreadMessagesCount

@@ -239,11 +239,7 @@ export default function ItemPage({ params }: { params: { id: string } }) {
       return;
     }
 
-    router.push(
-      `/chat?itemId=${item.id}&otherUserId=${
-        item.owner.id
-      }&otherUserName=${encodeURIComponent(item.owner.name)}`
-    );
+    router.push(`/chat?itemId=${item.id}&autoStart=true`);
   };
 
   const handleEditClick = () => {
@@ -297,7 +293,8 @@ export default function ItemPage({ params }: { params: { id: string } }) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+      {/* Report button */}
+      {/* <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
         <DialogTrigger asChild>
           <Button variant="outline" size="sm" className="px-6 md:px-10">
             <Flag className="mr-2 h-4 w-4" />
@@ -354,7 +351,7 @@ export default function ItemPage({ params }: { params: { id: string } }) {
             </DialogFooter>
           </form>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </>
   );
 
@@ -489,7 +486,7 @@ export default function ItemPage({ params }: { params: { id: string } }) {
 
           <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <Avatar className="h-12 w-12">
-              <AvatarImage src={item.owner?.avatarUrl} />
+              <AvatarImage src={item.owner.avatarUrl} />
               <AvatarFallback>
                 {(item.owner?.name || "U").charAt(0)}
               </AvatarFallback>

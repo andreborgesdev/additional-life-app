@@ -80,7 +80,21 @@ const registerHandler = async (client: ApiClient, request: NextRequest) => {
   };
 
   try {
-    await client.publicUserApi.createUser(userRequest);
+    const data = await client.publicUserApi.createUser(userRequest);
+
+    const { error: authError } = await supabase.auth.updateUser({
+      data: {
+        user_id: data.id,
+        name: data.name,
+        avatar_url: data.avatarUrl,
+        preferred_language: data.preferredLanguage,
+      },
+    });
+
+    if (authError) {
+      console.error("Error updating Supabase auth user metadata:", authError);
+    }
+
     return NextResponse.json(
       {
         success: true,
@@ -93,9 +107,6 @@ const registerHandler = async (client: ApiClient, request: NextRequest) => {
     if (apiError.status !== 409) {
       try {
         await supabase.auth.admin.deleteUser(supabaseData.user.id);
-        console.log(
-          `Successfully rolled back Supabase user: ${supabaseData.user.id}`
-        );
       } catch (rollbackError: any) {
         console.error(
           `Failed to rollback Supabase user ${supabaseData.user.id}:`,
@@ -147,7 +158,6 @@ const validateRecaptcha = async (recaptchaToken: string) => {
     !recaptchaData?.riskAnalysis?.score ||
     recaptchaData?.tokenProperties?.valid !== true
   ) {
-    console.log("Recaptcha failed", JSON.stringify(recaptchaData, null, 2));
     throw new Error("Recaptcha failed");
   }
 };

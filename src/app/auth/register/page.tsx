@@ -26,8 +26,11 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [validationTriggered, setValidationTriggered] = useState(false);
   const router = useRouter();
   const { mutate: signUp, isPending: isLoading } = useRegister();
   const { mutate: googleLogin } = useGoogleLogin();
@@ -36,7 +39,9 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreeToTerms) return;
+    setValidationTriggered(true);
+
+    if (!agreeToTerms || password !== confirmPassword) return;
     const recaptchaTokenInput = document.getElementById(
       "recaptcha-token"
     ) as HTMLInputElement | null;
@@ -55,8 +60,6 @@ export default function RegisterPage() {
         onError: (err: RegistrationError) => {
           let toastTitle = t("auth.registration_failed");
           let toastDescription = t("auth.unexpected_error");
-
-          console.log(err.status);
 
           if (err.status === 409) {
             toastTitle = t("auth.email_already_registered");
@@ -119,6 +122,10 @@ export default function RegisterPage() {
     "bg-yellow-400",
     "bg-green-500",
   ];
+
+  const passwordsMatch = password === confirmPassword;
+  const showPasswordMismatch =
+    validationTriggered && confirmPassword.length > 0 && !passwordsMatch;
 
   return (
     <div className="bg-green-50 dark:bg-green-800 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -321,6 +328,57 @@ export default function RegisterPage() {
               )}
             </div>
 
+            <div className="space-y-1">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                {t("auth.confirm_password")}
+              </label>
+              <div className="relative rounded-md shadow-sm">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={`block w-full pl-4 pr-10 py-2.5 border rounded-lg focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${
+                    showPasswordMismatch
+                      ? "border-red-500 dark:border-red-400"
+                      : "border-gray-300 dark:border-gray-600"
+                  }`}
+                  placeholder={t("auth.confirm_password_placeholder")}
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              {validationTriggered && showPasswordMismatch && (
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                  {t("auth.passwords_do_not_match")}
+                </p>
+              )}
+              {validationTriggered &&
+                confirmPassword.length > 0 &&
+                passwordsMatch && (
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                    {t("auth.passwords_match")}
+                  </p>
+                )}
+            </div>
+
             <div className="flex items-start">
               <div className="flex items-center h-5">
                 <input
@@ -360,7 +418,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading || !agreeToTerms}
-              className="w-full flex justify-center items-center px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+              className="w-full flex justify-center items-center px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <svg

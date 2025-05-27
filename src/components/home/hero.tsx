@@ -8,6 +8,7 @@ import { useEffect, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { SparklesText } from "../magicui/sparkles-text";
 import { useTranslation } from "react-i18next";
+import { PlaceholdersAndVanishInput } from "../ui/placeholders-and-vanish-input";
 
 export default function Hero() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -27,6 +28,14 @@ export default function Hero() {
       router.push("/items");
     }
   };
+
+  const placeholders = [
+    "Furniture",
+    "Books",
+    "Electronics",
+    "Kitchen",
+    "Garden",
+  ];
 
   return (
     <section className="relative bg-green-50 dark:bg-green-900 py-10 md:py-32">
@@ -91,66 +100,11 @@ export default function Hero() {
             animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <form
+            <PlaceholdersAndVanishInput
+              placeholders={placeholders}
+              onChange={(e) => setSearchTerm(e.target.value)}
               onSubmit={handleSearchSubmit}
-              className="flex items-center bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden"
-            >
-              <div className="pl-4 pr-2 py-1 flex-shrink-0">
-                <Search className="h-5 w-5 text-gray-400 dark:text-gray-300" />
-              </div>
-              <input
-                type="search"
-                name="search"
-                id="search"
-                placeholder={t("items.what_are_you_looking_for_placeholder")}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-3 text-gray-700 dark:text-gray-200 bg-transparent focus:outline-none placeholder-gray-400 dark:placeholder-gray-500"
-              />
-              <button
-                type="submit"
-                className="px-6 py-3 bg-green-800 hover:bg-teal-600 text-white font-semibold transition-colors duration-300 focus:outline-none"
-              >
-                {t("items.search")}
-              </button>
-            </form>
-            {/* <div className="mt-6 text-sm text-gray-500 dark:text-gray-400">
-              Popular searches:{" "}
-              <Link
-                href="/items?q=furniture"
-                className="text-teal-600 dark:text-teal-400 hover:underline"
-              >
-                Furniture
-              </Link>
-              ,{" "}
-              <Link
-                href="/items?q=books"
-                className="text-teal-600 dark:text-teal-400 hover:underline"
-              >
-                Books
-              </Link>
-              ,{" "}
-              <Link
-                href="/items?q=electronics"
-                className="text-teal-600 dark:text-teal-400 hover:underline"
-              >
-                Electronics
-              </Link>
-              ,{" "}
-              <Link
-                href="/items?q=kitchen"
-                className="text-teal-600 dark:text-teal-400 hover:underline"
-              >
-                Kitchen
-              </Link>
-              ,{" "}
-              <Link
-                href="/items?q=garden"
-                className="text-teal-600 dark:text-teal-400 hover:underline"
-              >
-                Garden
-              </Link>
-            </div> */}
+            />
           </motion.div>
           <motion.div
             className="flex flex-col sm:flex-row gap-4 justify-center mt-8"

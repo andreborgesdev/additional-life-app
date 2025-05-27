@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useMemo } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import {
@@ -136,15 +136,12 @@ function ItemsPageContent() {
   const { data: allCategoriesData, isLoading: isLoadingAllCategories } =
     useCategories();
 
-  const conditionDetails = getConditionDetails(t);
+  const conditionDetails = useMemo(() => getConditionDetails(t), [t]);
 
   useEffect(() => {
     const newTags: { id: string; label: string; type: string }[] = [];
-    if (
-      selectedCategoryId &&
-      allCategoriesData &&
-      allCategoriesData.length > 0
-    ) {
+
+    if (selectedCategoryId && allCategoriesData?.length) {
       const categoryMap = new Map<string, CategoryResponse>();
       allCategoriesData.forEach((cat) => {
         if (cat.id) {
@@ -169,7 +166,7 @@ function ItemsPageContent() {
         categoryLabel = pathArray.map((c) => c.name).join(" > ");
       } else {
         const selectedCat = categoryMap.get(selectedCategoryId);
-        if (selectedCat && selectedCat.name) {
+        if (selectedCat?.name) {
           categoryLabel = selectedCat.name;
         } else {
           categoryLabel = t("filters.selected_category");
@@ -181,16 +178,18 @@ function ItemsPageContent() {
         type: "category",
       });
     }
+
     selectedConditions.forEach((condition) => {
+      const conditionDetail = conditionDetails.find((c) => c.key === condition);
       newTags.push({
         id: `condition-${condition}`,
         label: `${t("filters.condition_label")} ${
-          conditionDetails.find((c) => c.key === condition)?.placeholder ||
-          condition
+          conditionDetail?.placeholder || condition
         }`,
         type: "condition",
       });
     });
+
     setActiveFilterTags(newTags);
   }, [
     selectedCategoryId,

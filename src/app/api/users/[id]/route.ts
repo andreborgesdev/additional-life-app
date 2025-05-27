@@ -91,8 +91,6 @@ const updateUserHandler = async (
           user_id: updatedUserInDb.id,
           name: userData.name,
           avatar_url: userData.avatarUrl,
-          address: userData.address,
-          bio: userData.bio,
           preferred_language: userData.preferredLanguage,
         },
       });

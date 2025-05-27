@@ -54,6 +54,10 @@ import { PhoneInput } from "@/src/components/shared/phone-input";
 import { uploadImage } from "@/src/lib/supabase/storage/client";
 import { useLogout } from "@/src/hooks/auth/use-logout";
 import { useUpdatePassword } from "@/src/hooks/users/use-update-password";
+import {
+  isEmailVerified,
+  isPhoneVerified,
+} from "@/src/utils/user-metadata-utils";
 import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
 import { useUserByEmail } from "@/src/hooks/users/use-user-by-email";
 import { Checkbox } from "@/src/components/ui/checkbox";
@@ -268,8 +272,8 @@ export default function UserSettingsPage() {
       bio: bio.trim() || undefined,
       avatarUrl: avatarUrlForPayload || undefined,
       preferredLanguage: language,
-      isEmailVerified: session?.user.user_metadata.email_verified || false,
-      isPhoneVerified: session?.user.user_metadata.phone_verified || false,
+      isEmailVerified: isEmailVerified(session),
+      isPhoneVerified: isPhoneVerified(session),
       contactOptions: contactOptions,
     };
 
@@ -470,7 +474,10 @@ export default function UserSettingsPage() {
       <div className="flex flex-col md:flex-row gap-8 mb-8">
         <div className="flex flex-col items-center md:items-start gap-4">
           <Avatar className="h-24 w-24">
-            <AvatarImage src={avatarPreviewUrl || avatarUrl} alt={name} />
+            <AvatarImage
+              src={avatarPreviewUrl || avatarUrl || undefined}
+              alt={name}
+            />
             <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="text-center md:text-left">
