@@ -11,7 +11,13 @@ import { Badge } from "@/src/components/ui/badge";
 import { Input } from "@/src/components/ui/input";
 import { ScrollArea } from "@/src/components/ui/scroll-area";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { Search, MessageCircle, Clock } from "lucide-react";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/src/components/ui/tabs";
+import { Search, MessageCircle, Clock, Send, Inbox } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ChatErrorBoundary } from "./chat-error-boundary";
 
@@ -139,19 +145,52 @@ const ChatList = memo(function ChatList({
   isLoading = false,
   onSelectChat,
 }: ChatListProps) {
+  const { session } = useSession();
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
 
-  const filteredChats = useMemo(
-    () =>
-      userChats.filter((chat) => {
-        if (!searchQuery) return true;
+  const currentUserId = session?.user?.user_metadata?.user_id;
 
-        return (
+  const { sentChats, receivedChats } = useMemo(() => {
+    if (!currentUserId) return { sentChats: [], receivedChats: [] };
+
+    return userChats.reduce(
+      (acc, chat) => {
+        const isUserOwner = chat.item.owner.id === currentUserId;
+        if (isUserOwner) {
+          acc.receivedChats.push(chat);
+        } else {
+          acc.sentChats.push(chat);
+        }
+        return acc;
+      },
+      { sentChats: [] as ChatListItem[], receivedChats: [] as ChatListItem[] }
+    );
+  }, [userChats, currentUserId]);
+
+  const getFilteredChats = useCallback(
+    (chats: ChatListItem[]) => {
+      if (!searchQuery) return chats;
+      return chats.filter(
+        (chat) =>
           chat.item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           chat.otherUser.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }),
-    [userChats, searchQuery]
+      );
+    },
+    [searchQuery]
+  );
+
+  const filteredSentChats = useMemo(
+    () => getFilteredChats(sentChats),
+    [getFilteredChats, sentChats]
+  );
+  const filteredReceivedChats = useMemo(
+    () => getFilteredChats(receivedChats),
+    [getFilteredChats, receivedChats]
+  );
+  const filteredAllChats = useMemo(
+    () => getFilteredChats(userChats),
+    [getFilteredChats, userChats]
   );
 
   const handleSearchChange = useCallback(
@@ -161,28 +200,10 @@ const ChatList = memo(function ChatList({
     []
   );
 
-  const totalChats = filteredChats.length;
-
-  return (
-    <div className="h-full flex flex-col bg-white dark:bg-gray-800">
-      <div className="flex-shrink-0 p-4 bg-white dark:bg-gray-800 border-b border-gray-200/50 dark:border-gray-700/50">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-          Messages
-        </h2>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Search conversations..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="pl-10 h-10 bg-gray-50 dark:bg-gray-700/50 border-gray-200/50 dark:border-gray-600/50 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-          />
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto">
-        {isLoading ? (
+  const renderChatList = useCallback(
+    (chats: ChatListItem[], emptyMessage: string) => {
+      if (isLoading) {
+        return (
           <div className="space-y-1 p-2">
             {[...Array(5)].map((_, i) => (
               <div
@@ -197,7 +218,11 @@ const ChatList = memo(function ChatList({
               </div>
             ))}
           </div>
-        ) : totalChats === 0 ? (
+        );
+      }
+
+      if (chats.length === 0) {
+        return (
           <div className="flex flex-col items-center justify-center p-8 text-center h-full">
             <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 w-16 h-16 rounded-2xl flex items-center justify-center mb-4">
               <MessageCircle className="h-8 w-8 text-gray-400 dark:text-gray-500" />
@@ -208,22 +233,93 @@ const ChatList = memo(function ChatList({
             <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-xs">
               {searchQuery
                 ? "Try searching with different keywords"
-                : "Start chatting by messaging someone about an item you're interested in"}
+                : emptyMessage}
             </p>
           </div>
-        ) : (
-          <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
-            {filteredChats.map((chat) => (
-              <UserChatListItemWrapper
-                key={chat.chatId}
-                chat={chat}
-                isSelected={selectedChatId === chat.chatId}
-                onSelectChat={onSelectChat}
-                searchQuery={searchQuery}
-              />
-            ))}
+        );
+      }
+
+      return (
+        <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
+          {chats.map((chat) => (
+            <UserChatListItemWrapper
+              key={chat.chatId}
+              chat={chat}
+              isSelected={selectedChatId === chat.chatId}
+              onSelectChat={onSelectChat}
+              searchQuery={searchQuery}
+            />
+          ))}
+        </div>
+      );
+    },
+    [isLoading, searchQuery, selectedChatId, onSelectChat]
+  );
+
+  return (
+    <div className="h-full flex flex-col bg-white dark:bg-gray-800">
+      <div className="flex-shrink-0 p-4 bg-white dark:bg-gray-800 border-b border-gray-200/50 dark:border-gray-700/50">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          Messages
+        </h2>
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search conversations..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="pl-10 h-10 bg-gray-50 dark:bg-gray-700/50 border-gray-200/50 dark:border-gray-600/50 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+          />
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-hidden">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="h-full flex flex-col"
+        >
+          <div className="flex-shrink-0 px-4 py-4">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="all" className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4" />
+                All ({userChats.length})
+              </TabsTrigger>
+              <TabsTrigger value="received" className="flex items-center gap-2">
+                <Inbox className="h-4 w-4" />
+                Received ({receivedChats.length})
+              </TabsTrigger>
+              <TabsTrigger value="sent" className="flex items-center gap-2">
+                <Send className="h-4 w-4" />
+                Sent ({sentChats.length})
+              </TabsTrigger>
+            </TabsList>
           </div>
-        )}
+
+          <div className="flex-1 overflow-y-auto">
+            <TabsContent value="all" className="mt-0 h-full">
+              {renderChatList(
+                filteredAllChats,
+                "Start chatting by messaging someone about an item you're interested in"
+              )}
+            </TabsContent>
+
+            <TabsContent value="received" className="mt-0 h-full">
+              {renderChatList(
+                filteredReceivedChats,
+                "No one has messaged you about your items yet"
+              )}
+            </TabsContent>
+
+            <TabsContent value="sent" className="mt-0 h-full">
+              {renderChatList(
+                filteredSentChats,
+                "Start chatting by messaging someone about an item you're interested in"
+              )}
+            </TabsContent>
+          </div>
+        </Tabs>
       </div>
     </div>
   );
