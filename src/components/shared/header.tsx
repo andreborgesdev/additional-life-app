@@ -18,6 +18,7 @@ import {
   LogOut,
   ChevronDown,
   Recycle,
+  MessageCircle,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -179,7 +180,12 @@ export default function Header() {
     // },
   ];
 
-  const accountNavItems = [
+  const accountNavItems: Array<{
+    href: string;
+    icon: React.ReactElement;
+    label: string;
+    badge?: number;
+  }> = [
     {
       href: "/users/settings",
       icon: <Settings className="h-5 w-5" />,
@@ -373,6 +379,33 @@ export default function Header() {
                   : t("ui.switch_to_dark_mode")}
               </TooltipContent>
             </Tooltip>
+
+            {/* Chat/Messages */}
+            {session && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/chat"
+                    className={cn(
+                      "p-2 rounded-full relative transition-colors",
+                      isActive("/chat")
+                        ? isScrolled
+                          ? "bg-gray-100 text-green-600 dark:bg-gray-800 dark:text-green-400"
+                          : "bg-white/10 text-white dark:bg-green-700/50 dark:text-white"
+                        : isScrolled
+                        ? "text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        : "text-white hover:text-white dark:text-green-100 hover:bg-white/10 dark:hover:bg-green-700/50"
+                    )}
+                  >
+                    <MessageCircle size={20} />
+                    <span className="sr-only">{t("ui.messages")}</span>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  {t("ui.messages")}
+                </TooltipContent>
+              </Tooltip>
+            )}
 
             {/* Notifications */}
             {session && (
@@ -587,6 +620,22 @@ export default function Header() {
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 px-3 mb-2">
                           {t("ui.account")}
                         </h3>
+
+                        <SheetClose asChild>
+                          <Link
+                            href="/chat"
+                            className={cn(
+                              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+                              isActive("/chat")
+                                ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-green-600 dark:hover:text-green-400"
+                            )}
+                          >
+                            <MessageCircle className="h-5 w-5" />
+                            <span>{t("ui.messages")}</span>
+                          </Link>
+                        </SheetClose>
+
                         {accountNavItems.map((item) => (
                           <SheetClose asChild key={item.href}>
                             <Link
