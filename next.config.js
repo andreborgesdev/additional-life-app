@@ -18,13 +18,24 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["bmxkdcjbtchixtkruzit.supabase.co"],
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "bmxkdcjbtchixtkruzit.supabase.co",
+        hostname: "*.supabase.co",
         port: "",
-        pathname: "/storage/v1/object/public/**",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.googleusercontent.com",
+        port: "",
+        pathname: "/**",
       },
     ],
   },

@@ -1,8 +1,16 @@
 import { ChatMessage, ChatListItem } from "@/src/types/chat";
-import { UserChatListResponse } from "@/src/lib/generated-api";
+import {
+  UserChatListResponse,
+  ChatHistoryWithOnlineStatusResponse,
+} from "@/src/lib/generated-api";
+
+export interface ChatHistoryResponse {
+  messages: ChatMessage[];
+  peerOnline: boolean;
+}
 
 export interface ChatApiService {
-  getChatHistory(chatId: string): Promise<ChatMessage[]>;
+  getChatHistory(chatId: string): Promise<ChatHistoryResponse>;
   getUserChats(userId: string): Promise<ChatListItem[]>;
   markChatAsRead(chatId: string, userId: string): Promise<void>;
   getChatId(itemId: string, userId: string): Promise<string>;
@@ -36,9 +44,13 @@ class ChatApiServiceImpl implements ChatApiService {
     return response;
   }
 
-  async getChatHistory(chatId: string): Promise<ChatMessage[]> {
+  async getChatHistory(chatId: string): Promise<ChatHistoryResponse> {
     const response = await this.fetchWithAuth(`/api/chat/${chatId}/history`);
-    return response.json();
+    const data: ChatHistoryWithOnlineStatusResponse = await response.json();
+    return {
+      messages: data.messages || [],
+      peerOnline: data.peerOnline || false,
+    };
   }
 
   async getUserChats(userId: string): Promise<ChatListItem[]> {

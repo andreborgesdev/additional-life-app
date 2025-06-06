@@ -5,6 +5,18 @@ import { usePrivateChat } from "@/src/hooks/chat/use-private-chat";
 import { useSession } from "@/src/app/auth-provider";
 import { useTranslation } from "react-i18next";
 import type { ChatMessage } from "@/src/types/chat";
+
+type DateSeparatorItem = {
+  type: "date";
+  date: Date;
+};
+
+type MessageWithMeta = ChatMessage & {
+  showAvatar: boolean;
+};
+
+type GroupedMessageItem = DateSeparatorItem | MessageWithMeta;
+
 import {
   Avatar,
   AvatarFallback,
@@ -45,6 +57,12 @@ const MessageBubble = memo(function MessageBubble({
     [message.timestamp]
   );
 
+  useEffect(() => {
+    console.log(
+      `MessageBubble rendered: ${message.id}, isOwn: ${isOwn}, senderName: ${senderName}, showAvatar: ${showAvatar}, avatarUrl: ${avatarUrl}`
+    );
+  }, [message, isOwn, senderName, showAvatar, avatarUrl]);
+
   return (
     <div
       className={`flex mb-4 px-4 ${isOwn ? "justify-end" : "justify-start"}`}
@@ -53,7 +71,7 @@ const MessageBubble = memo(function MessageBubble({
         <Avatar className="h-8 w-8 mr-3 mt-auto flex-shrink-0">
           <AvatarImage src={avatarUrl} alt={senderName} />
           <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-600 text-white text-xs font-semibold">
-            {senderName?.slice(0, 2).toUpperCase()}
+            {senderName?.slice(0, 1).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       )}
@@ -88,8 +106,9 @@ const MessageBubble = memo(function MessageBubble({
 
       {isOwn && showAvatar && (
         <Avatar className="h-8 w-8 ml-3 mt-auto flex-shrink-0">
+          <AvatarImage src={avatarUrl} alt={senderName} />
           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-semibold">
-            {senderName?.slice(0, 2).toUpperCase()}
+            {senderName?.slice(0, 1).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       )}
@@ -139,6 +158,7 @@ const ChatWindow = memo(function ChatWindow({
     isConnected,
     error,
     chatId,
+    peerOnline,
     sendMessage,
     markAsRead,
   } = usePrivateChat({
@@ -175,7 +195,7 @@ const ChatWindow = memo(function ChatWindow({
   );
 
   const groupedMessages = useMemo(() => {
-    return messages.reduce((groups: any[], message, index) => {
+    return messages.reduce((groups: GroupedMessageItem[], message, index) => {
       const messageDate = new Date(message.timestamp);
       const prevMessage = messages[index - 1];
       const showDateSeparator =
@@ -280,15 +300,14 @@ const ChatWindow = memo(function ChatWindow({
         <div className="flex items-center space-x-3">
           <div className="relative">
             <Avatar className="h-11 w-11 ring-2 ring-white dark:ring-gray-800 shadow-sm">
-              <AvatarImage
-                src={otherUser.avatarUrl || item.imageUrls[0]}
-                alt={otherUser.name}
-              />
+              <AvatarImage src={item.imageUrls?.[0]} alt={otherUser.name} />
               <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-600 text-white font-semibold">
                 {otherUser.name.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+            {peerOnline && (
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate">
@@ -299,7 +318,7 @@ const ChatWindow = memo(function ChatWindow({
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            {isConnected ? (
+            {isConnected && peerOnline ? (
               <div className="flex items-center text-green-500">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></div>
                 <span className="text-xs hidden sm:inline">Online</span>

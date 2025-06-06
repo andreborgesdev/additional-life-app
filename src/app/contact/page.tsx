@@ -133,7 +133,7 @@ export default function ContactPage() {
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto">
+        {/* <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-semibold text-green-700 dark:text-green-200 mb-4 text-center">
             {t("contact.otherWays.title")}
           </h2>
@@ -188,7 +188,7 @@ export default function ContactPage() {
               </a>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

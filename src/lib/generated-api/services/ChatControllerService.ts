@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChatMessageResponse } from '../models/ChatMessageResponse';
+import type { ChatHistoryWithOnlineStatusResponse } from '../models/ChatHistoryWithOnlineStatusResponse';
 import type { UserChatListResponse } from '../models/UserChatListResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -48,12 +48,12 @@ export class ChatControllerService {
     }
     /**
      * @param id
-     * @returns ChatMessageResponse OK
+     * @returns ChatHistoryWithOnlineStatusResponse OK
      * @throws ApiError
      */
     public getChatHistoryByChatId(
         id: string,
-    ): CancelablePromise<Array<ChatMessageResponse>> {
+    ): CancelablePromise<ChatHistoryWithOnlineStatusResponse> {
         return this.httpRequest.request({
             method: 'GET',
             url: '/api/v1/chat/{id}/history',

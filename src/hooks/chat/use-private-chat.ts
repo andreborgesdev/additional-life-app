@@ -21,6 +21,7 @@ interface UsePrivateChatReturn {
   isConnected: boolean;
   error: string | null;
   chatId: string | undefined;
+  peerOnline: boolean;
   sendMessage: (content: string, isFirstMessage?: boolean) => void;
   loadChatHistory: () => Promise<void>;
   markAsRead: () => void;
@@ -39,6 +40,7 @@ export function usePrivateChat({
   const { session } = useSession();
   const [realtimeMessages, setRealtimeMessages] = useState<ChatMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [peerOnline, setPeerOnline] = useState<boolean>(false);
   const currentChatRef = useRef<string>("");
 
   const chatApiService = useMemo(
@@ -61,7 +63,7 @@ export function usePrivateChat({
   const chatId = providedChatId || derivedChatId;
 
   const {
-    data: historyMessages = [],
+    data: historyData,
     isLoading: isHistoryLoading,
     refetch: loadChatHistory,
     error: historyError,
@@ -77,6 +79,14 @@ export function usePrivateChat({
     staleTime: STALE_TIME,
     refetchOnWindowFocus: false,
   });
+
+  const historyMessages = historyData?.messages || [];
+
+  useEffect(() => {
+    if (historyData?.peerOnline !== undefined) {
+      setPeerOnline(historyData.peerOnline);
+    }
+  }, [historyData?.peerOnline]);
 
   const isLoading = isChatIdLoading || isHistoryLoading;
 
@@ -116,13 +126,12 @@ export function usePrivateChat({
 
       const chatMessage: ChatMessage = {
         id: wsMessage.id,
-        chatId: wsMessage.chatId,
+        chatId: wsMessage.chatId || "",
         itemId: wsMessage.itemId,
         senderId: wsMessage.senderId,
-        senderName: wsMessage.senderName,
         recipientId: wsMessage.recipientId,
         content: wsMessage.content,
-        type: wsMessage.type,
+        type: wsMessage.type as ChatMessage["type"],
         timestamp: wsMessage.timestamp,
       };
 
@@ -156,9 +165,9 @@ export function usePrivateChat({
       }
 
       const messageData = {
-        chatId: chatId || undefined,
+        chatId: chatId,
         itemId,
-        senderId: session.user.user_metadata.user_id,
+        senderId: session.user.user_metadata.user_id || "",
         senderName: getUserDisplayName(session),
         recipientId: otherUserId,
         content,
@@ -213,6 +222,7 @@ export function usePrivateChat({
     isConnected,
     error,
     chatId,
+    peerOnline,
     sendMessage,
     loadChatHistory: () => loadChatHistory().then(() => {}),
     markAsRead,

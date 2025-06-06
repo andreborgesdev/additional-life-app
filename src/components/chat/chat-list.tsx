@@ -2,11 +2,6 @@ import { useState, useMemo, useCallback, memo } from "react";
 import { useSession } from "@/src/app/auth-provider";
 import { ChatListItem } from "@/src/types/chat";
 import { extractItemIdFromChatId } from "@/src/hooks/chat/use-user-chats";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
 import { Badge } from "@/src/components/ui/badge";
 import { Input } from "@/src/components/ui/input";
 import { ScrollArea } from "@/src/components/ui/scroll-area";
@@ -20,6 +15,7 @@ import {
 import { Search, MessageCircle, Clock, Send, Inbox } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ChatErrorBoundary } from "./chat-error-boundary";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 interface ChatListProps {
   selectedChatId?: string;
@@ -59,14 +55,13 @@ const ChatListItemComponent = memo(function ChatListItemComponent({
         <div className="relative flex-shrink-0">
           <Avatar className="h-12 w-12 ring-2 ring-white dark:ring-gray-800 shadow-sm">
             <AvatarImage
-              src={chat.item.imageUrls[0] || chat.otherUser.avatarUrl}
+              src={chat.item.imageUrls?.[0]}
               alt={chat.otherUser.name}
             />
             <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-sm">
-              {chat.otherUser.name.slice(0, 2).toUpperCase()}
+              {chat.otherUser.name.slice(0, 1).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
         </div>
 
         <div className="flex-1 min-w-0">

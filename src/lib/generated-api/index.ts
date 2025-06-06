@@ -11,6 +11,7 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { CategoryResponse } from './models/CategoryResponse';
+export type { ChatHistoryWithOnlineStatusResponse } from './models/ChatHistoryWithOnlineStatusResponse';
 export { ChatMessageResponse } from './models/ChatMessageResponse';
 export { CreateUserRequest } from './models/CreateUserRequest';
 export { ItemRequest } from './models/ItemRequest';

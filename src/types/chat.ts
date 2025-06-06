@@ -5,7 +5,19 @@ import {
 } from "@/src/lib/generated-api";
 
 export type ChatMessage = ChatMessageResponse;
-export type WebSocketMessage = ChatMessageResponse;
+
+export interface WebSocketMessage {
+  id: string;
+  chatId?: string;
+  itemId: string;
+  senderId: string;
+  senderName: string;
+  recipientId: string;
+  content: string;
+  type: "CHAT" | "JOIN" | "LEAVE";
+  timestamp: string;
+}
+
 export type MessageType = ChatMessageResponse.type;
 export type ChatListItem = UserChatListResponse;
 

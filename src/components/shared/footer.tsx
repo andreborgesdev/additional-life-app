@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Facebook, Twitter, Instagram } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import LanguageSelector from "./language-selector";
 
 export default function Footer() {
   const [mounted, setMounted] = useState(false);
@@ -18,7 +19,7 @@ export default function Footer() {
   return (
     <footer className="bg-green-800 dark:bg-green-950 text-white">
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-8">
           <div>
             <h3 className="text-xl font-semibold mb-4">
               {t("footer.about_additional_life")}
@@ -82,6 +83,9 @@ export default function Footer() {
                 <Instagram size={24} />
               </a>
             </div> */}
+            <h3 className="text-xl font-semibold mb-4">
+              {t("footer.legal_information")}
+            </h3>
             <ul className="space-y-2">
               <li>
                 <Link
@@ -100,6 +104,9 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
+          </div>
+          <div>
+            <LanguageSelector variant="footer" />
           </div>
         </div>
         <div className="mt-8 text-center text-green-200 dark:text-green-300">

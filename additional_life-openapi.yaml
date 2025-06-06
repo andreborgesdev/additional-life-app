@@ -726,9 +726,7 @@ paths:
           content:
             '*/*':
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ChatMessageResponse"
+                $ref: "#/components/schemas/ChatHistoryWithOnlineStatusResponse"
   /api/v1/chat/user/{userId}:
     get:
       tags:
@@ -1064,12 +1062,12 @@ components:
     PageItemResponse:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int32
         totalElements:
           type: integer
           format: int64
+        totalPages:
+          type: integer
+          format: int32
         first:
           type: boolean
         last:
@@ -1086,11 +1084,11 @@ components:
           format: int32
         sort:
           $ref: "#/components/schemas/SortObject"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         empty:
           type: boolean
     PageableObject:
@@ -1101,6 +1099,8 @@ components:
           format: int64
         sort:
           $ref: "#/components/schemas/SortObject"
+        unpaged:
+          type: boolean
         paged:
           type: boolean
         pageNumber:
@@ -1109,16 +1109,14 @@ components:
         pageSize:
           type: integer
           format: int32
-        unpaged:
-          type: boolean
     SortObject:
       type: object
       properties:
         empty:
           type: boolean
-        sorted:
-          type: boolean
         unsorted:
+          type: boolean
+        sorted:
           type: boolean
     Notification:
       type: object
@@ -1132,6 +1130,15 @@ components:
         timestamp:
           type: integer
           format: int64
+    ChatHistoryWithOnlineStatusResponse:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessageResponse"
+        peerOnline:
+          type: boolean
     ChatMessageResponse:
       type: object
       properties:
