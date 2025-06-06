@@ -57,12 +57,6 @@ const MessageBubble = memo(function MessageBubble({
     [message.timestamp]
   );
 
-  useEffect(() => {
-    console.log(
-      `MessageBubble rendered: ${message.id}, isOwn: ${isOwn}, senderName: ${senderName}, showAvatar: ${showAvatar}, avatarUrl: ${avatarUrl}`
-    );
-  }, [message, isOwn, senderName, showAvatar, avatarUrl]);
-
   return (
     <div
       className={`flex mb-4 px-4 ${isOwn ? "justify-end" : "justify-start"}`}

@@ -25,6 +25,7 @@ import {
 
 import { useSession } from "@/src/app/auth-provider";
 import { useLogout } from "@/src/hooks/auth/use-logout";
+import { useNotificationContext } from "@/src/contexts/notication-context";
 import {
   getUserDisplayName,
   getUserInitials,
@@ -89,7 +90,6 @@ interface HeaderProps {}
 export default function Header({}: HeaderProps) {
   const [mounted, setMounted] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
@@ -98,6 +98,7 @@ export default function Header({}: HeaderProps) {
   const { t, i18n } = useTranslation("common");
   const { session } = useSession();
   const logout = useLogout();
+  const { unreadCount } = useNotificationContext();
 
   const handleStorageAccess = useCallback((key: string, fallback?: string) => {
     try {
@@ -144,7 +145,6 @@ export default function Header({}: HeaderProps) {
     setMounted(true);
     initializeTheme();
     initializeLanguage();
-    setNotificationCount(3);
   }, [initializeTheme, initializeLanguage]);
 
   const toggleDarkMode = useCallback(() => {
@@ -396,12 +396,12 @@ export default function Header({}: HeaderProps) {
                       aria-label={t("ui.notifications")}
                     >
                       <Bell size={20} />
-                      {notificationCount > 0 && (
+                      {unreadCount > 0 && (
                         <Badge
                           variant="destructive"
                           className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs min-w-[18px] h-[18px] flex items-center justify-center"
                         >
-                          {notificationCount}
+                          {unreadCount}
                         </Badge>
                       )}
                     </Link>
