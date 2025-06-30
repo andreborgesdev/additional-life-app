@@ -55,6 +55,12 @@ const registerHandler = async (client: ApiClient, request: NextRequest) => {
     if (authError) {
       console.error("Error updating Supabase auth user metadata:", authError);
     }
+
+    const { error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError) {
+      console.error("Error refreshing session:", refreshError);
+    }
+
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err: any) {
     // Rollback: delete Supabase user if backend registration fails
