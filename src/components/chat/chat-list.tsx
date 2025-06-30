@@ -80,14 +80,14 @@ const ChatListItemComponent = memo(function ChatListItemComponent({
               </span>
             </div>
           </div>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate flex-1">
+              🏷️ {chat.item.title}
+            </p>
+          </div>
           <p className="text-sm text-gray-600 dark:text-gray-300 truncate mb-1 leading-relaxed">
             {chat.lastMessage}
           </p>
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate flex-1">
-              📦 {chat.item.title}
-            </p>
-          </div>
         </div>
       </div>
     </div>

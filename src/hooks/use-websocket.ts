@@ -15,36 +15,62 @@ export interface WebSocketMessage {
   timestamp: string;
 }
 
+export interface NotificationEvent {
+  id: string;
+  type: "MESSAGE" | "ITEM_STATUS_CHANGED" | "CHAT_STARTED" | "SYSTEM";
+  title: string;
+  message: string;
+  userId: string;
+  timestamp: string;
+  read: boolean;
+  metadata?: {
+    itemId?: string;
+    chatId?: string;
+    fromUserId?: string;
+    fromUserName?: string;
+    link?: string;
+    [key: string]: any;
+  };
+}
+
 interface UseWebSocketOptions {
   url: string;
-  chatId?: string;
+  userId?: string;
   onMessage?: (message: WebSocketMessage) => void;
+  onNotification?: (notification: NotificationEvent) => void;
   onError?: (error: Event) => void;
   onOpen?: () => void;
   onClose?: () => void;
   reconnectAttempts?: number;
   reconnectDelay?: number;
+  enableNotifications?: boolean;
 }
 
 interface UseWebSocketReturn {
   isConnected: boolean;
   isConnecting: boolean;
   error: string | null;
-  sendMessage: (message: Omit<WebSocketMessage, "id" | "timestamp">) => void;
-  startChat: (message: Omit<WebSocketMessage, "id" | "timestamp">) => void;
+  sendMessage: (
+    message: Omit<WebSocketMessage, "timestamp"> & { id?: string }
+  ) => void;
+  startChat: (
+    message: Omit<WebSocketMessage, "timestamp"> & { id?: string }
+  ) => void;
   disconnect: () => void;
   connect: () => void;
 }
 
 export function useWebSocket({
   url,
-  chatId,
+  userId,
   onMessage,
+  onNotification,
   onError,
   onOpen,
   onClose,
   reconnectAttempts = 3,
   reconnectDelay = 1000,
+  enableNotifications = true,
 }: UseWebSocketOptions): UseWebSocketReturn {
   const { session } = useSession();
   const [isConnected, setIsConnected] = useState(false);
@@ -56,12 +82,20 @@ export function useWebSocket({
   const reconnectTimer = useRef<NodeJS.Timeout | null>(null);
   const shouldReconnect = useRef(true);
   const currentSubscription = useRef<any>(null);
+  const notificationSubscription = useRef<any>(null);
 
   const stableOnMessage = useCallback(
     (message: WebSocketMessage) => {
       onMessage?.(message);
     },
     [onMessage]
+  );
+
+  const stableOnNotification = useCallback(
+    (notification: NotificationEvent) => {
+      onNotification?.(notification);
+    },
+    [onNotification]
   );
 
   const stableOnError = useCallback(
@@ -91,6 +125,12 @@ export function useWebSocket({
       console.log("🧹 Cleaning up chat subscription");
       currentSubscription.current.unsubscribe();
       currentSubscription.current = null;
+    }
+
+    if (notificationSubscription.current) {
+      console.log("🧹 Cleaning up notification subscription");
+      notificationSubscription.current.unsubscribe();
+      notificationSubscription.current = null;
     }
 
     if (stompClient.current && stompClient.current.connected) {
@@ -221,8 +261,8 @@ export function useWebSocket({
   ]);
 
   const subscribeToChat = useCallback(() => {
-    if (!chatId || !stompClient.current?.connected) {
-      console.log("⏳ Cannot subscribe: no chatId or client not connected");
+    if (!userId || !stompClient.current?.connected) {
+      console.log("⏳ Cannot subscribe: no userId or client not connected");
       return;
     }
 
@@ -233,9 +273,9 @@ export function useWebSocket({
     }
 
     try {
-      console.log(`📝 Subscribing to chat topic: /topic/chat/${chatId}`);
+      console.log(`📝 Subscribing to chat topic: /user/${userId}/msg`);
       const subscription = stompClient.current.subscribe(
-        `/topic/chat/${chatId}`,
+        `/user/${userId}/msg`,
         (message: IMessage) => {
           console.log("📨 Received chat message:", message);
           try {
@@ -253,10 +293,53 @@ export function useWebSocket({
     } catch (err) {
       console.error("❌ Failed to subscribe to chat topics:", err);
     }
-  }, [chatId, stableOnMessage]);
+  }, [userId, stableOnMessage]);
+
+  const subscribeToNotifications = useCallback(() => {
+    if (
+      !session?.user?.id ||
+      !stompClient.current?.connected ||
+      !enableNotifications
+    ) {
+      console.log(
+        "⏳ Cannot subscribe to notifications: missing requirements or disabled"
+      );
+      return;
+    }
+
+    if (notificationSubscription.current) {
+      console.log("🧹 Unsubscribing from previous notification subscription");
+      notificationSubscription.current.unsubscribe();
+      notificationSubscription.current = null;
+    }
+
+    try {
+      console.log(
+        `📝 Subscribing to notification topic: /user/queue/notifications`
+      );
+      const subscription = stompClient.current.subscribe(
+        `/user/queue/notifications`,
+        (message: IMessage) => {
+          console.log("🔔 Received notification:", message);
+          try {
+            const notification: NotificationEvent = JSON.parse(message.body);
+            console.log("✅ Parsed notification:", notification);
+            stableOnNotification(notification);
+          } catch (err) {
+            console.error("❌ Failed to parse notification message:", err);
+          }
+        }
+      );
+      notificationSubscription.current = subscription;
+      console.log("✅ Successfully subscribed to notifications");
+      return subscription;
+    } catch (err) {
+      console.error("❌ Failed to subscribe to notifications:", err);
+    }
+  }, [session?.user?.id, stableOnNotification, enableNotifications]);
 
   const sendMessage = useCallback(
-    (message: Omit<WebSocketMessage, "id" | "timestamp">) => {
+    (message: Omit<WebSocketMessage, "timestamp"> & { id?: string }) => {
       if (!stompClient.current || !stompClient.current.connected) {
         console.error("❌ Cannot send message: STOMP client not connected");
         setError("STOMP client is not connected");
@@ -265,7 +348,7 @@ export function useWebSocket({
 
       const fullMessage: WebSocketMessage = {
         ...message,
-        id: crypto.randomUUID(),
+        id: message.id || crypto.randomUUID(),
         timestamp: new Date().toISOString(),
       };
 
@@ -286,7 +369,7 @@ export function useWebSocket({
   );
 
   const startChat = useCallback(
-    (message: Omit<WebSocketMessage, "id" | "timestamp">) => {
+    (message: Omit<WebSocketMessage, "timestamp"> & { id?: string }) => {
       if (!stompClient.current || !stompClient.current.connected) {
         console.error("❌ Cannot start chat: STOMP client not connected");
         setError("STOMP client is not connected");
@@ -295,7 +378,7 @@ export function useWebSocket({
 
       const fullMessage: WebSocketMessage = {
         ...message,
-        id: crypto.randomUUID(),
+        id: message.id || crypto.randomUUID(),
         timestamp: new Date().toISOString(),
       };
 
@@ -337,7 +420,7 @@ export function useWebSocket({
   }, [session?.access_token, url, connect, disconnect, isConnecting]);
 
   useEffect(() => {
-    if (isConnected && chatId) {
+    if (isConnected && userId) {
       console.log("🔄 Connection ready, subscribing to chat");
       const subscription = subscribeToChat();
 
@@ -348,7 +431,26 @@ export function useWebSocket({
         }
       };
     }
-  }, [isConnected, chatId, subscribeToChat]);
+  }, [isConnected, userId, subscribeToChat]);
+
+  useEffect(() => {
+    if (isConnected && enableNotifications && session?.user?.id) {
+      console.log("🔔 Connection ready, subscribing to notifications");
+      const subscription = subscribeToNotifications();
+
+      return () => {
+        if (subscription) {
+          console.log("🧹 Unsubscribing from notification topic");
+          subscription.unsubscribe();
+        }
+      };
+    }
+  }, [
+    isConnected,
+    enableNotifications,
+    session?.user?.id,
+    subscribeToNotifications,
+  ]);
 
   return {
     isConnected,

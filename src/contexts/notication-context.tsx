@@ -6,16 +6,21 @@ import React, {
   useEffect,
   useState,
   useMemo,
+  useCallback,
 } from "react";
 import { useSession } from "@/src/app/auth-provider";
-import { ChatNotification } from "@/src/types/chat";
+import { ChatNotification, NotificationEvent } from "@/src/types/chat";
 import { createNotificationApiService } from "../services/notification-api.service";
+import { useNotificationsWebSocket } from "@/src/hooks/use-notifications-websocket";
 
 interface NotificationContextType {
   notifications: ChatNotification[];
   unreadCount: number;
   isLoading: boolean;
   refreshNotifications: () => Promise<void>;
+  isWebSocketConnected: boolean;
+  isWebSocketConnecting: boolean;
+  webSocketError: string | null;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -24,8 +29,11 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
 
 export function NotificationProvider({
   children,
+  websocketUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
+    "http://localhost:8080/ws",
 }: {
   children: React.ReactNode;
+  websocketUrl?: string;
 }) {
   const { session } = useSession();
   const [notifications, setNotifications] = useState<ChatNotification[]>([]);
@@ -36,7 +44,7 @@ export function NotificationProvider({
     [session?.access_token]
   );
 
-  const refreshNotifications = async () => {
+  const refreshNotifications = useCallback(async () => {
     if (!session?.user?.id) return;
 
     setIsLoading(true);
@@ -50,21 +58,73 @@ export function NotificationProvider({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [session?.user?.id, notificationApiService]);
+
+  const handleWebSocketNotification = useCallback(
+    (notification: NotificationEvent) => {
+      console.log("🔔 Real-time notification received:", notification);
+
+      // Show browser notification
+      if (Notification.permission === "granted") {
+        new Notification(notification.title, {
+          body: notification.message,
+          icon: "/favicon.ico",
+          tag: notification.id,
+        });
+      }
+
+      // Refresh notifications from API to get updated data
+      refreshNotifications();
+    },
+    [refreshNotifications]
+  );
+
+  const handleWebSocketError = useCallback((error: Event) => {
+    console.error("🔔 Notifications WebSocket error:", error);
+  }, []);
+
+  const handleWebSocketOpen = useCallback(() => {
+    console.log("🔔 Notifications WebSocket connected");
+  }, []);
+
+  const handleWebSocketClose = useCallback(() => {
+    console.log("🔔 Notifications WebSocket disconnected");
+  }, []);
+
+  // WebSocket connection for real-time notifications
+  const {
+    isConnected: isWebSocketConnected,
+    isConnecting: isWebSocketConnecting,
+    error: webSocketError,
+  } = useNotificationsWebSocket({
+    url: websocketUrl,
+    onNotification: handleWebSocketNotification,
+    onError: handleWebSocketError,
+    onOpen: handleWebSocketOpen,
+    onClose: handleWebSocketClose,
+    enabled: Boolean(session?.access_token),
+  });
 
   const unreadCount = notifications.reduce(
     (total, notification) => total + notification.unreadCount,
     0
   );
 
+  // Initial load of notifications
   useEffect(() => {
     if (session?.access_token) {
       refreshNotifications();
-
-      const interval = setInterval(refreshNotifications, 30000);
-      return () => clearInterval(interval);
     }
-  }, [session?.access_token]);
+  }, [session?.access_token, refreshNotifications]);
+
+  // Request browser notification permission
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission().then((permission) => {
+        console.log("🔔 Notification permission:", permission);
+      });
+    }
+  }, []);
 
   return (
     <NotificationContext.Provider
@@ -73,6 +133,9 @@ export function NotificationProvider({
         unreadCount,
         isLoading,
         refreshNotifications,
+        isWebSocketConnected,
+        isWebSocketConnecting,
+        webSocketError,
       }}
     >
       {children}

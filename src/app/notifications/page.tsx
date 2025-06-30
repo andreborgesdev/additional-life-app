@@ -13,6 +13,7 @@ import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useNotifications } from "@/src/hooks/notifications/use-notifications";
+import { NotificationConnectionStatus } from "@/src/components/shared/notification-connection-status";
 import { Bell, MessageCircle, Trash2, CheckCheck } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -94,6 +95,7 @@ export default function NotificationsPage() {
               {unreadCount} unread
             </Badge>
           )}
+          <NotificationConnectionStatus />
         </div>
         {/* {unreadCount > 0 && (
           <Button

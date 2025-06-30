@@ -66,3 +66,21 @@ export interface ChatNotification {
   timestamp: string;
   unreadCount: number;
 }
+
+export interface NotificationEvent {
+  id: string;
+  type: "MESSAGE" | "ITEM_STATUS_CHANGED" | "CHAT_STARTED" | "SYSTEM";
+  title: string;
+  message: string;
+  userId: string;
+  timestamp: string;
+  read: boolean;
+  metadata?: {
+    itemId?: string;
+    chatId?: string;
+    fromUserId?: string;
+    fromUserName?: string;
+    link?: string;
+    [key: string]: any;
+  };
+}

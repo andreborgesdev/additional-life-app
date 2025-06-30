@@ -21,6 +21,8 @@ import {
   LogOut,
   Recycle,
   MessageCircle,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 
 import { useSession } from "@/src/app/auth-provider";
@@ -98,7 +100,8 @@ export default function Header({}: HeaderProps) {
   const { t, i18n } = useTranslation("common");
   const { session } = useSession();
   const logout = useLogout();
-  const { unreadCount } = useNotificationContext();
+  const { unreadCount, isWebSocketConnected: isNotificationsConnected } =
+    useNotificationContext();
 
   const handleStorageAccess = useCallback((key: string, fallback?: string) => {
     try {
@@ -403,6 +406,17 @@ export default function Header({}: HeaderProps) {
                         >
                           {unreadCount}
                         </Badge>
+                      )}
+                      {isNotificationsConnected ? (
+                        <Wifi
+                          size={8}
+                          className="absolute bottom-0 right-0 text-green-500"
+                        />
+                      ) : (
+                        <WifiOff
+                          size={8}
+                          className="absolute bottom-0 right-0 text-red-500"
+                        />
                       )}
                     </Link>
                   </TooltipTrigger>

@@ -32,7 +32,12 @@ export default function RootLayout({
         <ReactQueryClientProvider>
           <I18nAppProvider>
             <AuthProvider>
-              <NotificationProvider>
+              <NotificationProvider
+                websocketUrl={
+                  process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
+                  "http://localhost:8080/ws"
+                }
+              >
                 <Toaster />
                 <Header />
                 <main className="flex-1 pt-14">{children}</main>
