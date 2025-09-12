@@ -13,7 +13,11 @@ import { Button } from "@/src/components/ui/button";
 function ChatContent() {
   const { session } = useSession();
   const searchParams = useSearchParams();
-  const { data: userChats = [], isLoading: isChatsLoading } = useUserChats();
+  const {
+    data: userChats = [],
+    isLoading: isChatsLoading,
+    refetch: refetchChats,
+  } = useUserChats();
   const [selectedChatId, setSelectedChatId] = useState<string>("");
   const [isUrlSelection, setIsUrlSelection] = useState(false);
   const [isMobileViewOpen, setIsMobileViewOpen] = useState(false);
@@ -37,8 +41,10 @@ function ChatContent() {
       setSelectedChatId(chatId);
       setIsUrlSelection(true);
       setIsMobileViewOpen(true);
+      // Refetch chats to ensure the new chat appears in the list
+      refetchChats();
     }
-  }, [chatId, hasSearchParams]);
+  }, [chatId, hasSearchParams, refetchChats]);
 
   const handleSelectChat = (chatId: string) => {
     setSelectedChatId(chatId);

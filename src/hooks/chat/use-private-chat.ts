@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useMemo, useRef } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/src/app/auth-provider";
 import { useWebSocket } from "../use-websocket";
 import { getUserDisplayName } from "@/src/utils/user-metadata-utils";
@@ -38,21 +38,11 @@ export function usePrivateChat({
   websocketUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL,
 }: UsePrivateChatOptions): UsePrivateChatReturn {
   const { session } = useSession();
+  const queryClient = useQueryClient();
   const [realtimeMessages, setRealtimeMessages] = useState<ChatMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [peerOnline, setPeerOnline] = useState<boolean>(false);
   const currentChatRef = useRef<string>("");
-
-  // Debug logging for realtime messages changes
-  useEffect(() => {
-    console.log("📱 Realtime messages updated:", {
-      count: realtimeMessages.length,
-      messages: realtimeMessages.map((m) => ({
-        id: m.id,
-        content: m.content.substring(0, 30),
-      })),
-    });
-  }, [realtimeMessages]);
 
   const chatApiService = useMemo(
     () => createChatApiService(() => session?.access_token || null),
@@ -133,20 +123,6 @@ export function usePrivateChat({
 
   const handleWebSocketMessage = useCallback(
     (wsMessage: WebSocketMessage) => {
-      console.log("🔍 Evaluating incoming WebSocket message:", {
-        messageId: wsMessage.id,
-        messageItemId: wsMessage.itemId,
-        currentItemId: itemId,
-        messageChatId: wsMessage.chatId,
-        currentChatId: chatId,
-        messageSender: wsMessage.senderId,
-        messageRecipient: wsMessage.recipientId,
-        ownUserId,
-        otherUserId,
-        content: wsMessage.content.substring(0, 30),
-      });
-
-      // Check if this message belongs to the current conversation
       const isRelevantByParticipants =
         wsMessage.itemId === itemId &&
         ((wsMessage.senderId === ownUserId &&
@@ -155,28 +131,15 @@ export function usePrivateChat({
             wsMessage.recipientId === ownUserId));
 
       if (!isRelevantByParticipants) {
-        console.log(
-          "🚫 Message not relevant to current conversation participants"
-        );
         return;
       }
 
-      // For messages with chatId, check if it matches our current chat (but be lenient for new chats)
       if (wsMessage.chatId && chatId && wsMessage.chatId !== chatId) {
-        console.log("🚫 Message chatId doesn't match current chatId");
         return;
       }
-
-      console.log("✅ Processing relevant WebSocket message:", {
-        originalId: wsMessage.id,
-        generatedId:
-          wsMessage.id || `${wsMessage.senderId}-${wsMessage.timestamp}`,
-        content: wsMessage.content.substring(0, 30),
-        timestamp: wsMessage.timestamp,
-      });
 
       const chatMessage: ChatMessage = {
-        id: wsMessage.id || `${wsMessage.senderId}-${wsMessage.timestamp}`, // Fallback ID if server doesn't provide one
+        id: wsMessage.id || `${wsMessage.senderId}-${wsMessage.timestamp}`,
         chatId: wsMessage.chatId || chatId || "",
         itemId: wsMessage.itemId,
         senderId: wsMessage.senderId,
@@ -186,48 +149,24 @@ export function usePrivateChat({
         timestamp: wsMessage.timestamp,
       };
 
-      console.log("🔧 About to update realtimeMessages, current state:", {
-        currentCount: undefined, // We'll see this in the state update
-        newMessage: {
-          id: chatMessage.id,
-          content: chatMessage.content.substring(0, 30),
-        },
-      });
-
       setRealtimeMessages((prev) => {
-        console.log("🔧 Inside setRealtimeMessages callback:", {
-          prevCount: prev.length,
-          prevMessages: prev.map((m) => ({
-            id: m.id,
-            content: m.content.substring(0, 30),
-          })),
-          newMessageId: chatMessage.id,
-        });
-
-        // Simple deduplication - if message ID exists, skip it
         const exists = prev.some((msg) => msg.id === chatMessage.id);
         if (exists) {
-          console.log(
-            "🔄 Message ID already exists, skipping:",
-            chatMessage.id
-          );
           return prev;
         }
 
-        // Add new message
-        console.log("📝 Adding new WebSocket message:", chatMessage);
         const newState = [...prev, chatMessage];
-        console.log("📝 New state will have:", {
-          count: newState.length,
-          messages: newState.map((m) => ({
-            id: m.id,
-            content: m.content.substring(0, 30),
-          })),
-        });
+
+        if (prev.length === 0) {
+          queryClient.invalidateQueries({
+            queryKey: ["user-chats", session?.user?.id],
+          });
+        }
+
         return newState;
       });
     },
-    [itemId, ownUserId, otherUserId, chatId]
+    [itemId, ownUserId, otherUserId, chatId, queryClient, session?.user?.id]
   );
 
   const {
@@ -272,13 +211,18 @@ export function usePrivateChat({
       try {
         if (isFirstMessage || !chatId) {
           startChat(messageToSend);
+          queryClient.invalidateQueries({
+            queryKey: ["user-chats", session?.user?.id],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["chat-id", itemId, otherUserId],
+          });
         } else {
           sendWebSocketMessage(messageToSend);
         }
-        console.log("✅ Message sent via WebSocket:", messageId);
         return messageId;
       } catch (error) {
-        console.error("❌ Failed to send message:", error);
+        console.error("Failed to send message:", error);
         setError("Failed to send message");
         return null;
       }
@@ -291,6 +235,7 @@ export function usePrivateChat({
       startChat,
       itemId,
       otherUserId,
+      queryClient,
     ]
   );
 
@@ -300,44 +245,21 @@ export function usePrivateChat({
   }, [chatId, session?.user?.id, markAsReadMutation]);
 
   const allMessages = useMemo(() => {
-    console.log("🔄 Recomputing allMessages:", {
-      historyCount: historyMessages.length,
-      realtimeCount: realtimeMessages.length,
-      chatId,
-    });
-
     const combined = [...historyMessages, ...realtimeMessages].sort(
       (a, b) =>
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
 
-    const deduplicated = combined.filter(
+    return combined.filter(
       (message, index, arr) =>
         arr.findIndex((m) => m.id === message.id) === index
     );
-
-    console.log("📊 Final message counts:", {
-      combined: combined.length,
-      deduplicated: deduplicated.length,
-      finalMessages: deduplicated.map((m) => ({
-        id: m.id,
-        content: m.content.substring(0, 30),
-      })),
-    });
-
-    return deduplicated;
-  }, [historyMessages, realtimeMessages, chatId]);
+  }, [historyMessages, realtimeMessages]);
 
   useEffect(() => {
     const currentChatKey = `${itemId}-${otherUserId}`;
-    console.log("🔑 Chat key check:", {
-      newKey: currentChatKey,
-      oldKey: currentChatRef.current,
-      shouldReset: currentChatRef.current !== currentChatKey,
-    });
 
     if (currentChatRef.current !== currentChatKey) {
-      console.log("🧹 Clearing realtime messages for new chat");
       setRealtimeMessages([]);
       currentChatRef.current = currentChatKey;
     }
