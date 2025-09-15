@@ -1,68 +1,47 @@
-"use client";
+'use client';
 
-import type React from "react";
-import { useEffect, useState } from "react";
-import { notFound, useRouter } from "next/navigation";
-import Link from "next/link";
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { notFound, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   ArrowLeft,
-  MapPin,
-  Flag,
-  Share2,
-  Copy,
-  Facebook,
-  MessageCircle,
   Clock,
-  MapPinHouse,
-  Truck,
+  Copy,
   Edit,
-  Mail,
-  Phone,
+  MapPin,
+  MapPinHouse,
+  MessageCircle,
+  Share2,
   Tag,
-} from "lucide-react";
-import ImageCarousel from "@/src/components/shared/image-carousel";
-import { Button } from "@/src/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/src/components/ui/dialog";
-import { Label } from "@/src/components/ui/label";
-import { Textarea } from "@/src/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/src/components/ui/radio-group";
+  Truck,
+} from 'lucide-react';
+import ImageCarousel from '@/src/components/shared/image-carousel';
+import { Button } from '@/src/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/src/components/ui/dropdown-menu";
-import { useToast } from "@/src/hooks/use-toast";
-import { useItem } from "@/src/hooks/items/use-item";
-import { Skeleton } from "@/src/components/ui/skeleton";
-import { useSession } from "../../auth-provider";
-import { motion } from "framer-motion";
-import { Badge } from "@/src/components/ui/badge";
+} from '@/src/components/ui/dropdown-menu';
+import { useToast } from '@/src/hooks/use-toast';
+import { useItem } from '@/src/hooks/items/use-item';
+import { Skeleton } from '@/src/components/ui/skeleton';
+import { useSession } from '../../auth-provider';
+import { motion } from 'framer-motion';
+import { Badge } from '@/src/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/src/components/ui/avatar';
+import { conditionDetails } from '@/src/components/shared/detailed-item-card';
+import { Separator } from '@/src/components/ui/separator';
+import { getTimeAgo } from '@/src/utils/date-utils';
+import { useUser } from '@/src/hooks/users/use-user';
+import MapCaller from '@/src/components/ui/map-caller';
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
-import { conditionDetails } from "@/src/components/shared/detailed-item-card";
-import { Separator } from "@/src/components/ui/separator";
-import { getTimeAgo } from "@/src/utils/date-utils";
-import { useUser } from "@/src/hooks/users/use-user";
-import MapCaller from "@/src/components/ui/map-caller";
-import {
-  convertToLatLng,
-  parseAddressToLocationData,
   getOptimalZoom,
   type LocationData,
-} from "@/src/utils/location-utils";
-import { useTranslation } from "react-i18next";
+  parseAddressToLocationData,
+} from '@/src/utils/location-utils';
+import { useTranslation } from 'react-i18next';
 
 const fadeIn = {
   hidden: { opacity: 0 },
@@ -75,23 +54,19 @@ const slideUp = {
 };
 
 export default function ItemPage({ params }: { params: { id: string } }) {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation('common');
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
-  const [reportReason, setReportReason] = useState("");
-  const [reportDescription, setReportDescription] = useState("");
+  const [reportReason, setReportReason] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
   const [locationData, setLocationData] = useState<LocationData>({
-    type: "pin",
+    type: 'pin',
     coordinates: { lat: 47.3769, lng: 8.5417 },
   });
   const { toast } = useToast();
   const { session } = useSession();
   const router = useRouter();
 
-  const {
-    data: item,
-    isLoading: isLoadingItemData,
-    error,
-  } = useItem(params.id);
+  const { data: item, isLoading: isLoadingItemData, error } = useItem(params.id);
 
   useEffect(() => {
     if (item) {
@@ -101,18 +76,14 @@ export default function ItemPage({ params }: { params: { id: string } }) {
     }
   }, [item]);
 
-  const { data: ownerData, isLoading: isLoadingOwnerData } = useUser(
-    item?.owner.id
-  );
+  const { data: ownerData, isLoading: isLoadingOwnerData } = useUser(item?.owner.id);
 
   if (isLoadingItemData) {
     return <ProductSkeleton />;
   }
 
   if (error) {
-    return (
-      <p>{t("errors.error_loading_product", { message: error.message })}</p>
-    );
+    return <p>{t('errors.error_loading_product', { message: error.message })}</p>;
   }
 
   if (!item) {
@@ -123,16 +94,16 @@ export default function ItemPage({ params }: { params: { id: string } }) {
 
   const handleReportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Report submitted:", {
+    console.log('Report submitted:', {
       reason: reportReason,
       description: reportDescription,
     });
     setIsReportDialogOpen(false);
-    setReportReason("");
-    setReportDescription("");
+    setReportReason('');
+    setReportDescription('');
     toast({
-      title: t("reports.report_submitted"),
-      description: t("reports.report_submitted_description"),
+      title: t('reports.report_submitted'),
+      description: t('reports.report_submitted_description'),
     });
   };
 
@@ -142,91 +113,88 @@ export default function ItemPage({ params }: { params: { id: string } }) {
 
   const handleShare = (platform: string) => {
     const url = `${window.location.origin}/items/${params.id}`;
-    let shareUrl = "";
+    let shareUrl = '';
 
     switch (platform) {
-      case "copy":
+      case 'copy':
         navigator.clipboard.writeText(url);
         toast({
-          title: t("sharing.link_copied"),
-          description: t("sharing.link_copied_description"),
+          title: t('sharing.link_copied'),
+          description: t('sharing.link_copied_description'),
         });
         return;
-      case "facebook":
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-          url
-        )}`;
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
         break;
-      case "messenger":
+      case 'messenger':
         shareUrl = `https://www.facebook.com/dialog/send?link=${encodeURIComponent(
-          url
+          url,
         )}&app_id=YOUR_FACEBOOK_APP_ID`;
         break;
-      case "whatsapp":
-        shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(
-          url
-        )}`;
+      case 'whatsapp':
+        shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(url)}`;
         break;
     }
 
     if (shareUrl) {
-      window.open(shareUrl, "_blank", "noopener,noreferrer");
+      window.open(shareUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
-  const handleContact = (method: "EMAIL" | "PHONE" | "WHATSAPP") => {
+  const handleContact = (method: 'EMAIL' | 'PHONE' | 'WHATSAPP') => {
     if (!ownerData) {
       toast({
-        title: t("contact.contact_information_missing"),
-        description: t("contact.unable_to_retrieve_contact"),
-        variant: "destructive",
+        title: t('contact.contact_information_missing'),
+        description: t('contact.unable_to_retrieve_contact'),
+        variant: 'destructive',
       });
       return;
     }
 
     switch (method) {
-      case "EMAIL":
+      case 'EMAIL':
         if (ownerData.email) {
-          window.location.href = `mailto:${
-            ownerData.email
-          }?subject=Additional Life: ${t("contact.interested_in_item", {
-            title: item?.title,
-          })}`;
+          window.location.href = `mailto:${ownerData.email}?subject=Additional Life: ${t(
+            'contact.interested_in_item',
+            {
+              title: item?.title,
+            },
+          )}`;
         } else {
           toast({
-            title: t("contact.email_not_available"),
-            description: t("contact.owner_no_email"),
-            variant: "destructive",
+            title: t('contact.email_not_available'),
+            description: t('contact.owner_no_email'),
+            variant: 'destructive',
           });
         }
         break;
-      case "PHONE":
+      case 'PHONE':
         if (ownerData.phoneNumber) {
           window.location.href = `tel:${ownerData.phoneNumber}`;
         } else {
           toast({
-            title: t("contact.phone_not_available"),
-            description: t("contact.owner_no_phone"),
-            variant: "destructive",
+            title: t('contact.phone_not_available'),
+            description: t('contact.owner_no_phone'),
+            variant: 'destructive',
           });
         }
         break;
-      case "WHATSAPP":
+      case 'WHATSAPP':
         if (ownerData.phoneNumber) {
-          const cleanPhone = ownerData.phoneNumber.replace(/[^0-9]/g, "");
+          const cleanPhone = ownerData.phoneNumber.replace(/[^0-9]/g, '');
           const message = encodeURIComponent(
-            t("contact.interested_in_item", { title: item?.title })
+            t('contact.interested_in_item', { title: item?.title }),
           );
           window.open(
             `https://wa.me/${cleanPhone}?text=${message}`,
-            "_blank",
-            "noopener,noreferrer"
+            '_blank',
+            'noopener,noreferrer',
           );
         } else {
           toast({
-            title: t("contact.whatsapp_not_available"),
-            description: t("contact.owner_no_phone_whatsapp"),
-            variant: "destructive",
+            title: t('contact.whatsapp_not_available'),
+            description: t('contact.owner_no_phone_whatsapp'),
+            variant: 'destructive',
           });
         }
         break;
@@ -251,45 +219,36 @@ export default function ItemPage({ params }: { params: { id: string } }) {
   const ActionButtons = () => (
     <>
       {isOwner && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleEditClick}
-          className="px-6 md:px-10"
-        >
+        <Button variant="outline" size="sm" onClick={handleEditClick} className="px-6 md:px-10">
           <Edit className="mr-2 h-4 w-4" />
-          {t("items.edit")}
+          {t('items.edit')}
         </Button>
       )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm" className="px-6 md:px-10">
             <Share2 className="mr-2 h-4 w-4" />
-            {t("items.share")}
+            {t('items.share')}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem onSelect={() => handleShare("copy")}>
+          <DropdownMenuItem onSelect={() => handleShare('copy')}>
             <Copy className="mr-2 h-4 w-4" />
-            {t("items.copy_link")}
+            {t('items.copy_link')}
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => handleShare("facebook")}>
-            <Facebook className="mr-2 h-4 w-4" />
-            {t("items.share_on_facebook")}
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => handleShare("messenger")}>
-            <MessageCircle className="mr-2 h-4 w-4" />
-            {t("items.share_on_messenger")}
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => handleShare("whatsapp")}>
-            <svg
-              className="mr-2 h-4 w-4"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
+          {/*<DropdownMenuItem onSelect={() => handleShare("facebook")}>*/}
+          {/*  <Facebook className="mr-2 h-4 w-4" />*/}
+          {/*  {t("items.share_on_facebook")}*/}
+          {/*</DropdownMenuItem>*/}
+          {/*<DropdownMenuItem onSelect={() => handleShare("messenger")}>*/}
+          {/*  <MessageCircle className="mr-2 h-4 w-4" />*/}
+          {/*  {t("items.share_on_messenger")}*/}
+          {/*</DropdownMenuItem>*/}
+          <DropdownMenuItem onSelect={() => handleShare('whatsapp')}>
+            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
             </svg>
-            {t("items.share_on_whatsapp")}
+            {t('items.share_on_whatsapp')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -369,7 +328,7 @@ export default function ItemPage({ params }: { params: { id: string } }) {
       return (
         <Button className="w-full" onClick={handleChatClick}>
           <MessageCircle className="mr-2 h-5 w-5" />
-          {t("items.chat_with_owner")}
+          {t('items.chat_with_owner')}
         </Button>
       );
     }
@@ -428,7 +387,7 @@ export default function ItemPage({ params }: { params: { id: string } }) {
         <div className="flex flex-col sm:flex-row gap-3">{contactButtons}</div>
         <Button className="w-full" onClick={handleChatClick}>
           <MessageCircle className="mr-2 h-5 w-5" />
-          {t("items.chat_with_owner")}
+          {t('items.chat_with_owner')}
         </Button>
       </div>
     );
@@ -436,23 +395,15 @@ export default function ItemPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="container mx-auto px-4 py-8 overflow-x-hidden">
-      <Link
-        href="/items"
-        className="flex items-center text-green-600 hover:text-green-700 mb-4"
-      >
+      <Link href="/items" className="flex items-center text-green-600 hover:text-green-700 mb-4">
         <ArrowLeft className="mr-2" size={20} />
-        {t("items.back_to_listings")}
+        {t('items.back_to_listings')}
       </Link>
       <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-full">
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={fadeIn}
-          className="w-full min-w-0"
-        >
+        <motion.div initial="hidden" animate="visible" variants={fadeIn} className="w-full min-w-0">
           <ImageCarousel
             images={imagesForCarousel}
-            alt={item.title || "Product Image"}
+            alt={item.title || 'Product Image'}
             priority={true}
           />
         </motion.div>
@@ -473,11 +424,8 @@ export default function ItemPage({ params }: { params: { id: string } }) {
                 variant="outline"
                 className="bg-blue-50 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
               >
-                {t("contact.condition")}:{" "}
-                {
-                  conditionDetails.find((c) => c.key === item.condition)
-                    ?.placeholder
-                }
+                {t('contact.condition')}:{' '}
+                {conditionDetails.find((c) => c.key === item.condition)?.placeholder}
               </Badge>
             </div>
 
@@ -489,28 +437,22 @@ export default function ItemPage({ params }: { params: { id: string } }) {
           <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <Avatar className="h-12 w-12">
               <AvatarImage src={item.owner.avatarUrl} />
-              <AvatarFallback>
-                {(item.owner?.name || "U").charAt(0)}
-              </AvatarFallback>
+              <AvatarFallback>{(item.owner?.name || 'U').charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-medium text-gray-900 dark:text-gray-100">
-                {item.owner?.name}
-              </p>
+              <p className="font-medium text-gray-900 dark:text-gray-100">{item.owner?.name}</p>
               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <Clock className="mr-1 h-4 w-4" />
                 <span>
-                  {t("contact.posted")} {getTimeAgo(item.createdAt)}
+                  {t('contact.posted')} {getTimeAgo(item.createdAt)}
                 </span>
               </div>
             </div>
           </div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-4">
-            {t("contact.description")}
+            {t('contact.description')}
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            {item.description}
-          </p>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">{item.description}</p>
           <Separator className="my-4" />
           <div className="space-y-2 mb-6">
             <div className="flex items-center text-gray-600 dark:text-gray-300">
@@ -520,13 +462,13 @@ export default function ItemPage({ params }: { params: { id: string } }) {
             {item.isPickupPossible && (
               <div className="flex items-center text-gray-600 dark:text-gray-300">
                 <MapPinHouse size={20} className="mr-2" />
-                <span>{t("contact.pickup_available")}</span>
+                <span>{t('contact.pickup_available')}</span>
               </div>
             )}
             {item.isShippingPossible && (
               <div className="flex items-center text-gray-600 dark:text-gray-300">
                 <Truck size={20} className="mr-2" />
-                <span>{t("contact.shipping_available")}</span>
+                <span>{t('contact.shipping_available')}</span>
               </div>
             )}
           </div>
@@ -534,7 +476,7 @@ export default function ItemPage({ params }: { params: { id: string } }) {
             <div>
               <div className="space-y-4 mb-6">
                 <h2 className="text-xl font-semibold text-green-800 dark:text-green-200">
-                  {t("contact.contact_the_owner")}
+                  {t('contact.contact_the_owner')}
                 </h2>
               </div>
               <ContactButtons />
@@ -544,29 +486,26 @@ export default function ItemPage({ params }: { params: { id: string } }) {
               className="w-full bg-green-600 hover:bg-green-700"
               onClick={handleIAmInterested}
             >
-              {t("contact.i_am_interested")}
+              {t('contact.i_am_interested')}
             </Button>
           )}
         </motion.div>
       </div>
       <div className="mt-8">
         <h2 className="text-2xl font-bold text-green-800 dark:text-green-200 mb-4">
-          {t("items.location")}
+          {t('items.location')}
         </h2>
         <div className="h-[400px] rounded-lg overflow-hidden">
-          <MapCaller
-            locationData={locationData}
-            zoom={getOptimalZoom(locationData)}
-          />
+          <MapCaller locationData={locationData} zoom={getOptimalZoom(locationData)} />
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
           <MapPin className="inline w-4 h-4 mr-1" />
           {item.address}
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-          {locationData.type === "boundingbox"
-            ? t("items.map_general_area")
-            : t("items.map_approximate_location")}
+          {locationData.type === 'boundingbox'
+            ? t('items.map_general_area')
+            : t('items.map_approximate_location')}
         </p>
       </div>
     </div>
@@ -588,8 +527,7 @@ function ProductSkeleton() {
           <div className="flex justify-between items-start mb-4">
             <Skeleton className="h-10 w-3/4" /> {/* Title */}
             <div className="flex space-x-2">
-              <Skeleton className="h-8 w-20 rounded" />{" "}
-              {/* Edit button skeleton */}
+              <Skeleton className="h-8 w-20 rounded" /> {/* Edit button skeleton */}
               <Skeleton className="h-8 w-20 rounded" /> {/* Share button */}
               <Skeleton className="h-8 w-20 rounded" /> {/* Report button */}
             </div>
@@ -616,13 +554,10 @@ function ProductSkeleton() {
             <Skeleton className="h-4 w-1/2" /> {/* Category name */}
           </div>
           <div>
-            <Skeleton className="h-8 w-1/2 mb-4" />{" "}
-            {/* Contact title / I am interested button */}
+            <Skeleton className="h-8 w-1/2 mb-4" /> {/* Contact title / I am interested button */}
             <div className="flex flex-wrap gap-2">
-              <Skeleton className="h-10 w-24 rounded" />{" "}
-              {/* Contact button 1 */}
-              <Skeleton className="h-10 w-24 rounded" />{" "}
-              {/* Contact button 2 */}
+              <Skeleton className="h-10 w-24 rounded" /> {/* Contact button 1 */}
+              <Skeleton className="h-10 w-24 rounded" /> {/* Contact button 2 */}
             </div>
           </div>
         </div>

@@ -1,0 +1,17 @@
+# node / build
+node_modules
+dist
+.build
+coverage
+
+# local editor/project files
+.vscode
+.DS_Store
+
+# lock files (if you format them elsewhere)
+yarn.lock
+package-lock.json
+
+# logs
+logs
+*.log
