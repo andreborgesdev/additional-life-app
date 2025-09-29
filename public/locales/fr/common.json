@@ -106,7 +106,17 @@
     "check_your_email": "Vérifiez votre email",
     "reset_link_sent": "Nous avons envoyé un lien de réinitialisation du mot de passe à",
     "didnt_receive_email": "Vous n'avez pas reçu l'email ? Vérifiez votre dossier spam ou réessayez.",
-    "try_again": "Réessayer"
+    "try_again": "Réessayer",
+    "update_password": "Mettre à jour le mot de passe",
+    "updating_password": "Mise à jour du mot de passe...",
+    "password_update_error": "Échec de la mise à jour du mot de passe.",
+    "password_updated": "Mot de passe mis à jour",
+    "password_updated_success": "Votre mot de passe a été mis à jour avec succès.",
+    "set_new_password": "Définir un nouveau mot de passe",
+    "enter_new_password": "Entrez et confirmez votre nouveau mot de passe ci-dessous.",
+    "recovery_session_missing": "Le lien de récupération est invalide ou a expiré. Veuillez demander un nouveau lien de réinitialisation du mot de passe.",
+    "new_password_placeholder": "Entrer le nouveau mot de passe",
+    "confirm_password_placeholder": "Confirmer le nouveau mot de passe"
   },
   "hero": {
     "title": "Donnez une seconde vie à vos affaires",

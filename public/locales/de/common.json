@@ -106,7 +106,18 @@
     "check_your_email": "Überprüfen Sie Ihre E-Mails",
     "reset_link_sent": "Wir haben einen Passwort-Zurücksetzungslink an",
     "didnt_receive_email": "E-Mail nicht erhalten? Überprüfen Sie Ihren Spam-Ordner oder versuchen Sie es erneut.",
-    "try_again": "Erneut versuchen"
+    "try_again": "Erneut versuchen",
+    "update_password": "Passwort aktualisieren",
+    "updating_password": "Passwort wird aktualisiert...",
+    "password_update_error": "Passwort konnte nicht aktualisiert werden.",
+    "password_updated": "Passwort aktualisiert",
+    "password_updated_success": "Ihr Passwort wurde erfolgreich aktualisiert.",
+    "set_new_password": "Neues Passwort festlegen",
+    "enter_new_password": "Geben Sie unten Ihr neues Passwort ein und bestätigen Sie es.",
+    "recovery_session_missing": "Der Wiederherstellungslink ist ungültig oder abgelaufen. Fordern Sie einen neuen Link zum Zurücksetzen an.",
+    "new_password_placeholder": "Neues Passwort eingeben",
+    "confirm_password_placeholder": "Neues Passwort bestätigen",
+    "passwords_do_not_match": "Passwörter stimmen nicht überein"
   },
   "hero": {
     "title": "Geben Sie Ihren Besitztümern ein zweites Leben",
@@ -657,52 +668,5 @@
     "generosity_text": "Eine Kultur des Gebens und Teilens fördern",
     "sign_up_button": "Jetzt registrieren",
     "learn_more_button": "Mehr erfahren"
-  },
-  "auth": {
-    "back_to_home": "Zurück zur Startseite",
-    "create_account": "Konto erstellen",
-    "join_community": "Treten Sie unserer Community bei und fangen Sie an zu teilen",
-    "google": "Mit Google anmelden",
-    "or_continue_email": "Oder mit E-Mail fortfahren",
-    "full_name": "Vollständiger Name",
-    "name_placeholder": "Ihr vollständiger Name",
-    "email_address": "E-Mail-Adresse",
-    "email_placeholder": "Ihre E-Mail-Adresse",
-    "password": "Passwort",
-    "password_placeholder": "Ihr Passwort",
-    "confirm_password": "Passwort bestätigen",
-    "confirm_password_placeholder": "Bestätigen Sie Ihr Passwort",
-    "passwords_do_not_match": "Passwörter stimmen nicht überein",
-    "password_strength": {
-      "label": "Passwortstärke",
-      "weak": "Schwach",
-      "fair": "Mittel",
-      "strong": "Stark"
-    },
-    "password_requirements": {
-      "min_length": "Mindestens 8 Zeichen",
-      "uppercase": "Enthält Großbuchstaben",
-      "number": "Enthält Zahlen",
-      "special_char": "Enthält Sonderzeichen"
-    },
-    "agree_to": "Ich stimme den",
-    "terms_and_conditions": "Allgemeinen Geschäftsbedingungen",
-    "and": "und",
-    "privacy_policy": "Datenschutzbestimmungen",
-    "already_have_account": "Sie haben bereits ein Konto?",
-    "sign_in": "Anmelden",
-    "welcome_back": "Willkommen zurück!",
-    "enter_credentials": "Bitte geben Sie Ihre Anmeldedaten ein, um auf Ihr Konto zuzugreifen",
-    "email": "E-Mail",
-    "forgot_password": "Passwort vergessen?",
-    "remember_me": "Angemeldet bleiben",
-    "sign_up_for_free": "Kostenlos registrieren",
-    "forgot_password_title": "Passwort vergessen",
-    "forgot_password_description": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts.",
-    "send_reset_link": "Link zum Zurücksetzen senden",
-    "back_to_login": "Zurück zur Anmeldung",
-    "sign_up_free": "Kostenlos registrieren",
-    "login": "Anmelden",
-    "logout": "Abmelden"
   }
 }

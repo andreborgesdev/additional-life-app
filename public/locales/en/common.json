@@ -136,7 +136,17 @@
     "email_in_use": "This email is already in use. Please try logging in or use a different email address.",
     "email_not_confirmed": "Please confirm your email address before logging in.",
     "password_reset_sent": "Password Reset Email Sent",
-    "check_your_email_instructions": "Check your email for a link to reset your password."
+    "check_your_email_instructions": "Check your email for a link to reset your password.",
+    "update_password": "Update Password",
+    "updating_password": "Updating password...",
+    "password_update_error": "Failed to update password.",
+    "password_updated": "Password Updated",
+    "password_updated_success": "Your password has been updated successfully.",
+    "set_new_password": "Set New Password",
+    "enter_new_password": "Enter and confirm your new password below.",
+    "recovery_session_missing": "The recovery link is invalid or has expired. Please request a new password reset link.",
+    "new_password_placeholder": "Enter new password",
+    "confirm_password_placeholder": "Confirm new password"
   },
   "hero": {
     "title": "Give a Second Life to Your Belongings",
