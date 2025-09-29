@@ -1,26 +1,26 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
 
 import {
-  Menu,
-  Sun,
-  Moon,
-  PlusCircle,
-  LogIn,
-  User,
   Bell,
   List,
-  Package,
-  Settings,
-  Search,
+  LogIn,
   LogOut,
-  Recycle,
+  Menu,
   MessageCircle,
+  Moon,
+  Package,
+  PlusCircle,
+  Recycle,
+  Search,
+  Settings,
+  Sun,
+  User,
   Wifi,
   WifiOff,
 } from "lucide-react";
@@ -28,21 +28,13 @@ import {
 import { useSession } from "@/src/app/auth-provider";
 import { useLogout } from "@/src/hooks/auth/use-logout";
 import { useNotificationContext } from "@/src/contexts/notication-context";
-import {
-  getUserDisplayName,
-  getUserInitials,
-  getUserAvatarUrl,
-} from "@/src/utils/user-metadata-utils";
+import { getUserAvatarUrl, getUserDisplayName, getUserInitials, } from "@/src/utils/user-metadata-utils";
 import { cn } from "@/src/lib/utils";
 
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import { Input } from "@/src/components/ui/input";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,20 +43,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/src/components/ui/tooltip";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/src/components/ui/sheet";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, } from "@/src/components/ui/tooltip";
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger, } from "@/src/components/ui/sheet";
+import LanguageSelector from "@/src/components/shared/language-selector";
 
 interface NavigationItem {
   href: string;
@@ -100,8 +81,7 @@ export default function Header({}: HeaderProps) {
   const { t, i18n } = useTranslation("common");
   const { session } = useSession();
   const logout = useLogout();
-  const { unreadCount, isWebSocketConnected: isNotificationsConnected } =
-    useNotificationContext();
+  const { unreadCount, isWebSocketConnected: isNotificationsConnected } = useNotificationContext();
 
   const handleStorageAccess = useCallback((key: string, fallback?: string) => {
     try {
@@ -121,12 +101,9 @@ export default function Header({}: HeaderProps) {
 
   const initializeTheme = useCallback(() => {
     const storedTheme = handleStorageAccess(THEME_STORAGE_KEY);
-    const systemPrefersDark = window.matchMedia?.(
-      "(prefers-color-scheme: dark)"
-    ).matches;
+    const systemPrefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
 
-    const shouldUseDarkMode =
-      storedTheme === "dark" || (!storedTheme && systemPrefersDark);
+    const shouldUseDarkMode = storedTheme === "dark" || (!storedTheme && systemPrefersDark);
 
     setDarkMode(shouldUseDarkMode);
     document.documentElement.classList.toggle("dark", shouldUseDarkMode);
@@ -168,7 +145,7 @@ export default function Header({}: HeaderProps) {
       }
       return pathname?.startsWith(href);
     },
-    [pathname]
+    [pathname],
   );
 
   const handleMobileSearchToggle = useCallback(() => {
@@ -181,7 +158,7 @@ export default function Header({}: HeaderProps) {
       { href: "/categories", icon: null, label: t("nav.categories") },
       { href: "/about", icon: null, label: t("nav.about") },
     ],
-    [t]
+    [t],
   );
 
   const mobileNavItems: NavigationItem[] = useMemo(
@@ -202,7 +179,7 @@ export default function Header({}: HeaderProps) {
         label: t("nav.about"),
       },
     ],
-    [t]
+    [t],
   );
 
   const accountNavItems: AccountNavigationItem[] = useMemo(
@@ -218,7 +195,7 @@ export default function Header({}: HeaderProps) {
         label: t("nav.items_published"),
       },
     ],
-    [t]
+    [t],
   );
 
   const headerClassNames = useMemo(
@@ -227,20 +204,18 @@ export default function Header({}: HeaderProps) {
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         isScrolled
           ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-sm"
-          : "bg-green-600 dark:bg-green-800"
+          : "bg-green-600 dark:bg-green-800",
       ),
-    [isScrolled]
+    [isScrolled],
   );
 
   const logoClassNames = useMemo(
     () =>
       cn(
         "text-2xl font-bold transition-colors duration-300 flex items-center gap-2",
-        isScrolled
-          ? "text-green-600 dark:text-green-400"
-          : "text-white dark:text-green-100"
+        isScrolled ? "text-green-600 dark:text-green-400" : "text-white dark:text-green-100",
       ),
-    [isScrolled]
+    [isScrolled],
   );
 
   const getNavLinkClasses = useCallback(
@@ -257,8 +232,8 @@ export default function Header({}: HeaderProps) {
               ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
               : "bg-gray-100 text-green-600 dark:bg-gray-800 dark:text-green-400"
             : isAddButton
-            ? "bg-green-500 text-white dark:bg-green-700 dark:text-white"
-            : "bg-white/10 text-white dark:bg-green-700/50 dark:text-white"
+              ? "bg-green-500 text-white dark:bg-green-700 dark:text-white"
+              : "bg-white/10 text-white dark:bg-green-700/50 dark:text-white",
         );
       }
 
@@ -269,11 +244,11 @@ export default function Header({}: HeaderProps) {
             ? "bg-green-600 text-white hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
             : "text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800"
           : isAddButton
-          ? "bg-white text-green-600 hover:bg-green-50 dark:bg-green-100 dark:text-green-800 dark:hover:bg-white"
-          : "text-white/90 hover:text-white dark:text-green-100 hover:bg-white/10 dark:hover:bg-green-700/50"
+            ? "bg-white text-green-600 hover:bg-green-50 dark:bg-green-100 dark:text-green-800 dark:hover:bg-white"
+            : "text-white/90 hover:text-white dark:text-green-100 hover:bg-white/10 dark:hover:bg-green-700/50",
       );
     },
-    [isActive, isScrolled]
+    [isActive, isScrolled],
   );
 
   const getIconButtonClasses = useCallback(
@@ -285,10 +260,10 @@ export default function Header({}: HeaderProps) {
             ? "bg-gray-100 text-green-600 dark:bg-gray-800 dark:text-green-400"
             : "bg-white/10 text-white dark:bg-green-700/50 dark:text-white"
           : isScrolled
-          ? "text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-          : "text-white hover:text-white dark:text-green-100 hover:bg-white/10 dark:hover:bg-green-700/50"
+            ? "text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+            : "text-white hover:text-white dark:text-green-100 hover:bg-white/10 dark:hover:bg-green-700/50",
       ),
-    [isActive, isScrolled]
+    [isActive, isScrolled],
   );
 
   if (!mounted) return null;
@@ -306,10 +281,7 @@ export default function Header({}: HeaderProps) {
             {navItems.map((item) => (
               <Tooltip key={item.href}>
                 <TooltipTrigger asChild>
-                  <Link
-                    href={item.href}
-                    className={getNavLinkClasses(item.href)}
-                  >
+                  <Link href={item.href} className={getNavLinkClasses(item.href)}>
                     {item.icon}
                     {item.label}
                   </Link>
@@ -344,28 +316,27 @@ export default function Header({}: HeaderProps) {
             </Button>
 
             {!session && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleDarkMode}
-                    className={getIconButtonClasses()}
-                    aria-label={
-                      darkMode
-                        ? t("ui.switch_to_light_mode")
-                        : t("ui.switch_to_dark_mode")
-                    }
-                  >
-                    {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  {darkMode
-                    ? t("ui.switch_to_light_mode")
-                    : t("ui.switch_to_dark_mode")}
-                </TooltipContent>
-              </Tooltip>
+              <>
+                <LanguageSelector />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleDarkMode}
+                      className={getIconButtonClasses()}
+                      aria-label={
+                        darkMode ? t("ui.switch_to_light_mode") : t("ui.switch_to_dark_mode")
+                      }
+                    >
+                      {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {darkMode ? t("ui.switch_to_light_mode") : t("ui.switch_to_dark_mode")}
+                  </TooltipContent>
+                </Tooltip>
+              </>
             )}
 
             {session && (
@@ -374,18 +345,13 @@ export default function Header({}: HeaderProps) {
                   <TooltipTrigger asChild>
                     <Link
                       href="/chat"
-                      className={cn(
-                        "p-2 rounded-full relative",
-                        getIconButtonClasses("/chat")
-                      )}
+                      className={cn("p-2 rounded-full relative", getIconButtonClasses("/chat"))}
                       aria-label={t("ui.messages")}
                     >
                       <MessageCircle size={20} />
                     </Link>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    {t("ui.messages")}
-                  </TooltipContent>
+                  <TooltipContent side="bottom">{t("ui.messages")}</TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
@@ -394,7 +360,7 @@ export default function Header({}: HeaderProps) {
                       href="/notifications"
                       className={cn(
                         "p-2 rounded-full relative",
-                        getIconButtonClasses("/notifications")
+                        getIconButtonClasses("/notifications"),
                       )}
                       aria-label={t("ui.notifications")}
                     >
@@ -408,21 +374,13 @@ export default function Header({}: HeaderProps) {
                         </Badge>
                       )}
                       {isNotificationsConnected ? (
-                        <Wifi
-                          size={8}
-                          className="absolute bottom-0 right-0 text-green-500"
-                        />
+                        <Wifi size={8} className="absolute bottom-0 right-0 text-green-500" />
                       ) : (
-                        <WifiOff
-                          size={8}
-                          className="absolute bottom-0 right-0 text-red-500"
-                        />
+                        <WifiOff size={8} className="absolute bottom-0 right-0 text-red-500" />
                       )}
                     </Link>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    {t("ui.notifications")}
-                  </TooltipContent>
+                  <TooltipContent side="bottom">{t("ui.notifications")}</TooltipContent>
                 </Tooltip>
 
                 <DropdownMenu>
@@ -433,15 +391,12 @@ export default function Header({}: HeaderProps) {
                         "relative h-8 w-8 rounded-full p-0 overflow-hidden",
                         isScrolled
                           ? "ring-2 ring-white dark:ring-gray-800"
-                          : "ring-2 ring-green-500 dark:ring-green-700"
+                          : "ring-2 ring-green-500 dark:ring-green-700",
                       )}
                       aria-label="User menu"
                     >
                       <Avatar className="h-8 w-8">
-                        <AvatarImage
-                          src={getUserAvatarUrl(session)}
-                          alt="User avatar"
-                        />
+                        <AvatarImage src={getUserAvatarUrl(session)} alt="User avatar" />
                         <AvatarFallback className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-lg">
                           {getUserInitials(session)}
                         </AvatarFallback>
@@ -467,7 +422,7 @@ export default function Header({}: HeaderProps) {
                           className={cn(
                             "flex items-center justify-between cursor-pointer",
                             isActive(item.href) &&
-                              "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400",
                           )}
                         >
                           <div className="flex items-center">
@@ -495,10 +450,11 @@ export default function Header({}: HeaderProps) {
                         <Moon className="mr-2 h-4 w-4" />
                       )}
                       <span>
-                        {darkMode
-                          ? t("ui.switch_to_light_mode")
-                          : t("ui.switch_to_dark_mode")}
+                        {darkMode ? t("ui.switch_to_light_mode") : t("ui.switch_to_dark_mode")}
                       </span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <LanguageSelector />
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -520,7 +476,7 @@ export default function Header({}: HeaderProps) {
                     href="/auth/login"
                     className={cn(
                       "flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-colors",
-                      getNavLinkClasses("/auth/login")
+                      getNavLinkClasses("/auth/login"),
                     )}
                   >
                     <LogIn className="h-4 w-4" />
@@ -553,21 +509,14 @@ export default function Header({}: HeaderProps) {
                   {session && (
                     <div className="mb-6 pb-6 border-b flex items-center gap-4">
                       <Avatar className="h-12 w-12">
-                        <AvatarImage
-                          src={getUserAvatarUrl(session)}
-                          alt="User avatar"
-                        />
+                        <AvatarImage src={getUserAvatarUrl(session)} alt="User avatar" />
                         <AvatarFallback className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-lg">
                           {getUserInitials(session)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">
-                          {getUserDisplayName(session)}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {session.user.email}
-                        </p>
+                        <p className="font-medium">{getUserDisplayName(session)}</p>
+                        <p className="text-sm text-muted-foreground">{session.user.email}</p>
                       </div>
                     </div>
                   )}
@@ -581,7 +530,7 @@ export default function Header({}: HeaderProps) {
                             "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
                             isActive(item.href)
                               ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-green-600 dark:hover:text-green-400"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-green-600 dark:hover:text-green-400",
                           )}
                         >
                           {item.icon}
@@ -597,7 +546,7 @@ export default function Header({}: HeaderProps) {
                           "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
                           isActive("/items/create/new")
                             ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                            : "bg-green-600 text-white hover:bg-green-700"
+                            : "bg-green-600 text-white hover:bg-green-700",
                         )}
                       >
                         <PlusCircle className="h-5 w-5" />
@@ -619,7 +568,7 @@ export default function Header({}: HeaderProps) {
                             "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
                             isActive("/chat")
                               ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-green-600 dark:hover:text-green-400"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-green-600 dark:hover:text-green-400",
                           )}
                         >
                           <MessageCircle className="h-5 w-5" />
@@ -635,7 +584,7 @@ export default function Header({}: HeaderProps) {
                               "flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg transition-colors",
                               isActive(item.href)
                                 ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-green-600 dark:hover:text-green-400"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-green-600 dark:hover:text-green-400",
                             )}
                           >
                             <div className="flex items-center gap-3">
@@ -668,7 +617,7 @@ export default function Header({}: HeaderProps) {
                             "flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-colors",
                             isActive("/auth/login")
                               ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                              : "bg-green-600 text-white hover:bg-green-700"
+                              : "bg-green-600 text-white hover:bg-green-700",
                           )}
                         >
                           <LogIn className="h-5 w-5" />
@@ -682,7 +631,7 @@ export default function Header({}: HeaderProps) {
                             "flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border transition-colors",
                             isActive("/auth/register")
                               ? "bg-gray-100 border-gray-200 text-green-700 dark:bg-gray-800 dark:border-gray-700 dark:text-green-400"
-                              : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                              : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800",
                           )}
                         >
                           <User className="h-5 w-5" />
@@ -712,12 +661,14 @@ export default function Header({}: HeaderProps) {
                         <span
                           className={cn(
                             "inline-block h-4 w-4 transform rounded-full bg-white dark:bg-gray-200 transition",
-                            darkMode ? "translate-x-6" : "translate-x-1"
+                            darkMode ? "translate-x-6" : "translate-x-1",
                           )}
                         />
                       </button>
                     </div>
                   </div>
+
+                  <LanguageSelector />
                 </div>
               </SheetContent>
             </Sheet>

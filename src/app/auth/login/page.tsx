@@ -6,11 +6,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
 import { useLogin } from "@/src/hooks/auth/use-login";
-import { ArrowLeft, Eye, EyeOff, LogIn, Mail } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, LogIn, Mail, RefreshCw } from "lucide-react";
 import { toast } from "@/src/hooks/use-toast";
 import { useGoogleLogin } from "@/src/hooks/auth/use-login-google";
 import { useTranslation } from "react-i18next";
 import { useRedirectIfAuthenticated } from "@/src/hooks/auth/use-redirect-if-authenticated";
+import { useResendConfirmationEmail } from "@/src/hooks/auth/use-resend-confirmation-email";
 
 const LoadingSpinner = ({ className = "h-5 w-5" }: { className?: string }) => (
   <svg
@@ -33,26 +34,32 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [emailNotConfirmed, setEmailNotConfirmed] = useState(false);
   const router = useRouter();
   const { mutate: login, isPending: isEmailLoading } = useLogin();
   const { mutate: googleLogin, isPending: isGoogleLoading } = useGoogleLogin();
+  const { mutate: resendConfirmation, isPending: isResendLoading } = useResendConfirmationEmail();
   const { t } = useTranslation("common");
   const { checking } = useRedirectIfAuthenticated();
 
-  const isAnyRequestPending = isEmailLoading || isGoogleLoading;
+  const isAnyRequestPending = isEmailLoading || isGoogleLoading || isResendLoading;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setEmailNotConfirmed(false);
     login(
       { email, password },
       {
         onSuccess: () => router.push("/"),
         onError: (error: Error) => {
           const raw = (error as any)?.response?.data?.message || (error as any)?.message || "";
-          const isEmailNotConfirmed = raw.toLowerCase().includes("email not confirmed");
+          const isEmailNotConfirmedErr = raw.toLowerCase().includes("email not confirmed");
+          if (isEmailNotConfirmedErr) {
+            setEmailNotConfirmed(true);
+          }
           toast({
             title: t("auth.login_failed"),
-            description: isEmailNotConfirmed
+            description: isEmailNotConfirmedErr
               ? t("auth.email_not_confirmed")
               : t("auth.check_credentials"),
             variant: "destructive",
@@ -63,6 +70,32 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = () => googleLogin();
+
+  const handleResend = () => {
+    if (!email) {
+      toast({
+        title: t("auth.login_failed"),
+        description: t("auth.email_placeholder") || t("auth.email"),
+        variant: "destructive",
+      });
+      return;
+    }
+    resendConfirmation(email, {
+      onSuccess: () => {
+        toast({
+          title: t("auth.email_confirmation_resent_title"),
+          description: t("auth.email_confirmation_resent_description", { email }),
+        });
+      },
+      onError: (error: Error) => {
+        toast({
+          title: t("auth.unexpected_error"),
+          description: error.message,
+          variant: "destructive",
+        });
+      },
+    });
+  };
 
   const disabledLinkClasses = isAnyRequestPending ? "pointer-events-none opacity-50" : "";
 
@@ -182,25 +215,28 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  disabled={isAnyRequestPending}
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+            {emailNotConfirmed && (
+              <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-900/30 dark:border-amber-600 p-3 text-xs text-amber-800 dark:text-amber-200 space-y-2">
+                <p>{t("auth.email_not_confirmed_help")}</p>
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={isResendLoading}
+                  className="inline-flex items-center gap-1 rounded-md bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {t("auth.remember_me")}
-                </label>
+                  {isResendLoading ? (
+                    <LoadingSpinner className="h-4 w-4" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  <span>
+                    {isResendLoading
+                      ? t("auth.resending_confirmation_email")
+                      : t("auth.resend_confirmation_email")}
+                  </span>
+                </button>
               </div>
-            </div>
+            )}
 
             <button
               type="submit"

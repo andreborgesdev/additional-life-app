@@ -146,7 +146,12 @@
     "enter_new_password": "Enter and confirm your new password below.",
     "recovery_session_missing": "The recovery link is invalid or has expired. Please request a new password reset link.",
     "new_password_placeholder": "Enter new password",
-    "confirm_password_placeholder": "Confirm new password"
+    "confirm_password_placeholder": "Confirm new password",
+    "email_not_confirmed_help": "Your email address is not confirmed yet. Please check your inbox (and spam) for the confirmation email. If you didn't receive it, you can resend it below.",
+    "resend_confirmation_email": "Resend confirmation email",
+    "resending_confirmation_email": "Resending...",
+    "email_confirmation_resent_title": "Confirmation Email Sent",
+    "email_confirmation_resent_description": "We've re-sent a confirmation email to {{email}}. Please check your inbox and spam folder."
   },
   "hero": {
     "title": "Give a Second Life to Your Belongings",
