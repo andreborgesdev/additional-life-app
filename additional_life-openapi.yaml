@@ -3,34 +3,34 @@ info:
   title: OpenAPI definition
   version: v0
 servers:
-- url: http://localhost:8080
-  description: Generated server url
+  - url: http://localhost:8080
+    description: Generated server url
 tags:
-- name: Public User API
-  description: Public user operations
-- name: User API
-  description: User operations
-- name: Item API
-  description: Item operations
-- name: Public Category API
-  description: Public category operations
-- name: Public Item API
-  description: Public item operations
+  - name: Public User API
+    description: Public user operations
+  - name: User API
+    description: User operations
+  - name: Item API
+    description: Item operations
+  - name: Public Category API
+    description: Public category operations
+  - name: Public Item API
+    description: Public item operations
 paths:
   /api/v1/users/{id}:
     get:
       tags:
-      - User API
+        - User API
       summary: Get user by ID
       description: Retrieves a user by their unique identifier
       operationId: getUserById
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
           description: User found
@@ -58,17 +58,17 @@ paths:
                 $ref: "#/components/schemas/UserResponse"
     put:
       tags:
-      - User API
+        - User API
       summary: Update an existing user
       description: Updates a user with the provided data
       operationId: updateUser
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         content:
           application/json:
@@ -108,17 +108,17 @@ paths:
                 $ref: "#/components/schemas/UserResponse"
     delete:
       tags:
-      - User API
+        - User API
       summary: Delete a user
       description: Deletes a user by their unique identifier
       operationId: deleteUser
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "204":
           description: User deleted successfully
@@ -131,17 +131,17 @@ paths:
   /api/v1/items/{id}:
     put:
       tags:
-      - Item API
+        - Item API
       summary: Update an existing item
       description: Updates an item with the provided data
       operationId: updateItem
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         content:
           application/json:
@@ -181,17 +181,17 @@ paths:
                 $ref: "#/components/schemas/ItemResponse"
     delete:
       tags:
-      - Item API
+        - Item API
       summary: Delete an item
       description: Soft deletes an item by marking it as inactive
       operationId: deleteItem
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "204":
           description: Item deleted successfully
@@ -204,28 +204,28 @@ paths:
   /api/v1/chat/{id}/mark-as-read/{userId}:
     put:
       tags:
-      - chat-controller
+        - chat-controller
       operationId: markChatAsRead
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
           description: OK
   /api/v1/public/users:
     post:
       tags:
-      - Public User API
+        - Public User API
       summary: Create a new user
       description: Creates a new user with the provided data
       operationId: createUser
@@ -257,7 +257,7 @@ paths:
   /api/v1/items:
     post:
       tags:
-      - Item API
+        - Item API
       summary: Create a new item
       description: Creates a new item with the provided data
       operationId: createItem
@@ -295,17 +295,17 @@ paths:
   /api/v1/items/{id}/status:
     post:
       tags:
-      - Item API
+        - Item API
       summary: Change item status
       description: Change the status of an item
       operationId: changeItemStatus
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         content:
           application/json:
@@ -340,17 +340,17 @@ paths:
   /api/v1/users/supabase/{supabaseId}:
     get:
       tags:
-      - User API
+        - User API
       summary: Get user by Supabase ID
       description: Retrieves a user by their Supabase ID
       operationId: getUserBySupabaseId
       parameters:
-      - name: supabaseId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: supabaseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
           description: User found
@@ -379,16 +379,16 @@ paths:
   /api/v1/users/email/{email}:
     get:
       tags:
-      - User API
+        - User API
       summary: Get user by email
       description: Retrieves a user by their email address
       operationId: getUserByEmail
       parameters:
-      - name: email
-        in: path
-        required: true
-        schema:
-          type: string
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: User found
@@ -417,66 +417,66 @@ paths:
   /api/v1/public/items:
     get:
       tags:
-      - Public Item API
+        - Public Item API
       summary: Get paginated list of available items
       description: Retrieves a paginated list of items that are active and not taken
       operationId: getItems
       parameters:
-      - name: query
-        in: query
-        description: Full-text search query
-        required: false
-        schema:
-          type: string
-      - name: category
-        in: query
-        description: Item category
-        required: false
-        schema:
-          type: string
-          format: uuid
-      - name: condition
-        in: query
-        description: Item condition
-        required: false
-        schema:
-          type: string
-      - name: sortBy
-        in: query
-        description: Sort field
-        required: false
-        schema:
-          type: string
-          default: createdAt
-        example: createdAt
-      - name: sortDirection
-        in: query
-        description: Sort direction
-        required: false
-        schema:
-          type: string
-          enum:
-          - asc
-          - desc
-        example: desc
-      - name: page
-        in: query
-        description: Page number (zero-based)
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 0
-          minimum: 0
-      - name: size
-        in: query
-        description: Page size
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 20
-          minimum: 1
+        - name: query
+          in: query
+          description: Full-text search query
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Item category
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: condition
+          in: query
+          description: Item condition
+          required: false
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          description: Sort field
+          required: false
+          schema:
+            type: string
+            default: createdAt
+          example: createdAt
+        - name: sortDirection
+          in: query
+          description: Sort direction
+          required: false
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+          example: desc
+        - name: page
+          in: query
+          description: Page number (zero-based)
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+            minimum: 0
+        - name: size
+          in: query
+          description: Page size
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+            minimum: 1
       responses:
         "200":
           description: Available items retrieved successfully
@@ -487,17 +487,17 @@ paths:
   /api/v1/public/items/{id}:
     get:
       tags:
-      - Public Item API
+        - Public Item API
       summary: Get item by ID
       description: Retrieves an item by its unique identifier
       operationId: getItemById
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
           description: Item found
@@ -514,7 +514,7 @@ paths:
   /api/v1/public/categories:
     get:
       tags:
-      - Public Category API
+        - Public Category API
       summary: Get all categories
       description: Retrieves a list of all categories
       operationId: getAllCategories
@@ -530,17 +530,17 @@ paths:
   /api/v1/public/categories/{parentId}/subcategories:
     get:
       tags:
-      - Public Category API
+        - Public Category API
       summary: Get subcategories by parent ID
       description: Retrieves a list of subcategories for a given parent category ID
       operationId: getSubcategories
       parameters:
-      - name: parentId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: parentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
           description: Subcategories retrieved successfully
@@ -561,17 +561,17 @@ paths:
   /api/v1/public/categories/{id}:
     get:
       tags:
-      - Public Category API
+        - Public Category API
       summary: Get category by ID
       description: Retrieves a category by its unique identifier
       operationId: getCategoryById
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
           description: Category found
@@ -588,7 +588,7 @@ paths:
   /api/v1/public/categories/root:
     get:
       tags:
-      - Public Category API
+        - Public Category API
       summary: Get root categories
       description: Retrieves a list of all root categories (categories without a parent)
       operationId: getRootCategories
@@ -604,7 +604,7 @@ paths:
   /api/v1/public/categories/featured:
     get:
       tags:
-      - Public Category API
+        - Public Category API
       summary: Get featured categories
       description: Retrieves a list of featured categories
       operationId: getFeaturedCategories
@@ -620,7 +620,7 @@ paths:
   /api/v1/ping:
     get:
       tags:
-      - ping-controller
+        - ping-controller
       operationId: ping
       responses:
         "200":
@@ -632,15 +632,15 @@ paths:
   /api/v1/notifications/user/{userId}:
     get:
       tags:
-      - notification-controller
+        - notification-controller
       operationId: getNotificationsByUserId
       parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
           description: OK
@@ -653,7 +653,7 @@ paths:
   /api/v1/items/user/{userId}:
     get:
       tags:
-      - Item API
+        - Item API
       summary: Get all items from a specific user
       description: Retrieves all active items posted by the specified user
       operationId: getUserItems
@@ -685,21 +685,21 @@ paths:
   /api/v1/chat/{id}/unread-count/{userId}:
     get:
       tags:
-      - chat-controller
+        - chat-controller
       operationId: getUnreadChatCount
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
           description: OK
@@ -711,15 +711,15 @@ paths:
   /api/v1/chat/{id}/history:
     get:
       tags:
-      - chat-controller
+        - chat-controller
       operationId: getChatHistoryByChatId
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
           description: OK
@@ -730,15 +730,15 @@ paths:
   /api/v1/chat/user/{userId}:
     get:
       tags:
-      - chat-controller
+        - chat-controller
       operationId: getUserChatsList
       parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
           description: OK
@@ -751,21 +751,21 @@ paths:
   /api/v1/chat/item/{itemId}/user/{userId}:
     get:
       tags:
-      - chat-controller
+        - chat-controller
       operationId: getChatIdByItemIdAndUserId
       parameters:
-      - name: itemId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
           description: OK
@@ -801,9 +801,9 @@ components:
         preferredLanguage:
           type: string
           enum:
-          - ENGLISH
-          - FRENCH
-          - GERMAN
+            - ENGLISH
+            - FRENCH
+            - GERMAN
         isEmailVerified:
           type: boolean
         isPhoneVerified:
@@ -813,9 +813,9 @@ components:
           items:
             type: string
             enum:
-            - EMAIL
-            - PHONE
-            - WHATSAPP
+              - EMAIL
+              - PHONE
+              - WHATSAPP
     UserResponse:
       type: object
       properties:
@@ -834,9 +834,9 @@ components:
           items:
             type: string
             enum:
-            - EMAIL
-            - PHONE
-            - WHATSAPP
+              - EMAIL
+              - PHONE
+              - WHATSAPP
         phoneNumber:
           type: string
         address:
@@ -848,9 +848,9 @@ components:
         preferredLanguage:
           type: string
           enum:
-          - ENGLISH
-          - FRENCH
-          - GERMAN
+            - ENGLISH
+            - FRENCH
+            - GERMAN
         createdAt:
           type: string
           format: date-time
@@ -864,11 +864,11 @@ components:
         active:
           type: boolean
       required:
-      - createdAt
-      - email
-      - id
-      - name
-      - supabaseId
+        - createdAt
+        - email
+        - id
+        - name
+        - supabaseId
     ItemRequest:
       type: object
       properties:
@@ -882,10 +882,10 @@ components:
         condition:
           type: string
           enum:
-          - NEW
-          - LIKE_NEW
-          - USED
-          - DEFECTIVE
+            - NEW
+            - LIKE_NEW
+            - USED
+            - DEFECTIVE
         address:
           type: string
           minLength: 1
@@ -901,11 +901,11 @@ components:
           type: string
           format: uuid
       required:
-      - categoryId
-      - condition
-      - imageUrls
-      - isPickupPossible
-      - isShippingPossible
+        - categoryId
+        - condition
+        - imageUrls
+        - isPickupPossible
+        - isShippingPossible
     CategoryResponse:
       type: object
       properties:
@@ -932,12 +932,12 @@ components:
         active:
           type: boolean
       required:
-      - active
-      - createdAt
-      - description
-      - id
-      - imageUrl
-      - name
+        - active
+        - createdAt
+        - description
+        - id
+        - imageUrl
+        - name
     ItemResponse:
       type: object
       properties:
@@ -951,10 +951,10 @@ components:
         condition:
           type: string
           enum:
-          - NEW
-          - LIKE_NEW
-          - USED
-          - DEFECTIVE
+            - NEW
+            - LIKE_NEW
+            - USED
+            - DEFECTIVE
         address:
           type: string
         isPickupPossible:
@@ -974,15 +974,15 @@ components:
         itemType:
           type: string
           enum:
-          - INTERNAL
-          - EXTERNAL
+            - INTERNAL
+            - EXTERNAL
         externalUrl:
           type: string
         status:
           type: string
           enum:
-          - AVAILABLE
-          - TAKEN
+            - AVAILABLE
+            - TAKEN
         active:
           type: boolean
         owner:
@@ -992,22 +992,22 @@ components:
         sourceExternalPlatform:
           type: string
           enum:
-          - ANIBIS
+            - ANIBIS
       required:
-      - active
-      - address
-      - category
-      - condition
-      - createdAt
-      - description
-      - id
-      - imageUrls
-      - isPickupPossible
-      - isShippingPossible
-      - itemType
-      - owner
-      - status
-      - title
+        - active
+        - address
+        - category
+        - condition
+        - createdAt
+        - description
+        - id
+        - imageUrls
+        - isPickupPossible
+        - isShippingPossible
+        - itemType
+        - owner
+        - status
+        - title
     MinimalUserResponse:
       type: object
       properties:
@@ -1019,8 +1019,8 @@ components:
         avatarUrl:
           type: string
       required:
-      - id
-      - name
+        - id
+        - name
     CreateUserRequest:
       type: object
       properties:
@@ -1037,9 +1037,9 @@ components:
         authProvider:
           type: string
           enum:
-          - SUPBASE
-          - GOOGLE
-          - FACEBOOK
+            - SUPABASE
+            - GOOGLE
+            - FACEBOOK
         avatarUrl:
           type: string
         isEmailVerified:
@@ -1047,18 +1047,18 @@ components:
         isPhoneVerified:
           type: boolean
       required:
-      - authProvider
-      - supabaseId
+        - authProvider
+        - supabaseId
     ItemStatusRequest:
       type: object
       properties:
         status:
           type: string
           enum:
-          - AVAILABLE
-          - TAKEN
+            - AVAILABLE
+            - TAKEN
       required:
-      - status
+        - status
     PageItemResponse:
       type: object
       properties:
@@ -1162,21 +1162,21 @@ components:
         type:
           type: string
           enum:
-          - CHAT
-          - JOIN
-          - LEAVE
+            - CHAT
+            - JOIN
+            - LEAVE
         timestamp:
           type: string
           format: date-time
       required:
-      - chatId
-      - content
-      - id
-      - itemId
-      - recipientId
-      - senderId
-      - timestamp
-      - type
+        - chatId
+        - content
+        - id
+        - itemId
+        - recipientId
+        - senderId
+        - timestamp
+        - type
     UserChatListResponse:
       type: object
       properties:
@@ -1196,9 +1196,9 @@ components:
           type: string
           format: date-time
       required:
-      - chatId
-      - item
-      - lastMessage
-      - otherUser
-      - timestamp
-      - unreadMessagesCount
+        - chatId
+        - item
+        - lastMessage
+        - otherUser
+        - timestamp
+        - unreadMessagesCount

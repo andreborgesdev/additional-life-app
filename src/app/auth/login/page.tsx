@@ -9,7 +9,6 @@ import { useLogin } from "@/src/hooks/auth/use-login";
 import { ArrowLeft, Eye, EyeOff, LogIn, Mail } from "lucide-react";
 import { toast } from "@/src/hooks/use-toast";
 import { useGoogleLogin } from "@/src/hooks/auth/use-login-google";
-import { useFacebookLogin } from "@/src/hooks/auth/use-login-facebook";
 import { useTranslation } from "react-i18next";
 
 const LoadingSpinner = ({ className = "h-5 w-5" }: { className?: string }) => (
@@ -19,14 +18,7 @@ const LoadingSpinner = ({ className = "h-5 w-5" }: { className?: string }) => (
     fill="none"
     viewBox="0 0 24 24"
   >
-    <circle
-      className="opacity-25"
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      strokeWidth="4"
-    />
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
     <path
       className="opacity-75"
       fill="currentColor"
@@ -54,22 +46,24 @@ export default function LoginPage() {
       { email, password },
       {
         onSuccess: () => router.push("/"),
-        onError: () => {
+        onError: (error: Error) => {
+          const raw = (error as any)?.response?.data?.message || (error as any)?.message || "";
+          const isEmailNotConfirmed = raw.toLowerCase().includes("email not confirmed");
           toast({
             title: t("auth.login_failed"),
-            description: t("auth.check_credentials"),
+            description: isEmailNotConfirmed
+              ? t("auth.email_not_confirmed")
+              : t("auth.check_credentials"),
             variant: "destructive",
           });
         },
-      }
+      },
     );
   };
 
   const handleGoogleLogin = () => googleLogin();
 
-  const disabledLinkClasses = isAnyRequestPending
-    ? "pointer-events-none opacity-50"
-    : "";
+  const disabledLinkClasses = isAnyRequestPending ? "pointer-events-none opacity-50" : "";
 
   return (
     <div className="bg-green-50 dark:bg-green-800 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -84,11 +78,9 @@ export default function LoginPage() {
       <div className="w-full max-w-md mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl">
         <div className="flex flex-col space-y-2 text-center mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-            {t("auth.welcome_back")}
+            {t("auth.welcome")}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            {t("auth.enter_credentials")}
-          </p>
+          <p className="text-gray-500 dark:text-gray-400">{t("auth.enter_credentials")}</p>
         </div>
 
         <div className="flex flex-col space-y-6">
@@ -103,15 +95,13 @@ export default function LoginPage() {
               ) : (
                 <FcGoogle className="h-5 w-5 mr-2" />
               )}
-              <span>
-                {isGoogleLoading ? t("auth.connecting") : t("auth.google")}
-              </span>
+              <span>{isGoogleLoading ? t("auth.connecting") : t("auth.google")}</span>
             </button>
           </div>
 
           <div className="relative flex justify-center text-sm">
             <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-              {t("auth.or_continue_email")}
+              {t("auth.or_continue_with_email")}
             </span>
           </div>
 
@@ -177,11 +167,7 @@ export default function LoginPage() {
                     disabled={isAnyRequestPending}
                     className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
               </div>

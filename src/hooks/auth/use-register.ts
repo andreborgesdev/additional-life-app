@@ -23,14 +23,9 @@ export class RegistrationError extends Error {
 }
 
 export const useRegister = () => {
-  return useMutation<
-    RegisterSuccessResponse,
-    RegistrationError,
-    RegisterPayload,
-    unknown
-  >({
+  return useMutation<RegisterSuccessResponse, RegistrationError, RegisterPayload, unknown>({
     mutationFn: async (payload: RegisterPayload) => {
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch("/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -42,7 +37,7 @@ export const useRegister = () => {
         throw new RegistrationError(
           (responseBody as RegisterErrorResponse).message ||
             `Registration failed with status ${response.status}`,
-          response.status
+          response.status,
         );
       }
       return responseBody as RegisterSuccessResponse;

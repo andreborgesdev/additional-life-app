@@ -1,24 +1,14 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
-import { useRegister, RegistrationError } from "@/src/hooks/auth/use-register";
-import {
-  ArrowLeft,
-  Eye,
-  EyeOff,
-  Facebook,
-  Mail,
-  User,
-  UserPlus,
-} from "lucide-react";
+import { RegistrationError, useRegister } from "@/src/hooks/auth/use-register";
+import { ArrowLeft, Eye, EyeOff, Mail, User, UserPlus } from "lucide-react";
 import { RecaptchaWrapper } from "@/src/lib/recaptcha-wrapper";
 import { useGoogleLogin } from "@/src/hooks/auth/use-login-google";
-import { useFacebookLogin } from "@/src/hooks/auth/use-login-facebook";
 import { toast } from "@/src/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 
@@ -34,7 +24,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const { mutate: signUp, isPending: isLoading } = useRegister();
   const { mutate: googleLogin } = useGoogleLogin();
-  const { mutate: facebookLogin } = useFacebookLogin();
+  // const { mutate: facebookLogin } = useFacebookLogin();
   const { t } = useTranslation("common");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,10 +32,13 @@ export default function RegisterPage() {
     setValidationTriggered(true);
 
     if (!agreeToTerms || password !== confirmPassword) return;
+
     const recaptchaTokenInput = document.getElementById(
-      "recaptcha-token"
+      "recaptcha-token",
     ) as HTMLInputElement | null;
+
     const recaptchaToken = recaptchaTokenInput?.value || "";
+
     signUp(
       { email, password, name, recaptchaToken },
       {
@@ -58,12 +51,13 @@ export default function RegisterPage() {
           router.push("/auth/login");
         },
         onError: (err: RegistrationError) => {
+          console.log("Registration error:", err);
           let toastTitle = t("auth.registration_failed");
           let toastDescription = t("auth.unexpected_error");
 
           if (err.status === 409) {
             toastTitle = t("auth.email_already_registered");
-            toastDescription = t("auth.email_in_use_message");
+            toastDescription = t("auth.email_in_use");
           }
 
           toast({
@@ -72,7 +66,7 @@ export default function RegisterPage() {
             variant: "destructive",
           });
         },
-      }
+      },
     );
   };
 
@@ -116,16 +110,10 @@ export default function RegisterPage() {
     t("auth.password_strength.good"),
     t("auth.password_strength.strong"),
   ];
-  const strengthColors = [
-    "bg-red-500",
-    "bg-yellow-500",
-    "bg-yellow-400",
-    "bg-green-500",
-  ];
+  const strengthColors = ["bg-red-500", "bg-yellow-500", "bg-yellow-400", "bg-green-500"];
 
   const passwordsMatch = password === confirmPassword;
-  const showPasswordMismatch =
-    validationTriggered && confirmPassword.length > 0 && !passwordsMatch;
+  const showPasswordMismatch = validationTriggered && confirmPassword.length > 0 && !passwordsMatch;
 
   return (
     <div className="bg-green-50 dark:bg-green-800 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -142,9 +130,7 @@ export default function RegisterPage() {
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
             {t("auth.create_account")}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            {t("auth.join_community")}
-          </p>
+          <p className="text-gray-500 dark:text-gray-400">{t("auth.join_community")}</p>
         </div>
 
         <div className="flex flex-col space-y-6">
@@ -170,7 +156,7 @@ export default function RegisterPage() {
 
           <div className="relative flex justify-center text-sm">
             <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-              {t("auth.or_continue_email")}
+              {t("auth.or_continue_with_email")}
             </span>
           </div>
 
@@ -251,11 +237,7 @@ export default function RegisterPage() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
               </div>
@@ -275,9 +257,7 @@ export default function RegisterPage() {
                   <div className="h-1.5 w-full bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
                     <div
                       className={`h-full ${
-                        passwordStrength > 0
-                          ? strengthColors[passwordStrength - 1]
-                          : "bg-red-300"
+                        passwordStrength > 0 ? strengthColors[passwordStrength - 1] : "bg-red-300"
                       }`}
                       style={{ width: `${(passwordStrength / 4) * 100}%` }}
                     ></div>
@@ -286,9 +266,7 @@ export default function RegisterPage() {
                     <li className="flex items-center">
                       <span
                         className={`inline-block w-3 h-3 mr-2 rounded-full ${
-                          password.length >= 8
-                            ? "bg-green-500"
-                            : "bg-gray-300 dark:bg-gray-500"
+                          password.length >= 8 ? "bg-green-500" : "bg-gray-300 dark:bg-gray-500"
                         }`}
                       ></span>
                       {t("auth.password_requirements.min_length")}
@@ -296,9 +274,7 @@ export default function RegisterPage() {
                     <li className="flex items-center">
                       <span
                         className={`inline-block w-3 h-3 mr-2 rounded-full ${
-                          /[A-Z]/.test(password)
-                            ? "bg-green-500"
-                            : "bg-gray-300 dark:bg-gray-500"
+                          /[A-Z]/.test(password) ? "bg-green-500" : "bg-gray-300 dark:bg-gray-500"
                         }`}
                       ></span>
                       {t("auth.password_requirements.uppercase")}
@@ -306,9 +282,7 @@ export default function RegisterPage() {
                     <li className="flex items-center">
                       <span
                         className={`inline-block w-3 h-3 mr-2 rounded-full ${
-                          /[0-9]/.test(password)
-                            ? "bg-green-500"
-                            : "bg-gray-300 dark:bg-gray-500"
+                          /[0-9]/.test(password) ? "bg-green-500" : "bg-gray-300 dark:bg-gray-500"
                         }`}
                       ></span>
                       {t("auth.password_requirements.number")}
@@ -370,13 +344,11 @@ export default function RegisterPage() {
                   {t("auth.passwords_do_not_match")}
                 </p>
               )}
-              {validationTriggered &&
-                confirmPassword.length > 0 &&
-                passwordsMatch && (
-                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                    {t("auth.passwords_match")}
-                  </p>
-                )}
+              {validationTriggered && confirmPassword.length > 0 && passwordsMatch && (
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  {t("auth.passwords_match")}
+                </p>
+              )}
             </div>
 
             <div className="flex items-start">
@@ -391,10 +363,7 @@ export default function RegisterPage() {
                 />
               </div>
               <div className="ml-3 text-sm">
-                <label
-                  htmlFor="terms"
-                  className="text-gray-700 dark:text-gray-300"
-                >
+                <label htmlFor="terms" className="text-gray-700 dark:text-gray-300">
                   {t("auth.agree_to")}{" "}
                   <Link
                     href="/terms-and-conditions"
@@ -444,9 +413,7 @@ export default function RegisterPage() {
               ) : (
                 <UserPlus className="mr-2 h-4 w-4" />
               )}
-              {isLoading
-                ? t("auth.creating_account")
-                : t("auth.create_account")}
+              {isLoading ? t("auth.creating_account") : t("auth.create_account")}
             </button>
           </form>
         </div>

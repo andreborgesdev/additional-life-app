@@ -41,18 +41,14 @@ export default function ForgotPasswordPage() {
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
               {t("auth.check_your_email")}
             </h1>
-            <p className="text-gray-500 dark:text-gray-400">
-              {t("auth.password_reset_sent")}
-            </p>
-            <p className="text-green-600 dark:text-green-400 font-medium">
-              {email}
-            </p>
+            <p className="text-gray-500 dark:text-gray-400">{t("auth.password_reset_sent")}</p>
+            <p className="text-green-600 dark:text-green-400 font-medium">{email}</p>
           </div>
 
           <div className="space-y-6">
             <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
               <p className="text-sm text-green-700 dark:text-green-300">
-                {t("auth.email_not_received")}
+                {t("auth.check_your_email_instructions")}
               </p>
             </div>
 
@@ -124,8 +120,7 @@ export default function ForgotPasswordPage() {
           {forgotPasswordMutation.error && (
             <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
               <p className="text-sm text-red-700 dark:text-red-300">
-                {forgotPasswordMutation.error.message ||
-                  t("auth.reset_email_error")}
+                {forgotPasswordMutation.error.message || t("auth.reset_email_error")}
               </p>
             </div>
           )}
@@ -157,9 +152,7 @@ export default function ForgotPasswordPage() {
                 ></path>
               </svg>
             ) : null}
-            {forgotPasswordMutation.isPending
-              ? t("auth.sending")
-              : t("auth.send_reset_link")}
+            {forgotPasswordMutation.isPending ? t("auth.sending") : t("auth.send_reset_link")}
           </button>
 
           <div className="text-center">
