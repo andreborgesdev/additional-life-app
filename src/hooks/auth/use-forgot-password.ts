@@ -1,4 +1,4 @@
-import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
+import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const useForgotPassword = () => {

@@ -1,20 +1,14 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import useSupabaseBrowser from "../../lib/supabase/supabase-browser";
+import useSupabaseBrowser from "../../lib/supabase/supabase-browser-client";
 
 export const useLogin = () => {
   const queryClient = useQueryClient();
   const supabase = useSupabaseBrowser();
 
   return useMutation({
-    mutationFn: async ({
-      email,
-      password,
-    }: {
-      email: string;
-      password: string;
-    }) => {
+    mutationFn: async ({ email, password }: { email: string; password: string }) => {
       if (!supabase) {
         throw new Error("Supabase client is not initialized.");
       }

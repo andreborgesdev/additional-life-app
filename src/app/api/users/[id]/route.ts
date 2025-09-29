@@ -1,12 +1,6 @@
-import {
-  ApiClient,
-  UpdateUserRequest,
-  UserResponse,
-  withApiClient,
-  withPublicApiClient,
-} from "@/src/lib/api-client";
-import { useSupabaseServer } from "@/src/lib/supabase/supabase-server";
+import { ApiClient, UpdateUserRequest, UserResponse, withApiClient } from "@/src/lib/api-client";
 import { NextRequest, NextResponse } from "next/server";
+import { useSupabaseServerClient } from "@/src/lib/supabase/supabase-server"-client";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +12,7 @@ const getUserByIdHandler = async (
   client: ApiClient,
   jwt: string,
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse<UserResponse | { error: string }>> => {
   const idFromParams = context.params?.id;
 
@@ -29,10 +23,7 @@ const getUserByIdHandler = async (
   const userId = Array.isArray(idFromParams) ? idFromParams[0] : idFromParams;
 
   if (!userId) {
-    return NextResponse.json(
-      { error: "User ID is missing or invalid" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "User ID is missing or invalid" }, { status: 400 });
   }
 
   try {
@@ -52,9 +43,9 @@ const updateUserHandler = async (
   client: ApiClient,
   jwt: string,
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse<UserResponse | { error: string }>> => {
-  const supabase = await useSupabaseServer();
+  const supabase = await useSupabaseServerClient();
   const idFromParams = context.params?.id;
 
   if (!idFromParams) {
@@ -63,27 +54,18 @@ const updateUserHandler = async (
   const userId = Array.isArray(idFromParams) ? idFromParams[0] : idFromParams;
 
   if (!userId) {
-    return NextResponse.json(
-      { error: "User ID is missing or invalid" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "User ID is missing or invalid" }, { status: 400 });
   }
 
   let userData: UpdateUserRequest;
   try {
     userData = await request.json();
   } catch (error) {
-    return NextResponse.json(
-      { error: "Invalid request body" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
   try {
-    const updatedUserInDb: UserResponse = await client.userApi.updateUser(
-      userId,
-      userData
-    );
+    const updatedUserInDb: UserResponse = await client.userApi.updateUser(userId, userData);
 
     if (updatedUserInDb) {
       const { error: authError } = await supabase.auth.updateUser({

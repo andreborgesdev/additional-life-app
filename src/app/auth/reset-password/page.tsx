@@ -6,16 +6,50 @@ import { useTranslation } from "react-i18next";
 import { ArrowLeft, Lock } from "lucide-react";
 import { useUpdatePassword } from "@/src/hooks/users/use-update-password";
 import { useSession } from "@/src/app/auth-provider";
+import { useRouter } from "next/navigation";
+import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser-client";
 
 export default function ResetPasswordPage() {
   const { t } = useTranslation("common");
   const updatePasswordMutation = useUpdatePassword();
   const { session, isLoading: sessionLoading } = useSession();
+  const router = useRouter();
+  const supabase = useSupabaseBrowser();
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordUpdated, setPasswordUpdated] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    const hash = typeof window !== "undefined" ? window.location.hash : "";
+    const isRecovery = hash.includes("type=recovery");
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!isMounted) return;
+      if (data.session && !isRecovery) {
+        router.replace("/");
+      } else {
+        setCheckingSession(false);
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session && !window.location.hash.includes("type=recovery")) {
+        router.replace("/");
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (validationError) {
@@ -48,6 +82,14 @@ export default function ResetPasswordPage() {
   };
 
   const showForm = !!session; // User has a (recovery) session
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-green-50 dark:bg-green-800">
+        <span className="text-gray-600 dark:text-gray-300 text-sm">Loading...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-green-50 dark:bg-green-800 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">

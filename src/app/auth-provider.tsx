@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Session } from "@supabase/supabase-js";
-import useSupabaseBrowser from "../lib/supabase/supabase-browser";
+import useSupabaseBrowser from "../lib/supabase/supabase-browser-client";
 import { TypedSupabaseSession } from "../types/supabase-user";
 import { useOAuthUserHandler } from "../hooks/auth/use-oauth-user-handler";
 import { useQueryClient } from "@tanstack/react-query";

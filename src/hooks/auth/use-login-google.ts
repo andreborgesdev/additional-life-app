@@ -1,4 +1,4 @@
-import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
+import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser-client";
 import { useMutation } from "@tanstack/react-query";
 
 export const useGoogleLogin = () => {

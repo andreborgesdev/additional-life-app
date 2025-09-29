@@ -10,6 +10,7 @@ import { ArrowLeft, Eye, EyeOff, LogIn, Mail } from "lucide-react";
 import { toast } from "@/src/hooks/use-toast";
 import { useGoogleLogin } from "@/src/hooks/auth/use-login-google";
 import { useTranslation } from "react-i18next";
+import { useRedirectIfAuthenticated } from "@/src/hooks/auth/use-redirect-if-authenticated";
 
 const LoadingSpinner = ({ className = "h-5 w-5" }: { className?: string }) => (
   <svg
@@ -33,10 +34,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
-
   const { mutate: login, isPending: isEmailLoading } = useLogin();
   const { mutate: googleLogin, isPending: isGoogleLoading } = useGoogleLogin();
   const { t } = useTranslation("common");
+  const { checking } = useRedirectIfAuthenticated();
 
   const isAnyRequestPending = isEmailLoading || isGoogleLoading;
 
@@ -64,6 +65,14 @@ export default function LoginPage() {
   const handleGoogleLogin = () => googleLogin();
 
   const disabledLinkClasses = isAnyRequestPending ? "pointer-events-none opacity-50" : "";
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-green-50 dark:bg-green-800">
+        <span className="text-gray-600 dark:text-gray-300 text-sm">Loading...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-green-50 dark:bg-green-800 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">

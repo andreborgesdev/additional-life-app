@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiClient, CreateUserRequest, withPublicApiClient } from "@/src/lib/api-client";
-import { useSupabaseServer } from "@/src/lib/supabase/supabase-server";
+import { useSupabaseServerClient } from "@/src/lib/supabase/supabase-server"-client";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,7 @@ export interface RegisterPayload {
 const registerHandler = async (client: ApiClient, request: NextRequest) => {
   const body = await request.json();
   const { email, password, name } = body as RegisterPayload;
-  const supabase = await useSupabaseServer();
+  const supabase = await useSupabaseServerClient();
 
   // try {
   //   await validateRecaptcha(recaptchaToken);

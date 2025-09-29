@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies, headers } from "next/headers";
 
-export async function useSupabaseServer() {
+export async function useSupabaseServerClient() {
   const cookieStore = await cookies();
   const headerStore = headers();
 
@@ -16,7 +16,7 @@ export async function useSupabaseServer() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {
             // The `setAll` method was called from a Server Component.
@@ -25,6 +25,6 @@ export async function useSupabaseServer() {
           }
         },
       },
-    }
+    },
   );
 }

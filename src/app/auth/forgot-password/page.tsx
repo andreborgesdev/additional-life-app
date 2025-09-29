@@ -5,12 +5,14 @@ import { useForgotPassword } from "@/src/hooks/auth/use-forgot-password";
 import Link from "next/link";
 import { ArrowLeft, Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useRedirectIfAuthenticated } from "@/src/hooks/auth/use-redirect-if-authenticated";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const forgotPasswordMutation = useForgotPassword();
   const { t } = useTranslation("common");
+  const { checking } = useRedirectIfAuthenticated();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +26,14 @@ export default function ForgotPasswordPage() {
       console.error("Failed to send reset email:", error);
     }
   };
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-green-50 dark:bg-green-800">
+        <span className="text-gray-600 dark:text-gray-300 text-sm">Loading...</span>
+      </div>
+    );
+  }
 
   if (isSubmitted) {
     return (

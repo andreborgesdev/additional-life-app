@@ -11,6 +11,7 @@ import { RecaptchaWrapper } from "@/src/lib/recaptcha-wrapper";
 import { useGoogleLogin } from "@/src/hooks/auth/use-login-google";
 import { toast } from "@/src/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { useRedirectIfAuthenticated } from "@/src/hooks/auth/use-redirect-if-authenticated";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -21,11 +22,11 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [validationTriggered, setValidationTriggered] = useState(false);
-  const router = useRouter();
   const { mutate: signUp, isPending: isLoading } = useRegister();
   const { mutate: googleLogin } = useGoogleLogin();
-  // const { mutate: facebookLogin } = useFacebookLogin();
   const { t } = useTranslation("common");
+  const router = useRouter();
+  const { checking } = useRedirectIfAuthenticated();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,10 +75,6 @@ export default function RegisterPage() {
     googleLogin();
   };
 
-  // const handleFacebookRegister = () => {
-  //   facebookLogin();
-  // };
-
   // Calculate password strength
   const getPasswordStrength = () => {
     if (!password) return 0;
@@ -114,6 +111,14 @@ export default function RegisterPage() {
 
   const passwordsMatch = password === confirmPassword;
   const showPasswordMismatch = validationTriggered && confirmPassword.length > 0 && !passwordsMatch;
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-green-50 dark:bg-green-800">
+        <span className="text-gray-600 dark:text-gray-300 text-sm">Loading...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-green-50 dark:bg-green-800 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">

@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import useSupabaseBrowser from "../../lib/supabase/supabase-browser";
+import useSupabaseBrowser from "../../lib/supabase/supabase-browser-client";
 
 interface UpdatePasswordArgs {
   newPassword: string;

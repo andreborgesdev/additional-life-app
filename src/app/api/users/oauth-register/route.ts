@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  ApiClient,
-  CreateUserRequest,
-  withPublicApiClient,
-} from "@/src/lib/api-client";
-import { useSupabaseServer } from "@/src/lib/supabase/supabase-server";
+import { ApiClient, CreateUserRequest, withPublicApiClient } from "@/src/lib/api-client";
+import { useSupabaseServerClient } from "@/src/lib/supabase/supabase-server"-client";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +10,7 @@ export interface OauthUserRegisterPayload {
 }
 
 const registerHandler = async (client: ApiClient, request: NextRequest) => {
-  const supabase = await useSupabaseServer();
+  const supabase = await useSupabaseServerClient();
 
   const body = await request.json();
   const {
@@ -76,7 +72,7 @@ export const POST = withPublicApiClient(registerHandler);
 const validateRecaptcha = async (recaptchaToken: string) => {
   const recaptchaResponse = await fetch(
     `https://recaptchaenterprise.googleapis.com/v1/projects/additional-life-1747339334136/assessments?key=${String(
-      process.env.GOOGLE_API_KEY
+      process.env.GOOGLE_API_KEY,
     )}`,
     {
       method: "POST",
@@ -87,14 +83,11 @@ const validateRecaptcha = async (recaptchaToken: string) => {
           siteKey: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
         },
       }),
-    }
+    },
   );
   const recaptchaData = await recaptchaResponse.json();
 
-  if (
-    !recaptchaData?.riskAnalysis?.score ||
-    recaptchaData?.tokenProperties?.valid !== true
-  ) {
+  if (!recaptchaData?.riskAnalysis?.score || recaptchaData?.tokenProperties?.valid !== true) {
     throw new Error("Recaptcha failed");
   }
 };

@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import imageCompression from "browser-image-compression";
-import useSupabaseBrowser from "../supabase-browser";
+import useSupabaseBrowser from "../supabase-browser-client";
 
 function getStorage() {
   const { storage } = useSupabaseBrowser();
@@ -14,17 +14,10 @@ type UploadProps = {
   folder?: string;
 };
 
-export const uploadImage = async ({
-  file,
-  bucket,
-  folder,
-  userId,
-}: UploadProps) => {
+export const uploadImage = async ({ file, bucket, folder, userId }: UploadProps) => {
   const fileName = file.name;
   const fileExtension = fileName.slice(fileName.lastIndexOf(".") + 1);
-  const path = `${
-    folder ? folder + "/" : ""
-  }${userId}/${uuidv4()}.${fileExtension}`;
+  const path = `${folder ? folder + "/" : ""}${userId}/${uuidv4()}.${fileExtension}`;
 
   try {
     file = await imageCompression(file, {
@@ -43,8 +36,7 @@ export const uploadImage = async ({
     return { imageUrl: "", error: "Image upload failed" };
   }
 
-  const imageUrl = `${process.env
-    .NEXT_PUBLIC_SUPABASE_URL!}/storage/v1/object/public/${bucket}/${
+  const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL!}/storage/v1/object/public/${bucket}/${
     data?.path
   }`;
 

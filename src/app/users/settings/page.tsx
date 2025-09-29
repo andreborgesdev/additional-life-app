@@ -1,12 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/src/components/ui/tabs";
+import { useEffect, useRef, useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import {
   Card,
   CardContent,
@@ -18,30 +13,22 @@ import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 import { Textarea } from "@/src/components/ui/textarea";
-import { Switch } from "@/src/components/ui/switch";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
-import { Badge } from "@/src/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar";
 import { Separator } from "@/src/components/ui/separator";
 import {
-  User,
-  Bell,
-  Shield,
-  MapPin,
-  Upload,
   Check,
-  X,
-  Mail,
-  MessageSquare,
-  Phone,
-  Globe,
-  Lock,
   Eye,
   EyeOff,
+  Globe,
+  Lock,
   LogOut,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Upload,
+  User,
+  X,
 } from "lucide-react";
 import { toast } from "@/src/hooks/use-toast";
 import { useSession } from "../../auth-provider";
@@ -54,11 +41,8 @@ import { PhoneInput } from "@/src/components/shared/phone-input";
 import { uploadImage } from "@/src/lib/supabase/storage/client";
 import { useLogout } from "@/src/hooks/auth/use-logout";
 import { useUpdatePassword } from "@/src/hooks/users/use-update-password";
-import {
-  isEmailVerified,
-  isPhoneVerified,
-} from "@/src/utils/user-metadata-utils";
-import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser";
+import { isEmailVerified, isPhoneVerified } from "@/src/utils/user-metadata-utils";
+import useSupabaseBrowser from "@/src/lib/supabase/supabase-browser-client";
 import { useUserByEmail } from "@/src/hooks/users/use-user-by-email";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { useTranslation } from "react-i18next";
@@ -73,7 +57,7 @@ interface PasswordRequirementStatus {
 export default function UserSettingsPage() {
   const { session, isLoading: isLoadingSession } = useSession();
   const { data: userData, isLoading: isLoadingUserData } = useUserByEmail(
-    session?.user?.email ?? null
+    session?.user?.email ?? null,
   );
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -89,7 +73,7 @@ export default function UserSettingsPage() {
   const [location, setLocation] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [language, setLanguage] = useState<UpdateUserRequest.preferredLanguage>(
-    UpdateUserRequest.preferredLanguage.ENGLISH
+    UpdateUserRequest.preferredLanguage.ENGLISH,
   );
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
@@ -97,9 +81,7 @@ export default function UserSettingsPage() {
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // Contact preferences
-  const [contactOptions, setContactOptions] = useState<
-    Array<"EMAIL" | "PHONE" | "WHATSAPP">
-  >([]);
+  const [contactOptions, setContactOptions] = useState<Array<"EMAIL" | "PHONE" | "WHATSAPP">>([]);
 
   // Notification preferences
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -120,19 +102,16 @@ export default function UserSettingsPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isVerifyingCurrentPassword, setIsVerifyingCurrentPassword] =
-    useState(false);
-  const [passwordRequirements, setPasswordRequirements] =
-    useState<PasswordRequirementStatus>({
-      length: false,
-      uppercase: false,
-      number: false,
-      specialChar: false,
-    });
+  const [isVerifyingCurrentPassword, setIsVerifyingCurrentPassword] = useState(false);
+  const [passwordRequirements, setPasswordRequirements] = useState<PasswordRequirementStatus>({
+    length: false,
+    uppercase: false,
+    number: false,
+    specialChar: false,
+  });
 
   const { mutate: updateUser, isPending: isUpdatingUser } = useUpdateUser();
-  const { mutate: updatePassword, isPending: isUpdatingPassword } =
-    useUpdatePassword();
+  const { mutate: updatePassword, isPending: isUpdatingPassword } = useUpdatePassword();
 
   useEffect(() => {
     if (!isLoadingSession && !session) router.replace("/auth/login");
@@ -146,10 +125,7 @@ export default function UserSettingsPage() {
       setLocation(userData.address || "");
       setBio(userData.bio || "");
       setAvatarUrl(userData.avatarUrl || null);
-      setLanguage(
-        userData.preferredLanguage ||
-          UpdateUserRequest.preferredLanguage.ENGLISH
-      );
+      setLanguage(userData.preferredLanguage || UpdateUserRequest.preferredLanguage.ENGLISH);
       setContactOptions(userData.contactOptions || []);
       setIsLoading(false);
     } else if (!isLoadingUserData && !userData) {
@@ -175,13 +151,9 @@ export default function UserSettingsPage() {
     });
   }, [newPassword]);
 
-  const handleContactOptionToggle = (
-    option: "EMAIL" | "PHONE" | "WHATSAPP"
-  ) => {
+  const handleContactOptionToggle = (option: "EMAIL" | "PHONE" | "WHATSAPP") => {
     setContactOptions((prev) =>
-      prev.includes(option)
-        ? prev.filter((o) => o !== option)
-        : [...prev, option]
+      prev.includes(option) ? prev.filter((o) => o !== option) : [...prev, option],
     );
   };
 
@@ -244,9 +216,7 @@ export default function UserSettingsPage() {
         });
 
         if (uploadResult.error) {
-          throw new Error(
-            uploadResult.error || t("settings.avatar_upload_failed")
-          );
+          throw new Error(uploadResult.error || t("settings.avatar_upload_failed"));
         }
         avatarUrlForPayload = uploadResult.imageUrl;
         setAvatarUrl(avatarUrlForPayload);
@@ -294,7 +264,7 @@ export default function UserSettingsPage() {
             variant: "destructive",
           });
         },
-      }
+      },
     );
   };
 
@@ -315,7 +285,7 @@ export default function UserSettingsPage() {
   };
 
   const handleChangePasswordSubmit = async (
-    e?: React.FormEvent<HTMLFormElement> // Optional if called from button click
+    e?: React.FormEvent<HTMLFormElement>, // Optional if called from button click
   ) => {
     if (e) e.preventDefault();
 
@@ -374,11 +344,7 @@ export default function UserSettingsPage() {
 
       if (signInError) {
         // Check if the error is specifically about invalid credentials
-        if (
-          signInError.message
-            .toLowerCase()
-            .includes("invalid login credentials")
-        ) {
+        if (signInError.message.toLowerCase().includes("invalid login credentials")) {
           toast({
             title: "Incorrect Current Password",
             description: "The current password you entered is incorrect.",
@@ -417,14 +383,12 @@ export default function UserSettingsPage() {
           onSettled: () => {
             setIsVerifyingCurrentPassword(false);
           },
-        }
+        },
       );
     } catch (error: any) {
       toast({
         title: "Verification Failed",
-        description:
-          error.message ||
-          "An error occurred while verifying your current password.",
+        description: error.message || "An error occurred while verifying your current password.",
         variant: "destructive",
       });
       setIsVerifyingCurrentPassword(false);
@@ -435,9 +399,7 @@ export default function UserSettingsPage() {
     avatarInputRef.current?.click();
   };
 
-  const handleAvatarFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleAvatarFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
@@ -474,17 +436,12 @@ export default function UserSettingsPage() {
       <div className="flex flex-col md:flex-row gap-8 mb-8">
         <div className="flex flex-col items-center md:items-start gap-4">
           <Avatar className="h-24 w-24">
-            <AvatarImage
-              src={avatarPreviewUrl || avatarUrl || undefined}
-              alt={name}
-            />
+            <AvatarImage src={avatarPreviewUrl || avatarUrl || undefined} alt={name} />
             <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="text-center md:text-left">
             <h1 className="text-2xl font-bold">{name}</h1>
-            <p className="text-muted-foreground">
-              Member since {formatDate(userData?.createdAt)}
-            </p>
+            <p className="text-muted-foreground">Member since {formatDate(userData?.createdAt)}</p>
             {/* <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
               <Badge variant="outline" className="bg-green-50">
                 5 Items Shared
@@ -507,9 +464,7 @@ export default function UserSettingsPage() {
             </div>
             <div className="flex items-center gap-2">
               <Globe className="h-4 w-4 text-muted-foreground" />
-              <span>
-                {language.charAt(0) + language.slice(1).toLowerCase()}
-              </span>
+              <span>{language.charAt(0) + language.slice(1).toLowerCase()}</span>
             </div>
             <div className="flex items-center gap-2">
               {userData?.isEmailVerified ? (
@@ -551,9 +506,7 @@ export default function UserSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>{t("settings.profile_information")}</CardTitle>
-              <CardDescription>
-                {t("settings.update_personal_info")}
-              </CardDescription>
+              <CardDescription>{t("settings.update_personal_info")}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleProfileSubmit} className="space-y-6">
@@ -569,9 +522,7 @@ export default function UserSettingsPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">
-                        {t("settings.email_address")}
-                      </Label>
+                      <Label htmlFor="email">{t("settings.email_address")}</Label>
                       <Input
                         id="email"
                         type="email"
@@ -584,9 +535,7 @@ export default function UserSettingsPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="phone">
-                        {t("settings.phone_number")}
-                      </Label>
+                      <Label htmlFor="phone">{t("settings.phone_number")}</Label>
                       <PhoneInput
                         id="phone"
                         value={phone}
@@ -621,18 +570,14 @@ export default function UserSettingsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="avatar">
-                      {t("settings.profile_picture")}
-                    </Label>
+                    <Label htmlFor="avatar">{t("settings.profile_picture")}</Label>
                     <div className="flex items-center gap-4">
                       <Avatar className="h-16 w-16">
                         <AvatarImage
                           src={avatarPreviewUrl || avatarUrl || undefined}
                           alt={name || undefined}
                         />
-                        <AvatarFallback>
-                          {name?.charAt(0)?.toUpperCase() || "U"}
-                        </AvatarFallback>
+                        <AvatarFallback>{name?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
                       </Avatar>
                       <input
                         type="file"
@@ -658,26 +603,20 @@ export default function UserSettingsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="language">
-                      {t("settings.preferred_language")}
-                    </Label>
+                    <Label htmlFor="language">{t("settings.preferred_language")}</Label>
                     <select
                       id="language"
                       value={language}
                       onChange={(e) =>
-                        setLanguage(
-                          e.target.value as UpdateUserRequest.preferredLanguage
-                        )
+                        setLanguage(e.target.value as UpdateUserRequest.preferredLanguage)
                       }
                       className="w-full px-3 py-2 border rounded-md"
                     >
-                      {Object.values(UpdateUserRequest.preferredLanguage).map(
-                        (lang) => (
-                          <option key={lang} value={lang}>
-                            {lang.charAt(0) + lang.slice(1).toLowerCase()}
-                          </option>
-                        )
-                      )}
+                      {Object.values(UpdateUserRequest.preferredLanguage).map((lang) => (
+                        <option key={lang} value={lang}>
+                          {lang.charAt(0) + lang.slice(1).toLowerCase()}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -738,10 +677,7 @@ export default function UserSettingsPage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button
-                    type="submit"
-                    disabled={isUpdatingUser || isUploadingAvatar}
-                  >
+                  <Button type="submit" disabled={isUpdatingUser || isUploadingAvatar}>
                     {isUpdatingUser || isUploadingAvatar
                       ? t("settings.saving")
                       : t("settings.save_profile_changes")}
@@ -969,9 +905,7 @@ export default function UserSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Account Security</CardTitle>
-              <CardDescription>
-                Manage your password and account security settings
-              </CardDescription>
+              <CardDescription>Manage your password and account security settings</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleChangePasswordSubmit} className="space-y-6">
@@ -990,9 +924,7 @@ export default function UserSettingsPage() {
                         />
                         <button
                           type="button"
-                          onClick={() =>
-                            setShowCurrentPassword(!showCurrentPassword)
-                          }
+                          onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                           className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
                         >
                           {showCurrentPassword ? (
@@ -1030,9 +962,7 @@ export default function UserSettingsPage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="confirm-password">
-                        Confirm New Password
-                      </Label>
+                      <Label htmlFor="confirm-password">Confirm New Password</Label>
                       <div className="relative">
                         <Input
                           id="confirm-password"
@@ -1043,9 +973,7 @@ export default function UserSettingsPage() {
                         />
                         <button
                           type="button"
-                          onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
                         >
                           {showConfirmPassword ? (
@@ -1059,9 +987,7 @@ export default function UserSettingsPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <p className="text-sm font-medium">
-                      Password Requirements:
-                    </p>
+                    <p className="text-sm font-medium">Password Requirements:</p>
                     <ul className="text-sm text-muted-foreground space-y-1">
                       <li className="flex items-center gap-2">
                         {passwordRequirements.length ? (

@@ -1,4 +1,4 @@
-import useSupabaseBrowser from "./supabase-browser";
+import useSupabaseBrowser from "./supabase-browser-client";
 
 export const getBrowserSession = async () => {
   const supabase = await useSupabaseBrowser();
