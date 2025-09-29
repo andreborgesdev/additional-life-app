@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiClient, CreateUserRequest, withPublicApiClient } from "@/src/lib/api-client";
-import { useSupabaseServerClient } from "@/src/lib/supabase/supabase-server"-client";
+import { useSupabaseServerClient } from "@/src/lib/supabase/supabase-server-client";
 
 export const dynamic = "force-dynamic";
 

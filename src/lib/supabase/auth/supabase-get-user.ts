@@ -1,4 +1,4 @@
-import { useSupabaseServerClient } from "../supabase-server"-client";
+import { useSupabaseServerClient } from "../supabase-server-client";
 
 export async function getUser() {
   const supabase = await useSupabaseServerClient();
